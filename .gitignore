@@ -1,0 +1,10 @@
+*.db
+*.egg-info/
+.cache/
+.coverage
+.eggs/
+__pycache__/
+build/
+dist/
+htmlcov/
+venv/
