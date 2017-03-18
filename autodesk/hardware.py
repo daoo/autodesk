@@ -29,14 +29,14 @@ except (ImportError, RuntimeError):
         def output(pin, state):
             print("GPIO.output({}, {})".format(pin, state))
 
-pinUp = 13
-pinDown = 15
+PIN_UP = 13
+PIN_DOWN = 15
 
 
 def setup():
     GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(pinUp, GPIO.OUT)
-    GPIO.setup(pinDown, GPIO.OUT)
+    GPIO.setup(PIN_UP, GPIO.OUT)
+    GPIO.setup(PIN_DOWN, GPIO.OUT)
 
 
 def cleanup():
@@ -49,8 +49,5 @@ def go(pin, length):
     GPIO.output(pin, GPIO.LOW)
 
 
-def go_to_top():
-    go(pinUp, DELAY)
-
-def go_to_bottom():
-    go(pinDown, DELAY)
+def go_to(pin):
+    go(pin, DELAY)

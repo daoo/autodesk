@@ -1,20 +1,112 @@
 from contextlib import closing
 from datetime import datetime, timedelta
+import autodesk.hardware as hardware
 import autodesk.spans as spans
 import sqlite3
 
-STATE_DOWN = 0
-STATE_UP = 1
-SESSION_INACTIVE = 0
-SESSION_ACTIVE = 1
-LIMIT_DOWN = timedelta(minutes=50)
-LIMIT_UP = timedelta(minutes=10)
+
+class Up:
+    def next(self):
+        return Down()
+
+    def limit(self):
+        return timedelta(minutes=10)
+
+    def pin(self):
+        return hardware.PIN_UP
+
+    def integer(self):
+        return 1
+
+    def __str__(self):
+        return '1'
+
+    def __eq__(self, other):
+        return isinstance(other, Up)
 
 
-def event_from_row(_, values):
-    return spans.Event(
-        datetime.fromtimestamp(values[0]),
-        values[1])
+class Down:
+    def next(self):
+        return Up()
+
+    def limit(self):
+        return timedelta(minutes=50)
+
+    def pin(self):
+        return hardware.PIN_DOWN
+
+    def integer(self):
+        return 0
+
+    def __str__(self):
+        return '0'
+
+    def __eq__(self, other):
+        return isinstance(other, Down)
+
+
+class Active:
+    def active(self):
+        return True
+
+    def integer(self):
+        return 1
+
+    def __str__(self):
+        return '1'
+
+    def __eq__(self, other):
+        return isinstance(other, Active)
+
+
+class Inactive:
+    def active(self):
+        return False
+
+    def integer(self):
+        return 0
+
+    def __str__(self):
+        return '0'
+
+    def __eq__(self, other):
+        return isinstance(other, Inactive)
+
+
+def session_from_int(value):
+    if value == 0:
+        return Inactive()
+    elif value == 1:
+        return Active()
+    else:
+        raise ValueError()
+
+
+def desk_from_int(value):
+    if value == 0:
+        return Down()
+    elif value == 1:
+        return Up()
+    else:
+        raise ValueError()
+
+
+def event_from_row(cursor, values):
+    time = datetime.fromtimestamp(values[0])
+    assert cursor.description[0][0] == 'date'
+    col_name = cursor.description[1][0]
+    state = None
+    try:
+        if col_name == 'active':
+            state = session_from_int(values[1])
+        elif col_name == 'state':
+            state = desk_from_int(values[1])
+        else:
+            assert False
+    except:
+        assert False
+
+    return spans.Event(time, state)
 
 
 def get(db, query):
@@ -29,23 +121,23 @@ class Database:
         self.db.execute(
             'CREATE TABLE IF NOT EXISTS session('
             'date INTEGER NOT NULL,'
-            'data INTEGER NOT NULL)')
+            'active INTEGER NOT NULL)')
         self.db.execute(
             'CREATE TABLE IF NOT EXISTS desk('
             'date INTEGER NOT NULL,'
-            'data INTEGER NOT NULL)')
+            'state INTEGER NOT NULL)')
 
     def close(self):
         self.db.close()
 
     def insert_desk_event(self, event):
         self.db.execute('INSERT INTO desk values(?, ?)',
-                        (event.index.timestamp(), event.data))
+                        (event.index.timestamp(), event.data.integer()))
         self.db.commit()
 
     def insert_session_event(self, event):
         self.db.execute('INSERT INTO session values(?, ?)',
-                        (event.index.timestamp(), event.data))
+                        (event.index.timestamp(), event.data.integer()))
         self.db.commit()
 
     def get_desk_events(self):
@@ -56,14 +148,14 @@ class Database:
 
     def get_desk_spans(self, initial, final):
         return spans.collect(
-            default_data=0,
+            default_data=Down(),
             initial=initial,
             final=final,
             events=self.get_desk_events())
 
     def get_session_spans(self, initial, final):
         return spans.collect(
-            default_data=0,
+            default_data=Inactive(),
             initial=initial,
             final=final,
             events=self.get_session_events())
@@ -91,19 +183,13 @@ class Snapshot:
     def get_active_time(self):
         return spans.count(
             self.get_latest_session_spans(),
-            SESSION_ACTIVE,
+            Active(),
             timedelta(0))
 
     def get_next_state(self):
         active_time = self.get_active_time()
-        if self.desk_latest.data == STATE_DOWN:
-            limit = LIMIT_DOWN
-            return (limit - active_time, STATE_UP)
-        elif self.desk_latest.data == STATE_UP:
-            limit = LIMIT_UP
-            return (limit - active_time, STATE_DOWN)
-        else:
-            assert False
+        state = self.desk_latest.data
+        return (state.limit() - active_time, state.next())
 
     def __repr__(self):
         return (

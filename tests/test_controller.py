@@ -62,7 +62,7 @@ def test_update_timer(database, timer_path):
     with open(timer_path, 'r') as timer_file:
         assert 'stop\n' == timer_file.read()
 
-    controller.set_session(model.SESSION_ACTIVE, activated_at)
+    controller.set_session(activated_at, model.Active())
     with open(timer_path, 'r') as timer_file:
         str = timer_file.read()
         assert '3000 1\n' == str
@@ -76,11 +76,11 @@ def test_update_timer(database, timer_path):
 def test_set_session(database, timer_path):
     controller = Controller(timer_path, database)
     events = [
-        Event(datetime(2017, 2, 13, 12, 0, 0), model.SESSION_ACTIVE),
-        Event(datetime(2017, 2, 13, 13, 0, 0), model.SESSION_INACTIVE)
+        Event(datetime(2017, 2, 13, 12, 0, 0), model.Active()),
+        Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
     ]
     for event in events:
-        controller.set_session(event.data, event.index)
+        controller.set_session(event.index, event.data)
     assert database.get_session_events() == events
 
 
@@ -104,11 +104,11 @@ GPIO.cleanup()
 def test_set_desk(database, timer_path, capsys):
     controller = Controller(timer_path, database)
     events = [
-        Event(datetime(2017, 2, 13, 12, 0, 0), model.STATE_UP),
-        Event(datetime(2017, 2, 13, 12, 0, 0), model.STATE_DOWN)
+        Event(datetime(2017, 2, 13, 12, 0, 0), model.Up()),
+        Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
     ]
     for event in events:
-        controller.set_desk(event.data, event.index)
+        controller.set_desk(event.index, event.data)
     out = capsys.readouterr()[0]
     assert database.get_desk_events() == events
     assert out == expected
