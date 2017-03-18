@@ -6,6 +6,8 @@ import os
 
 app = flask.Flask(__name__)
 app.config.update(dict(
+    PIN_DOWN=15,
+    PIN_UP=13,
     LIMIT_DOWN=50,
     LIMIT_UP=10,
     DATABASE=os.path.join(app.root_path, 'autodesk.db'),
@@ -21,10 +23,11 @@ def get_db():
 
 
 def get_controller():
+    pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
     limit = (
         timedelta(minutes=app.config['LIMIT_DOWN']),
         timedelta(minutes=app.config['LIMIT_UP']))
-    return Controller(limit, app.config['TIMER_PATH'], get_db())
+    return Controller(pins, limit, app.config['TIMER_PATH'], get_db())
 
 
 @app.teardown_appcontext

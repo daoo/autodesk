@@ -7,6 +7,7 @@ import pytest
 import tempfile
 
 
+PINS = (15, 13)
 LIMITS = (timedelta(minutes=50), timedelta(minutes=10))
 
 
@@ -55,7 +56,7 @@ def test_disallow_operation_weekend():
 
 
 def test_update_timer(database, timer_path):
-    controller = Controller(LIMITS, timer_path, database)
+    controller = Controller(PINS, LIMITS, timer_path, database)
 
     initial = datetime(2017, 2, 13, 11, 00, 0)
     activated_at = datetime(2017, 2, 13, 11, 50, 0)
@@ -77,7 +78,7 @@ def test_update_timer(database, timer_path):
 
 
 def test_set_session(database, timer_path):
-    controller = Controller(LIMITS, timer_path, database)
+    controller = Controller(PINS, LIMITS, timer_path, database)
     events = [
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Active()),
         Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
@@ -105,7 +106,7 @@ GPIO.cleanup()
 
 
 def test_set_desk(database, timer_path, capsys):
-    controller = Controller(LIMITS, timer_path, database)
+    controller = Controller(PINS, LIMITS, timer_path, database)
     events = [
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Up()),
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())

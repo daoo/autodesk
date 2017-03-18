@@ -18,7 +18,8 @@ def allow_desk_operation(at):
 
 
 class Controller:
-    def __init__(self, limits, timer_path, database):
+    def __init__(self, pins, limits, timer_path, database):
+        self.pins = pins
         self.limits = limits
         self.timer_path = timer_path
         self.database = database
@@ -49,8 +50,8 @@ class Controller:
         if not allow_desk_operation(time):
             return False
 
-        hardware.setup()
-        hardware.go_to(state.test(hardware.PIN_DOWN, hardware.PIN_UP))
+        hardware.setup(*self.pins)
+        hardware.go_to(state.test(*self.pins))
         hardware.cleanup()
         self.database.insert_desk_event(Event(time, state))
         self.update_timer(time)
