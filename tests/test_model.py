@@ -63,7 +63,6 @@ def test_snapshot_empty(database):
     assert snapshot.session_latest == Span(a, b, Inactive())
     assert snapshot.get_active_time() == timedelta(0)
     assert snapshot.get_latest_session_spans() == [Span(a, b, Inactive())]
-    assert snapshot.get_next_state() == (timedelta(minutes=50), Up())
 
 
 def test_snapshot_example(database):
@@ -85,4 +84,3 @@ def test_snapshot_example(database):
     assert snapshot.session_latest == Span(d, e, Inactive())
     assert snapshot.get_active_time() == timedelta(minutes=10)
     assert snapshot.get_latest_session_spans() == [Span(c, d, Active()), Span(d, e, Inactive())]
-    assert snapshot.get_next_state() == (timedelta(minutes=0), Down())

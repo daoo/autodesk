@@ -8,9 +8,6 @@ class Up:
     def next(self):
         return Down()
 
-    def limit(self):
-        return timedelta(minutes=10)
-
     def test(self, a, b):
         return b
 
@@ -27,9 +24,6 @@ class Up:
 class Down:
     def next(self):
         return Up()
-
-    def limit(self):
-        return timedelta(minutes=50)
 
     def test(self, a, b):
         return a
@@ -185,10 +179,8 @@ class Snapshot:
             Active(),
             timedelta(0))
 
-    def get_next_state(self):
-        active_time = self.get_active_time()
-        state = self.desk_latest.data
-        return (state.limit() - active_time, state.next())
+    def get_latest_desk_state(self):
+        return self.desk_latest.data
 
     def __repr__(self):
         return (
