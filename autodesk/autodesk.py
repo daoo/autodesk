@@ -30,24 +30,18 @@ def close_db(_):
 
 @app.route('/api/set/session/<string>')
 def route_api_set_session(string):
-    try:
-        get_controller().set_session(
-            datetime.now(),
-            model.session_from_int(int(string)))
-        return ''
-    except Exception as e:
-        flask.abort(400)
+    get_controller().set_session(
+        datetime.now(),
+        model.session_from_int(int(string)))
+    return ''
 
 
 @app.route('/api/set/desk/<string>')
 def route_api_set_desk(string):
-    try:
-        state = model.desk_from_int(int(string))
-        if not get_controller().set_desk(datetime.now(), state):
-            flask.abort(403)
-        return ''
-    except:
-        flask.abort(400)
+    state = model.desk_from_int(int(string))
+    if not get_controller().set_desk(datetime.now(), state):
+        flask.abort(403)
+    return ''
 
 
 @app.route('/')
