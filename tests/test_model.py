@@ -80,7 +80,12 @@ def test_snapshot_example(database):
     snapshot = database.get_snapshot(a, e)
     assert snapshot.desk_spans == [Span(a, c, Down()), Span(c, e, Up())]
     assert snapshot.desk_latest == Span(c, e, Up())
-    assert snapshot.session_spans == [Span(a, b, Inactive()), Span(b, d, Active()), Span(d, e, Inactive())]
+    session_spans = [
+        Span(a, b, Inactive()),
+        Span(b, d, Active()),
+        Span(d, e, Inactive())]
+    assert snapshot.session_spans == session_spans
     assert snapshot.session_latest == Span(d, e, Inactive())
     assert snapshot.get_active_time() == timedelta(minutes=10)
-    assert snapshot.get_latest_session_spans() == [Span(c, d, Active()), Span(d, e, Inactive())]
+    latest_session_spans = [Span(c, d, Active()), Span(d, e, Inactive())]
+    assert snapshot.get_latest_session_spans() == latest_session_spans

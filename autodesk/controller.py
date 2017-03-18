@@ -7,6 +7,7 @@ LIMIT_UP = timedelta(minutes=10)
 DESK_OPERATION_ALLOWANCE_START = time(9, 0, 0)
 DESK_OPERATION_ALLOWANCE_END = time(17, 0, 0)
 
+
 def allow_desk_operation(at):
     monday = 0
     friday = 4
@@ -17,13 +18,16 @@ def allow_desk_operation(at):
         time_at <= DESK_OPERATION_ALLOWANCE_END and \
         weekday >= monday and weekday <= friday
 
+
 class Controller:
     def __init__(self, timer_path, database):
         self.timer_path = timer_path
         self.database = database
 
     def update_timer(self, time):
-        snapshot = self.database.get_snapshot(initial=datetime.fromtimestamp(0), final=time)
+        snapshot = self.database.get_snapshot(
+            initial=datetime.fromtimestamp(0),
+            final=time)
         with open(self.timer_path, 'w') as timer_file:
             if not allow_desk_operation(time):
                 timer_file.write('stop\n')

@@ -10,6 +10,7 @@ class Event:
         return 'Event(index={}, data={})'.format(
             repr(self.index), repr(self.data))
 
+
 class Span:
     def __init__(self, start, end, data):
         self.start = start
@@ -29,6 +30,7 @@ class Span:
         return 'Span(start={}, end={}, data={})'.format(
             repr(self.start), repr(self.end), repr(self.data))
 
+
 def collect(default_data, initial, final, events):
     start = initial
     data = default_data
@@ -41,14 +43,16 @@ def collect(default_data, initial, final, events):
         data = event.data
     yield Span(start, final, data)
 
+
 def cut(start, end, spans):
     for span in spans:
         if span.end < start or span.start > end:
             continue
 
         a = start if span.start < start else span.start
-        b = end if span.end  > end else span.end
+        b = end if span.end > end else span.end
         yield Span(a, b, span.data)
+
 
 def count(spans, data, start=0):
     return sum((span.length() for span in spans if span.data == data), start)

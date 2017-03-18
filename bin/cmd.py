@@ -3,6 +3,7 @@
 import hardware
 import sys
 
+
 def main(direction, timeDelta):
     pin = None
     if direction == "up":
@@ -17,6 +18,7 @@ def main(direction, timeDelta):
         hardware.go(pin, timeDelta)
     finally:
         hardware.cleanup()
+
 
 if len(sys.argv) != 3:
     sys.stderr.write("Usage: {} up/down seconds\n".format(sys.argv[0]))
