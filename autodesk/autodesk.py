@@ -1,11 +1,13 @@
 from autodesk.controller import Controller
-from datetime import datetime
+from datetime import datetime, timedelta
 import autodesk.model as model
 import flask
 import os
 
 app = flask.Flask(__name__)
 app.config.update(dict(
+    LIMIT_DOWN=50,
+    LIMIT_UP=10,
     DATABASE=os.path.join(app.root_path, 'autodesk.db'),
     TIMER_PATH=os.path.join(app.root_path, 'timer')
 ))
@@ -19,7 +21,10 @@ def get_db():
 
 
 def get_controller():
-    return Controller(app.config['TIMER_PATH'], get_db())
+    limit = (
+        timedelta(minutes=app.config['LIMIT_DOWN']),
+        timedelta(minutes=app.config['LIMIT_UP']))
+    return Controller(limit, app.config['TIMER_PATH'], get_db())
 
 
 @app.teardown_appcontext

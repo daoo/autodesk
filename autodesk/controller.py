@@ -2,8 +2,6 @@ from autodesk.spans import Event
 from datetime import datetime, time, timedelta
 import autodesk.hardware as hardware
 
-LIMIT_DOWN = timedelta(minutes=50)
-LIMIT_UP = timedelta(minutes=10)
 DESK_OPERATION_ALLOWANCE_START = time(9, 0, 0)
 DESK_OPERATION_ALLOWANCE_END = time(17, 0, 0)
 
@@ -20,7 +18,8 @@ def allow_desk_operation(at):
 
 
 class Controller:
-    def __init__(self, timer_path, database):
+    def __init__(self, limits, timer_path, database):
+        self.limits = limits
         self.timer_path = timer_path
         self.database = database
 
@@ -36,7 +35,7 @@ class Controller:
             else:
                 desk = snapshot.get_latest_desk_state()
                 active_time = snapshot.get_active_time()
-                limit = desk.test(LIMIT_DOWN, LIMIT_UP)
+                limit = desk.test(*self.limits)
                 delay = max(timedelta(0), limit - active_time)
                 target = desk.next()
                 timer_file.write('{} {}\n'.format(
