@@ -1,6 +1,5 @@
 from contextlib import closing
 from datetime import datetime, timedelta
-import autodesk.hardware as hardware
 import autodesk.spans as spans
 import sqlite3
 
@@ -12,8 +11,8 @@ class Up:
     def limit(self):
         return timedelta(minutes=10)
 
-    def pin(self):
-        return hardware.PIN_UP
+    def test(self, a, b):
+        return b
 
     def integer(self):
         return 1
@@ -32,8 +31,8 @@ class Down:
     def limit(self):
         return timedelta(minutes=50)
 
-    def pin(self):
-        return hardware.PIN_DOWN
+    def test(self, a, b):
+        return a
 
     def integer(self):
         return 0

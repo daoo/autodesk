@@ -41,7 +41,7 @@ class Controller:
             return False
 
         hardware.setup()
-        hardware.go_to(state.pin())
+        hardware.go_to(state.test(hardware.PIN_DOWN, hardware.PIN_UP))
         hardware.cleanup()
         self.database.insert_desk_event(Event(time, state))
         self.update_timer(time)
