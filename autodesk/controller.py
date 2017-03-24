@@ -17,30 +17,42 @@ def allow_desk_operation(at):
         weekday >= monday and weekday <= friday
 
 
+class Timer:
+    def __init__(self, path):
+        self.path = path
+
+    def set(self, delay, target):
+        assert delay >= 0
+        with open(self.path, 'w') as timer_file:
+            timer_file.write(str(delay) + ' ' + str(target) + '\n')
+
+    def stop(self):
+        with open(self.path, 'w') as timer_file:
+            timer_file.write('stop\n')
+
+
 class Controller:
-    def __init__(self, pins, limits, timer_path, database):
+    def __init__(self, pins, limits, timer, database):
         self.pins = pins
         self.limits = limits
-        self.timer_path = timer_path
+        self.timer = timer
         self.database = database
 
     def update_timer(self, time):
         snapshot = self.database.get_snapshot(
             initial=datetime.fromtimestamp(0),
             final=time)
-        with open(self.timer_path, 'w') as timer_file:
-            if not allow_desk_operation(time):
-                timer_file.write('stop\n')
-            elif not snapshot.session_latest.data.active():
-                timer_file.write('stop\n')
-            else:
-                desk = snapshot.get_latest_desk_state()
-                active_time = snapshot.get_active_time()
-                limit = desk.test(*self.limits)
-                delay = max(timedelta(0), limit - active_time)
-                target = desk.next()
-                timer_file.write('{} {}\n'.format(
-                    int(max(0, delay.total_seconds())), target))
+        if not allow_desk_operation(time):
+            self.timer.stop()
+        elif not snapshot.session_latest.data.active():
+            self.timer.stop()
+        else:
+            desk = snapshot.get_latest_desk_state()
+            active_time = snapshot.get_active_time()
+            limit = desk.test(*self.limits)
+            delay = max(timedelta(0), limit - active_time)
+            target = desk.next()
+            self.timer.set(int(delay.total_seconds()), target)
 
     def set_session(self, time, state):
         self.database.insert_session_event(Event(time, state))

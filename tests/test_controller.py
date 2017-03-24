@@ -1,7 +1,8 @@
+from autodesk.controller import Controller, Timer, allow_desk_operation
 from autodesk.spans import Event
 from contextlib import closing
 from datetime import date, datetime, time, timedelta
-from autodesk.controller import Controller, allow_desk_operation
+from unittest.mock import patch
 import autodesk.model as model
 import pytest
 import tempfile
@@ -19,9 +20,9 @@ def database():
 
 
 @pytest.fixture
-def timer_path():
-    with tempfile.NamedTemporaryFile() as tmp:
-        yield tmp.name
+def timer():
+    with patch('autodesk.controller.Timer') as mocktimer:
+        yield mocktimer
 
 
 def test_allow_operation_workday():
@@ -55,30 +56,25 @@ def test_disallow_operation_weekend():
     assert not allow_desk_operation(datetime.combine(sunday, stroke))
 
 
-def test_update_timer(database, timer_path):
-    controller = Controller(PINS, LIMITS, timer_path, database)
+def test_update_timer(database, timer):
+    controller = Controller(PINS, LIMITS, timer, database)
 
     initial = datetime(2017, 2, 13, 11, 00, 0)
     activated_at = datetime(2017, 2, 13, 11, 50, 0)
     now = datetime(2017, 2, 13, 12, 0, 0)
 
     controller.update_timer(initial)
-    with open(timer_path, 'r') as timer_file:
-        assert 'stop\n' == timer_file.read()
+    assert timer.stop.called
 
     controller.set_session(activated_at, model.Active())
-    with open(timer_path, 'r') as timer_file:
-        str = timer_file.read()
-        assert '3000 1\n' == str
+    assert timer.set.call_args == ((3000, model.Up()),)
 
     controller.update_timer(now)
-    with open(timer_path, 'r') as timer_file:
-        str = timer_file.read()
-        assert '2400 1\n' == str
+    assert timer.set.call_args == ((2400, model.Up()),)
 
 
-def test_set_session(database, timer_path):
-    controller = Controller(PINS, LIMITS, timer_path, database)
+def test_set_session(database, timer):
+    controller = Controller(PINS, LIMITS, timer, database)
     events = [
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Active()),
         Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
@@ -105,8 +101,8 @@ GPIO.cleanup()
 """
 
 
-def test_set_desk(database, timer_path, capsys):
-    controller = Controller(PINS, LIMITS, timer_path, database)
+def test_set_desk(database, timer, capsys):
+    controller = Controller(PINS, LIMITS, timer, database)
     events = [
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Up()),
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
