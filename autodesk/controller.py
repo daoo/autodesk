@@ -32,8 +32,8 @@ class Timer:
 
 
 class Controller:
-    def __init__(self, pins, limits, timer, database):
-        self.pins = pins
+    def __init__(self, hardware, limits, timer, database):
+        self.hardware = hardware
         self.limits = limits
         self.timer = timer
         self.database = database
@@ -62,10 +62,8 @@ class Controller:
         if not allow_desk_operation(time):
             return False
 
-        hardware.setup(*self.pins)
-        hardware.go_to(state.test(*self.pins))
-        hardware.cleanup()
+        self.hardware.setup()
+        self.hardware.go(state)
+        self.hardware.cleanup()
         self.database.insert_desk_event(Event(time, state))
         self.update_timer(time)
-
-        return True

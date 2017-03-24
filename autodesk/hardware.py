@@ -29,22 +29,20 @@ except (ImportError, RuntimeError):
         def output(pin, state):
             print("GPIO.output({}, {})".format(pin, state))
 
+class Hardware:
+    def __init__(self, pins):
+        self.pins = pins
 
-def setup(pinup, pindown):
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(pindown, GPIO.OUT)
-    GPIO.setup(pinup, GPIO.OUT)
+    def setup(self):
+        GPIO.setmode(GPIO.BOARD)
+        for pin in self.pins:
+            GPIO.setup(pin, GPIO.OUT)
 
+    def cleanup(self):
+        GPIO.cleanup()
 
-def cleanup():
-    GPIO.cleanup()
-
-
-def go(pin, length):
-    GPIO.output(pin, GPIO.HIGH)
-    time.sleep(length)
-    GPIO.output(pin, GPIO.LOW)
-
-
-def go_to(pin):
-    go(pin, DELAY)
+    def go(self, state):
+        pin = state.test(*self.pins)
+        GPIO.output(pin, GPIO.HIGH)
+        time.sleep(DELAY)
+        GPIO.output(pin, GPIO.LOW)

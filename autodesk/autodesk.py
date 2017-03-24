@@ -1,4 +1,5 @@
 from autodesk.controller import Controller, Timer
+from autodesk.hardware import Hardware
 from datetime import datetime, timedelta
 import autodesk.model as model
 import flask
@@ -27,7 +28,7 @@ def get_controller():
     limit = (
         timedelta(minutes=app.config['LIMIT_DOWN']),
         timedelta(minutes=app.config['LIMIT_UP']))
-    return Controller(pins, limit, Timer(app.config['TIMER_PATH']), get_db())
+    return Controller(Hardware(pins), limit, Timer(app.config['TIMER_PATH']), get_db())
 
 
 @app.teardown_appcontext
