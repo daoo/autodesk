@@ -17,20 +17,6 @@ def allow_desk_operation(at):
         weekday >= monday and weekday <= friday
 
 
-class Timer:
-    def __init__(self, path):
-        self.path = path
-
-    def set(self, delay, target):
-        assert delay >= 0
-        with open(self.path, 'w') as timer_file:
-            timer_file.write(str(delay) + ' ' + str(target) + '\n')
-
-    def stop(self):
-        with open(self.path, 'w') as timer_file:
-            timer_file.write('stop\n')
-
-
 class Controller:
     def __init__(self, hardware, limits, timer, database):
         self.hardware = hardware
@@ -51,8 +37,7 @@ class Controller:
             active_time = snapshot.get_active_time()
             limit = desk.test(*self.limits)
             delay = max(timedelta(0), limit - active_time)
-            target = desk.next()
-            self.timer.set(int(delay.total_seconds()), target)
+            self.timer.set(delay, desk.next())
 
     def set_session(self, time, state):
         self.database.insert_session_event(Event(time, state))

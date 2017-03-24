@@ -1,5 +1,6 @@
-from autodesk.controller import Controller, Timer
+from autodesk.controller import Controller
 from autodesk.hardware import Hardware
+from autodesk.timer import Timer
 from datetime import datetime, timedelta
 import autodesk.model as model
 import flask

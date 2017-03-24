@@ -1,4 +1,4 @@
-from autodesk.controller import Controller, Timer, allow_desk_operation
+from autodesk.controller import Controller, allow_desk_operation
 from autodesk.hardware import Hardware
 from autodesk.spans import Event
 from contextlib import closing
@@ -22,7 +22,7 @@ def database():
 
 @pytest.fixture
 def timer():
-    with patch('autodesk.controller.Timer') as mocktimer:
+    with patch('autodesk.timer.Timer') as mocktimer:
         yield mocktimer
 
 
@@ -68,10 +68,10 @@ def test_update_timer(database, timer):
     assert timer.stop.called
 
     controller.set_session(activated_at, model.Active())
-    assert timer.set.call_args == ((3000, model.Up()),)
+    assert timer.set.call_args == ((timedelta(seconds=3000), model.Up()),)
 
     controller.update_timer(now)
-    assert timer.set.call_args == ((2400, model.Up()),)
+    assert timer.set.call_args == ((timedelta(seconds=2400), model.Up()),)
 
 
 def test_set_session(database, timer):
