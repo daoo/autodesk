@@ -1,0 +1,11 @@
+[Unit]
+Description=autodesk flask server
+
+[Service]
+Type=simple
+User=pi
+Environment=FLASK_APP=autodesk AUTODESK_CONFIG=/var/local/autodesk/settings.cfg
+ExecStart=/var/local/autodesk/venv/bin/python -m flask run -p 8000
+
+[Install]
+WantedBy=multi-user.target
