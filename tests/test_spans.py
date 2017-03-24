@@ -23,11 +23,16 @@ def test_collect_final():
     events = [Event(1, 'a')]
     spans = collect('b', 0, 2, events)
     final = list(spans)[-1]
-    assert final.end == 2
+    assert final.data == 'a' and final.end == 2
 
 
-def test_collect_merge():
+def test_collect_merge_initial():
     events = [Event(1, 'a')]
+    assert list(collect('a', 0, 1, events)) == [Span(0, 1, 'a')]
+
+
+def test_collect_merge_events():
+    events = [Event(1, 'a'), Event(2, 'a')]
     assert list(collect('a', 0, 2, events)) == [Span(0, 2, 'a')]
 
 
