@@ -1,6 +1,5 @@
 from autodesk.spans import Event
 from datetime import datetime, time, timedelta
-import autodesk.hardware as hardware
 
 DESK_OPERATION_ALLOWANCE_START = time(9, 0, 0)
 DESK_OPERATION_ALLOWANCE_END = time(17, 0, 0)

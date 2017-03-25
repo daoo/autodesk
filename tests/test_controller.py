@@ -1,5 +1,4 @@
 from autodesk.controller import Controller, allow_desk_operation
-from autodesk.hardware import Hardware
 from autodesk.spans import Event
 from contextlib import closing
 from datetime import date, datetime, time, timedelta
@@ -9,8 +8,13 @@ import pytest
 import tempfile
 
 
-PINS = (15, 13)
 LIMITS = (timedelta(minutes=50), timedelta(minutes=10))
+
+
+@pytest.fixture
+def hardware():
+    with patch('autodesk.hardware.Hardware') as mockhw:
+        yield mockhw
 
 
 @pytest.fixture
@@ -58,7 +62,7 @@ def test_disallow_operation_weekend():
 
 
 def test_update_timer(database, timer):
-    controller = Controller(Hardware(PINS), LIMITS, timer, database)
+    controller = Controller(None, LIMITS, timer, database)
 
     initial = datetime(2017, 2, 13, 11, 00, 0)
     activated_at = datetime(2017, 2, 13, 11, 50, 0)
@@ -75,7 +79,7 @@ def test_update_timer(database, timer):
 
 
 def test_set_session(database, timer):
-    controller = Controller(Hardware(PINS), LIMITS, timer, database)
+    controller = Controller(None, LIMITS, timer, database)
     events = [
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Active()),
         Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
@@ -85,31 +89,15 @@ def test_set_session(database, timer):
     assert database.get_session_events() == events
 
 
-expected = """Warning: GPIO not found, using test implementation.
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(15, GPIO.OUT)
-GPIO.setup(13, GPIO.OUT)
-GPIO.output(13, GPIO.HIGH)
-GPIO.output(13, GPIO.LOW)
-GPIO.cleanup()
-Warning: GPIO not found, using test implementation.
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(15, GPIO.OUT)
-GPIO.setup(13, GPIO.OUT)
-GPIO.output(15, GPIO.HIGH)
-GPIO.output(15, GPIO.LOW)
-GPIO.cleanup()
-"""
-
-
-def test_set_desk(database, timer, capsys):
-    controller = Controller(Hardware(PINS), LIMITS, timer, database)
+def test_set_desk(hardware, database, timer, capsys):
+    controller = Controller(hardware, LIMITS, timer, database)
     events = [
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Up()),
         Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
     ]
     for event in events:
         controller.set_desk(event.index, event.data)
-    out = capsys.readouterr()[0]
+        assert hardware.setup.called
+        assert hardware.go.call_args[0] == (event.data,)
+        assert hardware.cleanup.called
     assert database.get_desk_events() == events
-    assert out == expected
