@@ -1,11 +1,9 @@
 from autodesk.controller import Controller, allow_desk_operation
 from autodesk.spans import Event
-from contextlib import closing
 from datetime import date, datetime, time, timedelta
 from unittest.mock import patch
 import autodesk.model as model
 import pytest
-import tempfile
 
 
 LIMITS = (timedelta(minutes=50), timedelta(minutes=10))
@@ -19,9 +17,13 @@ def hardware():
 
 @pytest.fixture
 def database():
-    with tempfile.NamedTemporaryFile() as tmp:
-        with closing(model.Database(tmp.name)) as database:
-            yield database
+    with patch('autodesk.model.Database') as mockdb:
+        with patch('autodesk.model.Snapshot') as mocksnap:
+            mockdb.get_snapshot.return_value = mocksnap
+            mocksnap.get_active_time.return_value = timedelta(0)
+            mocksnap.get_latest_desk_state.return_value = model.Down()
+            mocksnap.get_latest_session_state.return_value = model.Inactive()
+            yield (mockdb, mocksnap)
 
 
 @pytest.fixture
@@ -62,42 +64,55 @@ def test_disallow_operation_weekend():
 
 
 def test_update_timer(database, timer):
-    controller = Controller(None, LIMITS, timer, database)
+    (mockdb, mocksnap) = database
+    controller = Controller(None, LIMITS, timer, mockdb)
 
-    initial = datetime(2017, 2, 13, 11, 00, 0)
-    activated_at = datetime(2017, 2, 13, 11, 50, 0)
-    now = datetime(2017, 2, 13, 12, 0, 0)
+    time0 = datetime.fromtimestamp(0)
+    time1 = datetime(2017, 2, 13, 11, 0, 0)
+    snapshot_args = {'initial': time0, 'final': time1}
 
-    controller.update_timer(initial)
+    controller.update_timer(time1)
+    assert mockdb.get_snapshot.call_args == ((), snapshot_args)
     assert timer.stop.called
 
-    controller.set_session(activated_at, model.Active())
+    mocksnap.get_latest_session_state.return_value = model.Active()
+    controller.update_timer(time1)
+    assert mockdb.get_snapshot.call_args == ((), snapshot_args)
     assert timer.set.call_args == ((timedelta(seconds=3000), model.Up()),)
 
-    controller.update_timer(now)
-    assert timer.set.call_args == ((timedelta(seconds=2400), model.Up()),)
+    mocksnap.get_active_time.return_value = timedelta(seconds=1000)
+    controller.update_timer(time1)
+    assert mockdb.get_snapshot.call_args == ((), snapshot_args)
+    assert timer.set.call_args == ((timedelta(seconds=2000), model.Up()),)
 
 
 def test_set_session(database, timer):
-    controller = Controller(None, LIMITS, timer, database)
-    events = [
-        Event(datetime(2017, 2, 13, 12, 0, 0), model.Active()),
-        Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
-    ]
-    for event in events:
-        controller.set_session(event.index, event.data)
-    assert database.get_session_events() == events
+    (mockdb, _) = database
+    controller = Controller(None, LIMITS, timer, mockdb)
+
+    event1 = Event(datetime(2017, 2, 13, 12, 0, 0), model.Active())
+    controller.set_session(event1.index, event1.data)
+    assert mockdb.insert_session_event.call_args[0] == (event1,)
+
+    event2 = Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
+    controller.set_session(event2.index, event2.data)
+    assert mockdb.insert_session_event.call_args[0] == (event2,)
 
 
 def test_set_desk(hardware, database, timer, capsys):
-    controller = Controller(hardware, LIMITS, timer, database)
-    events = [
-        Event(datetime(2017, 2, 13, 12, 0, 0), model.Up()),
-        Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
-    ]
-    for event in events:
-        controller.set_desk(event.index, event.data)
-        assert hardware.setup.called
-        assert hardware.go.call_args[0] == (event.data,)
-        assert hardware.cleanup.called
-    assert database.get_desk_events() == events
+    (mockdb, _) = database
+    controller = Controller(hardware, LIMITS, timer, mockdb)
+
+    event1 = Event(datetime(2017, 2, 13, 12, 0, 0), model.Up())
+    controller.set_desk(event1.index, event1.data)
+    assert mockdb.insert_desk_event.call_args[0] == (event1,)
+    assert hardware.setup.called
+    assert hardware.go.call_args[0] == (event1.data,)
+    assert hardware.cleanup.called
+
+    event2 = Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
+    controller.set_desk(event2.index, event2.data)
+    assert mockdb.insert_desk_event.call_args[0] == (event2,)
+    assert hardware.setup.called
+    assert hardware.go.call_args[0] == (event2.data,)
+    assert hardware.cleanup.called

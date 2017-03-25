@@ -182,6 +182,9 @@ class Snapshot:
     def get_latest_desk_state(self):
         return self.desk_latest.data
 
+    def get_latest_session_state(self):
+        return self.session_latest.data
+
     def __repr__(self):
         return (
             'desk_spans:\n  {}\n'

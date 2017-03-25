@@ -29,7 +29,7 @@ class Controller:
             final=time)
         if not allow_desk_operation(time):
             self.timer.stop()
-        elif not snapshot.session_latest.data.active():
+        elif not snapshot.get_latest_session_state().active():
             self.timer.stop()
         else:
             desk = snapshot.get_latest_desk_state()
