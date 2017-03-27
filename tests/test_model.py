@@ -14,6 +14,22 @@ def database():
             yield database
 
 
+def test_down_next():
+    assert Down().next() == Up()
+
+
+def test_down_test():
+    assert Down().test(0, 1) == 0
+
+
+def test_up_next():
+    assert Up().next() == Down()
+
+
+def test_up_test():
+    assert Up().test(0, 1) == 1
+
+
 def test_session_from_int():
     assert model.session_from_int(0) == Inactive()
     assert model.session_from_int(1) == Active()

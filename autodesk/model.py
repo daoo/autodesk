@@ -11,12 +11,6 @@ class Up:
     def test(self, a, b):
         return b
 
-    def integer(self):
-        return 1
-
-    def __str__(self):
-        return '1'
-
     def __eq__(self, other):
         return isinstance(other, Up)
 
@@ -28,12 +22,6 @@ class Down:
     def test(self, a, b):
         return a
 
-    def integer(self):
-        return 0
-
-    def __str__(self):
-        return '0'
-
     def __eq__(self, other):
         return isinstance(other, Down)
 
@@ -42,11 +30,8 @@ class Active:
     def active(self):
         return True
 
-    def integer(self):
-        return 1
-
-    def __str__(self):
-        return '1'
+    def test(self, a, b):
+        return b
 
     def __eq__(self, other):
         return isinstance(other, Active)
@@ -56,11 +41,8 @@ class Inactive:
     def active(self):
         return False
 
-    def integer(self):
-        return 0
-
-    def __str__(self):
-        return '0'
+    def test(self, a, b):
+        return a
 
     def __eq__(self, other):
         return isinstance(other, Inactive)
@@ -125,12 +107,12 @@ class Database:
 
     def insert_desk_event(self, event):
         self.db.execute('INSERT INTO desk values(?, ?)',
-                        (event.index.timestamp(), event.data.integer()))
+                        (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
 
     def insert_session_event(self, event):
         self.db.execute('INSERT INTO session values(?, ?)',
-                        (event.index.timestamp(), event.data.integer()))
+                        (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
 
     def get_desk_events(self):

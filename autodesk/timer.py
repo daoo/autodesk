@@ -9,7 +9,7 @@ class Timer:
         assert delay >= timedelta(0)
         with open(self.path, 'w') as timer_file:
             seconds = int(delay.total_seconds())
-            timer_file.write(str(seconds) + ' ' + str(target) + '\n')
+            timer_file.write(str(seconds) + ' ' + target.test('0', '1') + '\n')
 
     def stop(self):
         with open(self.path, 'w') as timer_file:

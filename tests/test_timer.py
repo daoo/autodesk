@@ -1,4 +1,5 @@
 from autodesk.timer import Timer
+from autodesk.model import Down, Up
 from datetime import timedelta
 import pytest
 import tempfile
@@ -17,6 +18,10 @@ def test_stop(timer_path):
 
 
 def test_set(timer_path):
-    Timer(timer_path).set(timedelta(seconds=42), 1)
+    Timer(timer_path).set(timedelta(seconds=42), Down())
+    with open(timer_path, 'r') as fobj:
+        assert fobj.read() == '42 0\n'
+
+    Timer(timer_path).set(timedelta(seconds=42), Up())
     with open(timer_path, 'r') as fobj:
         assert fobj.read() == '42 1\n'
