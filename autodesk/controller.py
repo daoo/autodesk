@@ -43,11 +43,10 @@ class Controller:
         self.update_timer(time)
 
     def set_desk(self, time, state):
-        if not allow_desk_operation(time):
-            return False
-
-        self.hardware.setup()
-        self.hardware.go(state)
-        self.hardware.cleanup()
-        self.database.insert_desk_event(Event(time, state))
-        self.update_timer(time)
+        if allow_desk_operation(time):
+            self.hardware.setup()
+            self.hardware.go(state)
+            self.hardware.cleanup()
+            self.database.insert_desk_event(Event(time, state))
+        else:
+            self.update_timer(time)

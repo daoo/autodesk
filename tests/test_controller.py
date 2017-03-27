@@ -116,3 +116,16 @@ def test_set_desk(hardware, database, timer):
     assert hardware.setup.called
     assert hardware.go.call_args[0] == (event2.data,)
     assert hardware.cleanup.called
+
+
+def test_set_desk_disallow(hardware, database, timer):
+    (mockdb, _) = database
+    controller = Controller(hardware, LIMITS, timer, mockdb)
+
+    event = Event(datetime(2017, 2, 13, 7, 0, 0), model.Down())
+    controller.set_desk(event.index, event.data)
+    assert not mockdb.insert_desk_event.called
+    assert not hardware.setup.called
+    assert not hardware.go.called
+    assert not hardware.cleanup.called
+    assert timer.stop.called
