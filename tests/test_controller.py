@@ -99,7 +99,7 @@ def test_set_session(database, timer):
     assert mockdb.insert_session_event.call_args[0] == (event2,)
 
 
-def test_set_desk(hardware, database, timer, capsys):
+def test_set_desk(hardware, database, timer):
     (mockdb, _) = database
     controller = Controller(hardware, LIMITS, timer, mockdb)
 
