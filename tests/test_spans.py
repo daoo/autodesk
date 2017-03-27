@@ -67,3 +67,13 @@ def test_cut_inclusive():
     spans = [Span(2, 4, 'a')]
     assert list(cut(1, 2, spans)) == [Span(2, 2, 'a')]
     assert list(cut(4, 5, spans)) == [Span(4, 4, 'a')]
+
+
+def test_event_repr():
+    event = Event(1, 'test')
+    assert repr(event) == 'Event(index=1, data=\'test\')'
+
+
+def test_span_repr():
+    span = Span(1, 2, 'test')
+    assert repr(span) == 'Span(start=1, end=2, data=\'test\')'
