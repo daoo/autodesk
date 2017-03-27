@@ -2,6 +2,7 @@ from autodesk.model import Database, Up, Down, Active, Inactive
 from autodesk.spans import Event, Span
 from contextlib import closing
 from datetime import datetime, timedelta
+import autodesk.model as model
 import pytest
 import tempfile
 
@@ -11,6 +12,20 @@ def database():
     with tempfile.NamedTemporaryFile() as database_file:
         with closing(Database(database_file.name)) as database:
             yield database
+
+
+def test_session_from_int():
+    assert model.session_from_int(0) == Inactive()
+    assert model.session_from_int(1) == Active()
+    with pytest.raises(ValueError):
+        model.session_from_int(2)
+
+
+def test_desk_from_int():
+    assert model.desk_from_int(0) == Down()
+    assert model.desk_from_int(1) == Up()
+    with pytest.raises(ValueError):
+        model.desk_from_int(2)
 
 
 def test_database_empty_events(database):
