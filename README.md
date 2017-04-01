@@ -46,7 +46,7 @@ Blue, brown and white are used for up and down like this:
 Install the python package `autodesk` with pip or setuptools in a virtualenv or
 whatever and run the flask app like this (use whatever port you like):
 
-    AUTODESK_CONFIG=~/var/settings.cfg FLASK_APP=autodesk.autodesk flask run -p 8000
+    AUTODESK_CONFIG=~/var/settings.cfg FLASK_APP=autodesk.webserver flask run -p 8000
 
 Example `~/var/settings.cfg` (pins are in `GPIO.BOARD` mode, limit times are in
 minutes):
