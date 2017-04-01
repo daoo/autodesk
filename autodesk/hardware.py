@@ -1,33 +1,9 @@
+import RPi.GPIO as GPIO
 import time
 
-try:
-    import RPi.GPIO as GPIO
-    DELAY = 15
-except (ImportError, RuntimeError):
-    DELAY = 0
 
-    class GPIO:
-        BOARD = "GPIO.BOARD"
-        OUT = "GPIO.OUT"
-        HIGH = "GPIO.HIGH"
-        LOW = "GPIO.LOW"
+DELAY = 15
 
-        @staticmethod
-        def setmode(input):
-            print("Warning: GPIO not found, using test implementation.")
-            print("GPIO.setmode({})".format(input))
-
-        @staticmethod
-        def setup(pin, state):
-            print("GPIO.setup({}, {})".format(pin, state))
-
-        @staticmethod
-        def cleanup():
-            print("GPIO.cleanup()")
-
-        @staticmethod
-        def output(pin, state):
-            print("GPIO.output({}, {})".format(pin, state))
 
 class Hardware:
     def __init__(self, pins):
