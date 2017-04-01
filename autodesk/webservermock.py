@@ -27,4 +27,6 @@ sys.modules['RPi'] = RPi
 sys.modules['RPi.GPIO'] = RPi.GPIO
 from autodesk.webserver import app
 
+app.config.update(dict(DELAY=0))
+
 # Runs webserver with mocked GPIO for testing on non-raspberry computers.

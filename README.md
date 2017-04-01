@@ -51,6 +51,7 @@ whatever and run the flask app like this (use whatever port you like):
 Example `~/var/settings.cfg` (pins are in `GPIO.BOARD` mode, limit times are in
 minutes):
 
+    DELAY = 15
     PIN_DOWN = 15
     PIN_UP = 13
     LIMIT_DOWN = 50

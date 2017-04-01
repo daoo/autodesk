@@ -8,6 +8,7 @@ import os
 
 app = flask.Flask(__name__)
 app.config.update(dict(
+    DELAY=15,
     PIN_DOWN=15,
     PIN_UP=13,
     LIMIT_DOWN=50,
@@ -25,11 +26,12 @@ def get_db():
 
 
 def get_controller():
+    delay = app.config['DELAY']
     pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
     limit = (
         timedelta(minutes=app.config['LIMIT_DOWN']),
         timedelta(minutes=app.config['LIMIT_UP']))
-    return Controller(Hardware(pins), limit, Timer(app.config['TIMER_PATH']), get_db())
+    return Controller(Hardware(delay, pins), limit, Timer(app.config['TIMER_PATH']), get_db())
 
 
 @app.teardown_appcontext
