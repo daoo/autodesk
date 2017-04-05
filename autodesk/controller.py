@@ -48,5 +48,5 @@ class Controller:
             self.hardware.go(state)
             self.hardware.cleanup()
             self.database.insert_desk_event(Event(time, state))
-        else:
-            self.update_timer(time)
+
+        self.update_timer(time)
