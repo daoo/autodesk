@@ -1,21 +1,24 @@
 import unittest
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, call, patch
 from autodesk.model import Down, Up
 
 mock = MagicMock()
 mock.rpi = MagicMock()
-mock.time = MagicMock()
 
 import sys
 sys.modules['RPi'] = mock.rpi
 sys.modules['RPi.GPIO'] = mock.rpi.GPIO
-sys.modules['time'] = mock.time
 
 from autodesk.hardware import Hardware
 
 class TestHardware(unittest.TestCase):
     def setUp(self):
         mock.reset_mock()
+
+        self.time_patcher = patch('time.sleep')
+        self.time_sleep = self.time_patcher.start()
+        self.addCleanup(self.time_patcher.stop)
+
         self.hardware = Hardware(5, (0, 1))
 
     def test_hardware_setup(self):
@@ -35,16 +38,12 @@ class TestHardware(unittest.TestCase):
 
     def test_hardware_go_down(self):
         self.hardware.go(Down())
-        self.assertEqual(mock.mock_calls, [
-            call.rpi.GPIO.output(0, mock.rpi.GPIO.HIGH),
-            call.time.sleep(5),
-            call.rpi.GPIO.output(0, mock.rpi.GPIO.LOW),
-        ])
+        expected = [call(0, mock.rpi.GPIO.HIGH), call(0, mock.rpi.GPIO.LOW)]
+        self.assertEqual(mock.rpi.GPIO.output.call_args_list, expected)
+        self.time_sleep.assert_called_once_with(5)
 
     def test_hardware_go_up(self):
         self.hardware.go(Up())
-        self.assertEqual(mock.mock_calls, [
-            call.rpi.GPIO.output(1, mock.rpi.GPIO.HIGH),
-            call.time.sleep(5),
-            call.rpi.GPIO.output(1, mock.rpi.GPIO.LOW),
-        ])
+        expected = [call(1, mock.rpi.GPIO.HIGH), call(1, mock.rpi.GPIO.LOW)]
+        self.assertEqual(mock.rpi.GPIO.output.call_args_list, expected)
+        self.time_sleep.assert_called_once_with(5)
