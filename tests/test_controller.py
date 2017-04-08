@@ -1,7 +1,7 @@
 from autodesk.controller import Controller, allow_desk_operation
 from autodesk.spans import Event
 from datetime import date, datetime, time, timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 import autodesk.model as model
 import unittest
 
@@ -59,14 +59,19 @@ class TestController(unittest.TestCase):
         self.hardware_patcher = patch(
             'autodesk.hardware.Hardware', autospec=True)
 
-        self.snapshot = self.snapshot_patcher.start()
-        self.database = self.database_patcher.start()
-        self.timer = self.timer_patcher.start()
-        self.hardware = self.hardware_patcher.start()
+        # Starting the patch will import hardware and thus try to import the
+        # RPi modules which fails on non raspberry computers.
+        import sys
+        sys.modules['RPi'] = MagicMock()
+        sys.modules['RPi.GPIO'] = MagicMock()
 
+        self.snapshot = self.snapshot_patcher.start()
         self.addCleanup(self.snapshot_patcher.stop)
+        self.database = self.database_patcher.start()
         self.addCleanup(self.database_patcher.stop)
+        self.timer = self.timer_patcher.start()
         self.addCleanup(self.timer_patcher.stop)
+        self.hardware = self.hardware_patcher.start()
         self.addCleanup(self.hardware_patcher.stop)
 
         self.database.get_snapshot.return_value = self.snapshot
@@ -77,6 +82,10 @@ class TestController(unittest.TestCase):
         limits = (timedelta(minutes=50), timedelta(minutes=10))
         self.controller = Controller(
             self.hardware, limits, self.timer, self.database)
+
+    def tearDown(self):
+        import sys
+        del sys.modules['RPi']
 
     def test_update_timer(self):
         time0 = datetime.fromtimestamp(0)
