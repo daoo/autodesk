@@ -2,7 +2,7 @@ from autodesk.controller import Controller
 from autodesk.hardware import Hardware
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
-import autodesk.model as model
+from autodesk.model import Database, session_from_int, desk_from_int
 import flask
 import os
 
@@ -21,7 +21,7 @@ app.config.from_envvar('AUTODESK_CONFIG', silent=True)
 
 def get_db():
     if not hasattr(flask.g, 'sqlite_db'):
-        flask.g.sqlite_db = model.Database(app.config['DATABASE'])
+        flask.g.sqlite_db = Database(app.config['DATABASE'])
     return flask.g.sqlite_db
 
 
@@ -44,13 +44,13 @@ def close_db(_):
 def route_api_set_session(string):
     get_controller().set_session(
         datetime.now(),
-        model.session_from_int(int(string)))
+        session_from_int(int(string)))
     return ''
 
 
 @app.route('/api/set/desk/<string>')
 def route_api_set_desk(string):
-    state = model.desk_from_int(int(string))
+    state = desk_from_int(int(string))
     if not get_controller().set_desk(datetime.now(), state):
         flask.abort(403)
     return ''
