@@ -119,20 +119,30 @@ class TestController(unittest.TestCase):
         self.database.insert_session_event.assert_called_with(event)
 
     def test_set_desk_up(self):
+        self.snapshot.get_latest_session_state.return_value = model.Active()
+        self.snapshot.get_latest_desk_state.return_value = model.Up()
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Up())
+
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
         self.hardware.setup.assert_called_once()
         self.hardware.go.assert_called_with(event.data)
         self.hardware.cleanup.assert_called_once()
+        self.timer.stop.assert_not_called()
+        self.timer.set.assert_called_with(timedelta(minutes=10), model.Down())
 
     def test_set_desk_down(self):
+        self.snapshot.get_latest_session_state.return_value = model.Active()
+        self.snapshot.get_latest_desk_state.return_value = model.Down()
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
+
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
         self.hardware.setup.assert_called_once()
         self.hardware.go.assert_called_with(event.data)
         self.hardware.cleanup.assert_called_once()
+        self.timer.stop.assert_not_called()
+        self.timer.set.assert_called_with(timedelta(minutes=50), model.Up())
 
     def test_set_desk_disallow(self):
         event = Event(datetime(2017, 2, 13, 7, 0, 0), model.Down())
@@ -141,4 +151,5 @@ class TestController(unittest.TestCase):
         self.hardware.setup.assert_not_called()
         self.hardware.go.assert_not_called()
         self.hardware.cleanup.assert_not_called()
+        self.timer.set.assert_not_called()
         self.timer.stop.assert_called_once()
