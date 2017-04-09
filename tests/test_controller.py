@@ -63,7 +63,9 @@ class TestController(unittest.TestCase):
         # RPi modules which fails on non raspberry computers.
         import sys
         sys.modules['RPi'] = MagicMock()
+        self.addCleanup(sys.modules.pop, 'RPi')
         sys.modules['RPi.GPIO'] = MagicMock()
+        self.addCleanup(sys.modules.pop, 'RPi.GPIO')
 
         self.snapshot = self.snapshot_patcher.start()
         self.addCleanup(self.snapshot_patcher.stop)
@@ -83,25 +85,27 @@ class TestController(unittest.TestCase):
         self.controller = Controller(
             self.hardware, limits, self.timer, self.database)
 
-    def tearDown(self):
-        import sys
-        del sys.modules['RPi']
-
-    def test_update_timer(self):
+    def test_update_timer_inactive(self):
         time0 = datetime.fromtimestamp(0)
         time1 = datetime(2017, 2, 13, 11, 0, 0)
-
         self.controller.update_timer(time1)
         self.database.get_snapshot.assert_called_with(
             initial=time0, final=time1)
         self.timer.stop.assert_called_once()
 
+    def test_update_timer_active(self):
+        time0 = datetime.fromtimestamp(0)
+        time1 = datetime(2017, 2, 13, 11, 0, 0)
         self.snapshot.get_latest_session_state.return_value = model.Active()
         self.controller.update_timer(time1)
         self.database.get_snapshot.assert_called_with(
             initial=time0, final=time1)
         self.timer.set.assert_called_with(timedelta(seconds=3000), model.Up())
 
+    def test_update_timer_active_duration(self):
+        time0 = datetime.fromtimestamp(0)
+        time1 = datetime(2017, 2, 13, 11, 0, 0)
+        self.snapshot.get_latest_session_state.return_value = model.Active()
         self.snapshot.get_active_time.return_value = timedelta(seconds=1000)
         self.controller.update_timer(time1)
         self.database.get_snapshot.assert_called_with(
