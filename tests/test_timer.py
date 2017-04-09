@@ -9,9 +9,7 @@ class TestTimer(unittest.TestCase):
     def setUp(self):
         self.timer_file = tempfile.NamedTemporaryFile()
         self.timer_path = self.timer_file.name
-
-    def tearDown(self):
-        self.timer_file.close()
+        self.addCleanup(self.timer_file.close)
 
     def test_stop(self):
         Timer(self.timer_path).stop()
