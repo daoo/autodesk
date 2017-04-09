@@ -22,6 +22,7 @@ class RPi:
         def output(pin, state):
             print("GPIO.output({}, {})".format(pin, state))
 
+
 import sys
 sys.modules['RPi'] = RPi
 sys.modules['RPi.GPIO'] = RPi.GPIO

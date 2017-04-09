@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, call, patch
 from autodesk.model import Down, Up
 
+
 class TestHardware(unittest.TestCase):
     def setUp(self):
         self.time_patcher = patch('time.sleep')

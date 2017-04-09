@@ -36,7 +36,7 @@ class TestFactoryMethods(unittest.TestCase):
 
     def test_event_from_row_incorrect(self):
         cursor = MagicMock()
-        cursor.description = [['date'],['foobar']]
+        cursor.description = [['date'], ['foobar']]
         values = [0, 0]
         self.assertRaises(ValueError, model.event_from_row, cursor, values)
 
