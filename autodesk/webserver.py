@@ -19,10 +19,10 @@ app.config.update(dict(
 app.config.from_envvar('AUTODESK_CONFIG', silent=True)
 
 
-def get_db():
-    if not hasattr(flask.g, 'sqlite_db'):
-        flask.g.sqlite_db = Database(app.config['DATABASE'])
-    return flask.g.sqlite_db
+def get_database():
+    if not hasattr(flask.g, 'sqlite_database'):
+        flask.g.sqlite_database = Database(app.config['DATABASE'])
+    return flask.g.sqlite_database
 
 
 def get_controller():
@@ -31,13 +31,17 @@ def get_controller():
     limit = (
         timedelta(minutes=app.config['LIMIT_DOWN']),
         timedelta(minutes=app.config['LIMIT_UP']))
-    return Controller(Hardware(delay, pins), limit, Timer(app.config['TIMER_PATH']), get_db())
+    return Controller(
+        Hardware(delay, pins),
+        limit,
+        Timer(app.config['TIMER_PATH']),
+        get_database())
 
 
 @app.teardown_appcontext
-def close_db(_):
-    if hasattr(flask.g, 'sqlite_db'):
-        flask.g.sqlite_db.close()
+def close_database(_):
+    if hasattr(flask.g, 'sqlite_database'):
+        flask.g.sqlite_database.close()
 
 
 @app.route('/api/set/session/<string>')
@@ -60,6 +64,6 @@ def route_api_set_desk(string):
 def route_index():
     return flask.render_template(
         'index.html',
-        active_time=get_db().get_snapshot(
+        active_time=get_database().get_snapshot(
             datetime.fromtimestamp(0),
             datetime.now()).get_active_time())
