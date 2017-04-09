@@ -134,47 +134,29 @@ class Database:
 
     def get_snapshot(self, initial, final):
         return Snapshot(
-            desk_spans=self.get_desk_spans(initial, final),
-            session_spans=self.get_session_spans(initial, final))
+            desk_spans=list(self.get_desk_spans(initial, final)),
+            session_spans=list(self.get_session_spans(initial, final)))
 
 
 class Snapshot:
     def __init__(self, desk_spans, session_spans):
-        self.desk_spans = list(desk_spans)
-        self.desk_latest = self.desk_spans[-1]
+        self.desk_spans = desk_spans
+        self.session_spans = session_spans
 
-        self.session_spans = list(session_spans)
-        self.session_latest = self.session_spans[-1]
-
-    def get_latest_session_spans(self):
+    def get_session_spans_for_current_desk_span(self):
         return list(spans.cut(
-            self.desk_latest.start,
-            self.desk_latest.end,
+            self.desk_spans[-1].start,
+            self.desk_spans[-1].end,
             self.session_spans))
 
     def get_active_time(self):
         return spans.count(
-            self.get_latest_session_spans(),
+            self.get_session_spans_for_current_desk_span(),
             Active(),
             timedelta(0))
 
     def get_latest_desk_state(self):
-        return self.desk_latest.data
+        return self.desk_spans[-1].data
 
     def get_latest_session_state(self):
-        return self.session_latest.data
-
-    def __repr__(self):
-        return (
-            'desk_spans:\n  {}\n'
-            'desk_latest:\n  {}\n'
-            'session_spans:\n  {}\n'
-            'sessions_desk:\n  {}\n'
-            'active_time:\n  {}\n'
-        ).format(
-            '\n  '.join(map(repr, self.desk_spans)),
-            self.desk_latest,
-            '\n  '.join(map(repr, self.session_spans)),
-            '\n  '.join(map(repr, self.get_latest_session_spans())),
-            self.get_active_time()
-        )
+        return self.session_spans[-1].data

@@ -94,15 +94,10 @@ class TestDatabase(unittest.TestCase):
         a = datetime(2017, 1, 1)
         b = datetime(2017, 1, 2)
         snapshot = self.database.get_snapshot(a, b)
-        self.assertEqual(snapshot.desk_spans, [Span(a, b, Down())])
-        self.assertEqual(snapshot.desk_latest, Span(a, b, Down()))
-        self.assertEqual(snapshot.session_spans, [Span(a, b, Inactive())])
-        self.assertEqual(snapshot.session_latest, Span(a, b, Inactive()))
+
         self.assertEqual(snapshot.get_active_time(), timedelta(0))
-        self.assertEqual(
-            snapshot.get_latest_session_spans(),
-            [Span(a, b, Inactive())]
-        )
+        self.assertEqual(snapshot.get_latest_session_state(), Inactive())
+        self.assertEqual(snapshot.get_latest_desk_state(), Down())
 
     def test_snapshot_example(self):
         a = datetime(2017, 1, 1, 0, 0, 0)
@@ -116,21 +111,8 @@ class TestDatabase(unittest.TestCase):
             self.database.insert_session_event(event)
         for event in desk_events:
             self.database.insert_desk_event(event)
+
         snapshot = self.database.get_snapshot(a, e)
-        self.assertEqual(
-            snapshot.desk_spans,
-            [Span(a, c, Down()), Span(c, e, Up())]
-        )
-        self.assertEqual(snapshot.desk_latest, Span(c, e, Up()))
-        session_spans = [
-            Span(a, b, Inactive()),
-            Span(b, d, Active()),
-            Span(d, e, Inactive())]
-        self.assertEqual(snapshot.session_spans, session_spans)
-        self.assertEqual(snapshot.session_latest, Span(d, e, Inactive()))
         self.assertEqual(snapshot.get_active_time(), timedelta(minutes=10))
-        latest_session_spans = [Span(c, d, Active()), Span(d, e, Inactive())]
-        self.assertEqual(
-            snapshot.get_latest_session_spans(),
-            latest_session_spans
-        )
+        self.assertEqual(snapshot.get_latest_session_state(), Inactive())
+        self.assertEqual(snapshot.get_latest_desk_state(), Up())
