@@ -54,7 +54,7 @@ def session_from_int(value):
     elif value == 1:
         return Active()
     else:
-        raise ValueError()
+        raise ValueError('incorrect session state')
 
 
 def desk_from_int(value):
@@ -63,7 +63,7 @@ def desk_from_int(value):
     elif value == 1:
         return Up()
     else:
-        raise ValueError()
+        raise ValueError('incorrect desk state')
 
 
 def event_from_row(cursor, values):
@@ -71,15 +71,12 @@ def event_from_row(cursor, values):
     assert cursor.description[0][0] == 'date'
     col_name = cursor.description[1][0]
     state = None
-    try:
-        if col_name == 'active':
-            state = session_from_int(values[1])
-        elif col_name == 'state':
-            state = desk_from_int(values[1])
-        else:
-            assert False
-    except:
-        assert False
+    if col_name == 'active':
+        state = session_from_int(values[1])
+    elif col_name == 'state':
+        state = desk_from_int(values[1])
+    else:
+        raise ValueError('incorrect column names')
 
     return spans.Event(time, state)
 

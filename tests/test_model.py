@@ -1,6 +1,7 @@
 from autodesk.model import Database, Up, Down, Active, Inactive
 from autodesk.spans import Event, Span
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock
 import autodesk.model as model
 import tempfile
 import unittest
@@ -32,6 +33,12 @@ class TestFactoryMethods(unittest.TestCase):
         self.assertEqual(model.desk_from_int(0), Down())
         self.assertEqual(model.desk_from_int(1), Up())
         self.assertRaises(ValueError, model.desk_from_int, 2)
+
+    def test_event_from_row_incorrect(self):
+        cursor = MagicMock()
+        cursor.description = [['date'],['foobar']]
+        values = [0, 0]
+        self.assertRaises(ValueError, model.event_from_row, cursor, values)
 
 
 class TestDatabase(unittest.TestCase):
