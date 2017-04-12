@@ -41,6 +41,12 @@ class TestWebServer(unittest.TestCase):
         self.assertEqual(200, rv.status_code)
         self.assertTrue(b'12:34:56' in rv.data)
 
+    @patch('autodesk.webserver.Stats', autospec=True)
+    def test_webserver_get_session(self, stats):
+        stats.compute_daily_active_time.return_value = [0] * 60*24
+        rv = self.app.get('/api/get/session')
+        self.assertEqual(200, rv.status_code)
+
     def test_webserver_set_desk_down(self):
         rv = self.app.get('/api/set/desk/0')
         self.controller.return_value.set_desk.assert_called_with(

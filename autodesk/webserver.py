@@ -1,8 +1,9 @@
 from autodesk.controller import Controller
 from autodesk.hardware import Hardware
+from autodesk.model import Database, session_from_int, desk_from_int
+from autodesk.stats import Stats
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
-from autodesk.model import Database, session_from_int, desk_from_int
 import flask
 import os
 
@@ -58,6 +59,25 @@ def route_api_set_desk(string):
     if not get_controller().set_desk(datetime.now(), state):
         flask.abort(403)
     return ''
+
+
+@app.route('/api/get/session')
+def route_api_get_session():
+    stats = Stats(get_database())
+    start = 6*60
+    end = 20*60
+    cut = stats.compute_daily_active_time(
+        datetime.fromtimestamp(0),
+        datetime.now()
+    )[start:end]
+    index = start
+    result = ''
+    for bucket in cut:
+        hour = index // 60
+        minute = index % 60
+        result += '%d:%d,%f\n' % (hour, minute, bucket)
+        index += 1
+    return flask.Response(result, mimetype='text')
 
 
 @app.route('/')
