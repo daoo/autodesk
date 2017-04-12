@@ -14,8 +14,8 @@ app.config.update(dict(
     PIN_UP=13,
     LIMIT_DOWN=50,
     LIMIT_UP=10,
-    DATABASE=os.path.join(app.root_path, 'autodesk.db'),
-    TIMER_PATH=os.path.join(app.root_path, 'timer')
+    DATABASE=('/tmp/autodesk.db'),
+    TIMER_PATH=('/tmp/autodesk.timer')
 ))
 app.config.from_envvar('AUTODESK_CONFIG', silent=True)
 
