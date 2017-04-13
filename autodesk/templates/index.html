@@ -13,6 +13,17 @@
     </style>
     <script src="static/Chart.bundle.min.js"></script>
     <script>
+      function dataset(label, color, data) {
+        return {
+          label: label,
+          borderColor: color,
+          data: data,
+          fill: false,
+          pointRadius: 0,
+          borderWidth: 5
+        };
+      }
+
       function reqListener() {
         var json = JSON.parse(this.responseText);
         var labels = [];
@@ -34,11 +45,11 @@
           data: {
             labels: labels,
             datasets: [
-              {label: 'monday', data: values[0], fill: false, pointRadius:0, borderColor: '#f44336', borderWidth: 1},
-              {label: 'tuesday', data: values[1], fill: false, pointRadius:0,  borderColor: '#9c27b0', borderWidth: 1},
-              {label: 'wednesday', data: values[2], fill: false, pointRadius:0,  borderColor: '#66bb6a', borderWidth: 1},
-              {label: 'thursday', data: values[3], fill: false, pointRadius:0,  borderColor: '#ffee58', borderWidth: 1},
-              {label: 'friday', data: values[4], fill: false, pointRadius:0,  borderColor: '#8d6e63', borderWidth: 1},
+              dataset('monday', '#f44336', values[0]),
+              dataset('tuesday', '#9c27b0', values[1]),
+              dataset('wednesday', '#66bb6a', values[2]),
+              dataset('thursday', '#ffee58', values[3]),
+              dataset('friday', '#8d6e63', values[4]),
             ]
           },
           options: {
