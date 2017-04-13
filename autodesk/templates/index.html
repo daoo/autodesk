@@ -11,10 +11,71 @@
         justify-content: center;
       }
     </style>
+    <script src="static/Chart.bundle.min.js"></script>
+    <script>
+      function reqListener() {
+        var json = JSON.parse(this.responseText);
+        var labels = [];
+        for (var i = 0; i < json[0].length; ++i) {
+          labels.push(json[0][i]['time']);
+        }
+        var values = [];
+        for (var i = 0; i < json.length; ++i) {
+          var day = [];
+          for (var j = 0; j < json[i].length; ++j) {
+            day.push(json[i][j]['value']);
+          }
+          values.push(day);
+        }
+
+        var ctx = document.getElementById("myChart");
+        var myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {label: 'monday', data: values[0], fill: false, pointRadius:0, borderColor: '#f44336', borderWidth: 1},
+              {label: 'tuesday', data: values[1], fill: false, pointRadius:0,  borderColor: '#9c27b0', borderWidth: 1},
+              {label: 'wednesday', data: values[2], fill: false, pointRadius:0,  borderColor: '#66bb6a', borderWidth: 1},
+              {label: 'thursday', data: values[3], fill: false, pointRadius:0,  borderColor: '#ffee58', borderWidth: 1},
+              {label: 'friday', data: values[4], fill: false, pointRadius:0,  borderColor: '#8d6e63', borderWidth: 1},
+            ]
+          },
+          options: {
+            responsive: false,
+            scales: {
+              xAxes: [{
+                type: 'time',
+                time: {
+                  parser: 'HH:mm',
+                  displayFormat: 'HH:mm',
+                },
+                gridLines: {
+                  display: true
+                }
+              }],
+              yAxes: [{
+                gridLines: {
+                  display: false
+                }
+              }],
+            }
+          }
+        });
+      }
+
+      var oReq = new XMLHttpRequest();
+      oReq.addEventListener("load", reqListener);
+      oReq.open("GET", "/api/get/session.json");
+      oReq.send();
+    </script>
   </head>
   <body>
     <div>
       <h1>{{active_time}}</h1>
+    </div>
+    <div>
+      <canvas id="myChart" width="1500" height="800"></canvas>
     </div>
   </body>
 </html>

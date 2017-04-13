@@ -1,1 +1,2 @@
 recursive-include autodesk/templates *
+recursive-include autodesk/static *

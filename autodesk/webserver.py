@@ -5,6 +5,7 @@ from autodesk.stats import Stats
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
 import flask
+import json
 import os
 
 app = flask.Flask(__name__)
@@ -61,23 +62,55 @@ def route_api_set_desk(string):
     return ''
 
 
-@app.route('/api/get/session')
+@app.route('/api/get/session.json')
 def route_api_get_session():
+    start = 7*60
+    end = 19*60
+
+    def get_day(index, buckets):
+        length = 24*60
+        return buckets[index*length:(index+1)*length]
+
+    def split_days(buckets):
+        yield get_day(0, buckets)
+        yield get_day(1, buckets)
+        yield get_day(2, buckets)
+        yield get_day(3, buckets)
+        yield get_day(4, buckets)
+        yield get_day(5, buckets)
+        yield get_day(6, buckets)
+
+    def format_time(hour, minute, value):
+        return {
+            'time': '{:0>2}:{:0>2}'.format(hour, minute),
+            'value': str(value)
+        }
+
+    def format_day(minutes):
+        index = start
+        for value in minutes:
+            hour = index // 60
+            minute = index % 60
+            yield format_time(hour, minute, value)
+            index += 1
+
+    def cut(day):
+        return day[start:end]
+
     stats = Stats(get_database())
-    start = 6*60
-    end = 20*60
-    cut = stats.compute_daily_active_time(
+    result = stats.compute_daily_active_time(
         datetime.fromtimestamp(0),
         datetime.now()
-    )[start:end]
-    index = start
-    result = ''
-    for bucket in cut:
-        hour = index // 60
-        minute = index % 60
-        result += '%d:%d,%f\n' % (hour, minute, bucket)
-        index += 1
-    return flask.Response(result, mimetype='text')
+    )
+
+    return flask.Response(
+        json.dumps([list(format_day(cut(day))) for day in split_days(result)]),
+        mimetype='text/json')
+
+
+@app.route('/static/<path>')
+def route_static(path):
+    return flask.send_from_directory('static', path)
 
 
 @app.route('/')
