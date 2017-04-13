@@ -1,9 +1,9 @@
 from autodesk.controller import Controller
 from autodesk.hardware import Hardware
 from autodesk.model import Database, session_from_int, desk_from_int
-from autodesk.stats import Stats
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
+import autodesk.stats as stats
 import flask
 import json
 import os
@@ -97,11 +97,11 @@ def route_api_get_session():
     def cut(day):
         return day[start:end]
 
-    stats = Stats(get_database())
     result = stats.compute_daily_active_time(
-        datetime.fromtimestamp(0),
-        datetime.now()
-    )
+        get_database().get_session_spans(
+            datetime.fromtimestamp(0),
+            datetime.now()
+        ))
 
     return flask.Response(
         json.dumps([list(format_day(cut(day))) for day in split_days(result)]),
