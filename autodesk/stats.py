@@ -1,4 +1,7 @@
-from datetime import time
+from autodesk.model import Active
+from datetime import time, timedelta
+import autodesk.spans as spans
+
 
 def compute_daily_active_time(spans):
     def index(time):
@@ -24,3 +27,11 @@ def group_into_days(buckets):
     yield buckets[4*length:5*length]
     yield buckets[5*length:6*length]
     yield buckets[6*length:7*length]
+
+
+def compute_active_time(session_spans, desk_spans):
+    active_spans = spans.cut(
+        desk_spans[-1].start,
+        desk_spans[-1].end,
+        session_spans)
+    return spans.count(active_spans, Active(), timedelta(0))

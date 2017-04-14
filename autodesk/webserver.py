@@ -106,8 +106,9 @@ def route_static(path):
 
 @app.route('/')
 def route_index():
-    return flask.render_template(
-        'index.html',
-        active_time=get_database().get_snapshot(
-            datetime.fromtimestamp(0),
-            datetime.now()).get_active_time())
+    beginning = datetime.fromtimestamp(0)
+    now = datetime.now()
+    session_spans = get_database().get_session_spans(beginning, now)
+    desk_spans = get_database().get_desk_spans(beginning, now)
+    active_time = stats.compute_active_time(session_spans, desk_spans)
+    return flask.render_template('index.html', active_time=active_time)

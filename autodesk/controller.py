@@ -1,5 +1,6 @@
 from autodesk.spans import Event
 from datetime import datetime, time, timedelta
+import autodesk.stats as stats
 
 DESK_OPERATION_ALLOWANCE_START = time(9, 0, 0)
 DESK_OPERATION_ALLOWANCE_END = time(17, 0, 0)
@@ -28,15 +29,15 @@ class Controller:
             self.timer.stop()
             return
 
-        snapshot = self.database.get_snapshot(
-            initial=datetime.fromtimestamp(0),
-            final=time)
-        if not snapshot.get_latest_session_state().active():
+        beginning = datetime.fromtimestamp(0)
+        session_spans = self.database.get_session_spans(beginning, time)
+        if not session_spans[-1].data.active():
             self.timer.stop()
             return
 
-        desk = snapshot.get_latest_desk_state()
-        active_time = snapshot.get_active_time()
+        desk_spans = self.database.get_desk_spans(beginning, time)
+        desk = desk_spans[-1].data
+        active_time = stats.compute_active_time(session_spans, desk_spans)
         limit = desk.test(*self.limits)
         delay = max(timedelta(0), limit - active_time)
         self.timer.set(delay, desk.next())

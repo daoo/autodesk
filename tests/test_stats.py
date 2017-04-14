@@ -1,6 +1,6 @@
-from autodesk.model import Active
+from autodesk.model import Inactive, Active, Down, Up
 from autodesk.spans import Span
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import patch
 import autodesk.stats as stats
 import unittest
@@ -32,4 +32,35 @@ class TestStats(unittest.TestCase):
         self.assertEqual(
             flatten(stats.group_into_days(daily_active_time)),
             daily_active_time
+        )
+
+    def test_compute_active_time_empty(self):
+        self.assertRaises(IndexError, stats.compute_active_time, [], [])
+
+    def test_compute_active_time_inactive(self):
+        desk_span = Span(
+            datetime.fromtimestamp(0),
+            datetime.fromtimestamp(1000),
+            Down())
+        session_span = Span(
+            datetime.fromtimestamp(0),
+            datetime.fromtimestamp(1000),
+            Inactive())
+        self.assertEqual(
+            stats.compute_active_time([session_span], [desk_span]),
+            timedelta(0)
+        )
+
+    def test_compute_active_time_active(self):
+        desk_span = Span(
+            datetime.fromtimestamp(0),
+            datetime.fromtimestamp(1000),
+            Down())
+        session_span = Span(
+            datetime.fromtimestamp(0),
+            datetime.fromtimestamp(1000),
+            Active())
+        self.assertEqual(
+            stats.compute_active_time([session_span], [desk_span]),
+            timedelta(seconds=1000)
         )

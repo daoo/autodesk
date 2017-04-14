@@ -33,10 +33,9 @@ class TestWebServer(unittest.TestCase):
         from autodesk.webserver import app
         self.app = app.test_client()
 
-    @patch('autodesk.model.Snapshot', autospec=True)
-    def test_webserver_index(self, snapshot):
-        snapshot.get_active_time.return_value = '12:34:56'
-        self.database.return_value.get_snapshot.return_value = snapshot
+    @patch('autodesk.webserver.stats.compute_active_time', autospec=True)
+    def test_webserver_index(self, compute_active_time):
+        compute_active_time.return_value = '12:34:56'
         rv = self.app.get('/')
         self.assertEqual(200, rv.status_code)
         self.assertTrue(b'12:34:56' in rv.data)

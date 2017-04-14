@@ -119,44 +119,15 @@ class Database:
         return get(self.db, 'SELECT * FROM session ORDER BY date ASC')
 
     def get_desk_spans(self, initial, final):
-        return spans.collect(
+        return list(spans.collect(
             default_data=Down(),
             initial=initial,
             final=final,
-            events=self.get_desk_events())
+            events=self.get_desk_events()))
 
     def get_session_spans(self, initial, final):
-        return spans.collect(
+        return list(spans.collect(
             default_data=Inactive(),
             initial=initial,
             final=final,
-            events=self.get_session_events())
-
-    def get_snapshot(self, initial, final):
-        return Snapshot(
-            desk_spans=list(self.get_desk_spans(initial, final)),
-            session_spans=list(self.get_session_spans(initial, final)))
-
-
-class Snapshot:
-    def __init__(self, desk_spans, session_spans):
-        self.desk_spans = desk_spans
-        self.session_spans = session_spans
-
-    def get_session_spans_for_current_desk_span(self):
-        return list(spans.cut(
-            self.desk_spans[-1].start,
-            self.desk_spans[-1].end,
-            self.session_spans))
-
-    def get_active_time(self):
-        return spans.count(
-            self.get_session_spans_for_current_desk_span(),
-            Active(),
-            timedelta(0))
-
-    def get_latest_desk_state(self):
-        return self.desk_spans[-1].data
-
-    def get_latest_session_state(self):
-        return self.session_spans[-1].data
+            events=self.get_session_events()))

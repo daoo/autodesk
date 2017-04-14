@@ -89,30 +89,3 @@ class TestDatabase(unittest.TestCase):
 
         spans = list(self.database.get_session_spans(a, c))
         self.assertEqual(spans, [Span(a, b, Inactive()), Span(b, c, Active())])
-
-    def test_snapshot_empty(self):
-        a = datetime(2017, 1, 1)
-        b = datetime(2017, 1, 2)
-        snapshot = self.database.get_snapshot(a, b)
-
-        self.assertEqual(snapshot.get_active_time(), timedelta(0))
-        self.assertEqual(snapshot.get_latest_session_state(), Inactive())
-        self.assertEqual(snapshot.get_latest_desk_state(), Down())
-
-    def test_snapshot_example(self):
-        a = datetime(2017, 1, 1, 0, 0, 0)
-        b = datetime(2017, 1, 1, 0, 10, 0)
-        c = datetime(2017, 1, 1, 0, 20, 0)
-        d = datetime(2017, 1, 1, 0, 30, 0)
-        e = datetime(2017, 1, 1, 0, 40, 0)
-        session_events = [Event(b, Active()), Event(d, Inactive())]
-        desk_events = [Event(c, Up())]
-        for event in session_events:
-            self.database.insert_session_event(event)
-        for event in desk_events:
-            self.database.insert_desk_event(event)
-
-        snapshot = self.database.get_snapshot(a, e)
-        self.assertEqual(snapshot.get_active_time(), timedelta(minutes=10))
-        self.assertEqual(snapshot.get_latest_session_state(), Inactive())
-        self.assertEqual(snapshot.get_latest_desk_state(), Up())
