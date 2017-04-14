@@ -64,48 +64,39 @@ def route_api_set_desk(string):
 
 @app.route('/api/get/session.json')
 def route_api_get_session():
-    start = 7*60
-    end = 19*60
-
-    def get_day(index, buckets):
-        length = 24*60
-        return buckets[index*length:(index+1)*length]
-
-    def split_days(buckets):
-        yield get_day(0, buckets)
-        yield get_day(1, buckets)
-        yield get_day(2, buckets)
-        yield get_day(3, buckets)
-        yield get_day(4, buckets)
-        yield get_day(5, buckets)
-        yield get_day(6, buckets)
-
-    def format_time(hour, minute, value):
+    def format(hour, minute, value):
         return {
             'time': '{:0>2}:{:0>2}'.format(hour, minute),
             'value': str(value)
         }
 
-    def format_day(minutes):
-        index = start
-        for value in minutes:
-            hour = index // 60
-            minute = index % 60
-            yield format_time(hour, minute, value)
+    start = 7*60
+    end = 19*60
+
+    def trim_day(measurments):
+        return measurments[start:end]
+
+    def trim_week(measurments):
+        return measurments[0:5]
+
+    def decorate(measurments):
+        index = 0
+        for measurments in measurments:
+            yield (index // 60, index % 60, measurments)
             index += 1
 
-    def cut(day):
-        return day[start:end]
-
-    result = stats.compute_daily_active_time(
+    daily_active_time = stats.compute_daily_active_time(
         get_database().get_session_spans(
             datetime.fromtimestamp(0),
             datetime.now()
         ))
+    grouped = stats.group_into_days(daily_active_time)
+    decorated = [list(decorate(group)) for group in grouped]
+    trimmed = trim_week([trim_day(group) for group in decorated])
 
-    return flask.Response(
-        json.dumps([list(format_day(cut(day))) for day in split_days(result)]),
-        mimetype='text/json')
+    formatted = [[format(*data) for data in group] for group in trimmed]
+
+    return flask.Response(json.dumps(formatted), mimetype='text/json')
 
 
 @app.route('/static/<path>')

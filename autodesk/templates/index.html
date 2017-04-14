@@ -32,11 +32,12 @@
         }
         var values = [];
         for (var i = 0; i < json.length; ++i) {
-          var day = [];
-          for (var j = 0; j < json[i].length; ++j) {
-            day.push(json[i][j]['value']);
+          var day = json[i];
+          var result = [];
+          for (var j = 0; j < day.length; ++j) {
+            result.push(day[j]['value']);
           }
-          values.push(day);
+          values.push(result);
         }
 
         var ctx = document.getElementById("myChart");
@@ -45,11 +46,11 @@
           data: {
             labels: labels,
             datasets: [
-              dataset('monday', '#f44336', values[0]),
-              dataset('tuesday', '#9c27b0', values[1]),
-              dataset('wednesday', '#66bb6a', values[2]),
-              dataset('thursday', '#ffee58', values[3]),
-              dataset('friday', '#8d6e63', values[4]),
+              dataset('monday', '#4D4D4D', values[0]),
+              dataset('tuesday', '#5DA5DA', values[1]),
+              dataset('wednesday', '#FAA43A', values[2]),
+              dataset('thursday', '#60BD68', values[3]),
+              dataset('friday', '#F17CB0', values[4]),
             ]
           },
           options: {

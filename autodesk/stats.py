@@ -13,3 +13,14 @@ def compute_daily_active_time(spans):
                 buckets[i] += 1
 
     return buckets
+
+
+def group_into_days(buckets):
+    length = 24*60
+    yield buckets[0*length:1*length]
+    yield buckets[1*length:2*length]
+    yield buckets[2*length:3*length]
+    yield buckets[3*length:4*length]
+    yield buckets[4*length:5*length]
+    yield buckets[5*length:6*length]
+    yield buckets[6*length:7*length]
