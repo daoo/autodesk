@@ -24,32 +24,35 @@ class Controller:
         self.database = database
 
     def update_timer(self, time):
+        if not allow_desk_operation(time):
+            self.timer.stop()
+            return
+
         snapshot = self.database.get_snapshot(
             initial=datetime.fromtimestamp(0),
             final=time)
-        if not allow_desk_operation(time):
+        if not snapshot.get_latest_session_state().active():
             self.timer.stop()
-        elif not snapshot.get_latest_session_state().active():
-            self.timer.stop()
-        else:
-            desk = snapshot.get_latest_desk_state()
-            active_time = snapshot.get_active_time()
-            limit = desk.test(*self.limits)
-            delay = max(timedelta(0), limit - active_time)
-            self.timer.set(delay, desk.next())
+            return
+
+        desk = snapshot.get_latest_desk_state()
+        active_time = snapshot.get_active_time()
+        limit = desk.test(*self.limits)
+        delay = max(timedelta(0), limit - active_time)
+        self.timer.set(delay, desk.next())
 
     def set_session(self, time, state):
         self.database.insert_session_event(Event(time, state))
         self.update_timer(time)
 
     def set_desk(self, time, state):
-        if allow_desk_operation(time):
-            self.hardware.setup()
-            self.hardware.go(state)
-            self.hardware.cleanup()
-            self.database.insert_desk_event(Event(time, state))
-            self.update_timer(time)
-            return True
-        else:
+        if not allow_desk_operation(time):
             self.update_timer(time)
             return False
+
+        self.hardware.setup()
+        self.hardware.go(state)
+        self.hardware.cleanup()
+        self.database.insert_desk_event(Event(time, state))
+        self.update_timer(time)
+        return True
