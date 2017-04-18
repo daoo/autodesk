@@ -46,20 +46,33 @@ def close_database(_):
         flask.g.sqlite_database.close()
 
 
-@app.route('/api/set/session/<string>')
-def route_api_set_session(string):
-    get_controller().set_session(
-        datetime.now(),
-        session_from_int(int(string)))
-    return ''
+@app.route('/api/session', methods=['GET', 'PUT'])
+def route_api_session():
+    if flask.request.method == 'PUT':
+        get_controller().set_session(
+            datetime.now(),
+            session_from_int(int(flask.request.data)))
+        return ''
+    elif flask.request.method == 'GET':
+        return get_database().get_session_spans(
+            datetime.fromtimestamp(0),
+            datetime.now()
+        )[-1].data.test('0', '1')
 
 
-@app.route('/api/set/desk/<string>')
-def route_api_set_desk(string):
-    state = desk_from_int(int(string))
-    if not get_controller().set_desk(datetime.now(), state):
-        flask.abort(403)
-    return ''
+@app.route('/api/desk', methods=['GET', 'PUT'])
+def route_api_desk():
+    if flask.request.method == 'PUT':
+        if not get_controller().set_desk(
+            datetime.now(),
+            desk_from_int(int(flask.request.data))):
+            flask.abort(403)
+        return ''
+    elif flask.request.method == 'GET':
+        return get_database().get_desk_spans(
+            datetime.fromtimestamp(0),
+            datetime.now()
+        )[-1].data.test('0', '1')
 
 
 @app.route('/api/get/session.json')

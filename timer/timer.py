@@ -7,7 +7,7 @@ import threading
 
 
 def go(server, target):
-    requests.get(server + '/api/set/desk/' + str(target))
+    requests.put(server + '/api/desk', data=str(target))
 
 
 class DeskTimer:

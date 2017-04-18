@@ -3,14 +3,13 @@
 from datetime import datetime
 from gi.repository import GLib
 from pydbus import SystemBus
-import os
 import requests
 import sys
 
 
 def notify(url, active):
-    state = '1' if active else '0'
-    requests.get(os.path.join(url, state))
+    state = b'1' if active else b'0'
+    requests.put(url, data=state)
 
 
 def properties_handler(hostname, interface, changed, invalidated):
