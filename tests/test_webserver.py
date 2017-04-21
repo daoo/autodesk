@@ -98,3 +98,8 @@ class TestWebServer(unittest.TestCase):
         self.controller.return_value.set_session.assert_called_with(
             self.now, model.Active())
         self.assertEqual(200, rv.status_code)
+
+    def test_webserver_update_timer(self):
+        rv = self.app.get('/api/timer/update')
+        self.controller.return_value.update_timer.assert_called_with(self.now)
+        self.assertEqual(200, rv.status_code)

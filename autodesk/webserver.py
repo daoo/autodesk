@@ -75,6 +75,12 @@ def route_api_desk():
         )[-1].data.test('0', '1')
 
 
+@app.route('/api/timer/update')
+def route_api_timer_update():
+    get_controller().update_timer(datetime.now())
+    return ''
+
+
 @app.route('/api/sessions.json')
 def route_api_get_session():
     def format(hour, minute, value):

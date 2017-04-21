@@ -6,8 +6,11 @@ import sys
 import threading
 
 
-def go(server, target):
+def set_desk(server, target):
     requests.put(server + '/api/desk', data=str(target))
+
+def update_timer(server):
+    requests.get(server + '/api/timer/update')
 
 
 class DeskTimer:
@@ -30,7 +33,7 @@ class DeskTimer:
             self.timer.cancel()
 
     def run(self, target):
-        go(self.server, target)
+        set_desk(self.server, target)
 
     def __repr__(self):
         return 'DeskTimer(server={}, timer={})'.format(
@@ -40,6 +43,14 @@ class DeskTimer:
 
 def program(server):
     timer = DeskTimer(server)
+
+    try:
+        update_timer(server)
+    except requests.exceptions.ConnectionError:
+        # Timer service started first, let
+        # webserver update us when it starts.
+        pass
+
     try:
         while True:
             cmd = input()
