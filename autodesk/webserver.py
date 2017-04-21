@@ -75,7 +75,7 @@ def route_api_desk():
         )[-1].data.test('0', '1')
 
 
-@app.route('/api/get/session.json')
+@app.route('/api/sessions.json')
 def route_api_get_session():
     def format(hour, minute, value):
         return {
