@@ -2,8 +2,8 @@ from autodesk.spans import Event
 from datetime import datetime, time, timedelta
 import autodesk.stats as stats
 
-DESK_OPERATION_ALLOWANCE_START = time(9, 0, 0)
-DESK_OPERATION_ALLOWANCE_END = time(17, 0, 0)
+DESK_OPERATION_ALLOWANCE_START = time(8, 0, 0)
+DESK_OPERATION_ALLOWANCE_END = time(18, 0, 0)
 
 
 def allow_desk_operation(at):
