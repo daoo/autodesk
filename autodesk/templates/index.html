@@ -3,16 +3,17 @@
   <head>
     <title>AutoDesk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-      body div {
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    </style>
     <script src="static/Chart.bundle.min.js"></script>
     <script>
+      function go(dir) {
+        var oReq = new XMLHttpRequest();
+        oReq.open("PUT", "/api/desk");
+        oReq.send(dir);
+      }
+
+      function down() { go('0'); }
+      function up() { go('1'); }
+
       function dataset(label, color, data) {
         return {
           label: label,
@@ -83,11 +84,11 @@
     </script>
   </head>
   <body>
-    <div>
-      <h1>{{active_time}}</h1>
+    <div style="text-align: center">
+      <h1>AutoDesk</h1>
+      <p>{{state}} for {{active_time}}.</p>
+      <p><a href="#" onclick="down();">Down</a> / <a href="#" onclick="up();">Up</a></p>
     </div>
-    <div>
-      <canvas id="myChart" width="1500" height="800"></canvas>
-    </div>
+    <canvas id="myChart" width="1500" height="800" style="margin: auto"></canvas>
   </body>
 </html>
