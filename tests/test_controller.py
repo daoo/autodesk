@@ -28,9 +28,9 @@ class TestOperation(unittest.TestCase):
     def test_disallow_operation_night_time(self):
         workday = datetime(2017, 2, 13)
         self.assertFalse(
-            allow_desk_operation(datetime.combine(workday, time(8, 59, 0))))
+            allow_desk_operation(datetime.combine(workday, time(7, 59, 0))))
         self.assertFalse(
-            allow_desk_operation(datetime.combine(workday, time(17, 1, 0))))
+            allow_desk_operation(datetime.combine(workday, time(18, 1, 0))))
         self.assertFalse(
             allow_desk_operation(datetime.combine(workday, time(23, 0, 0))))
         self.assertFalse(
