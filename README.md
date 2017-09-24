@@ -46,22 +46,22 @@ Blue, brown and white are used for up and down like this:
 Install the python package `autodesk` with pip or setuptools in a virtualenv or
 whatever and run the flask app like this (use whatever port you like):
 
-    AUTODESK_CONFIG=~/var/settings.cfg FLASK_APP=autodesk.webserver flask run -p 8000
+    AUTODESK_CONFIG=/var/local/autodesk/settings.cfg FLASK_APP=autodesk.webserver flask run -p 8000
 
-Example `~/var/settings.cfg` (pins are in `GPIO.BOARD` mode, limit times are in
-minutes):
+Example `/var/local/autodesk/settings.cfg` (pins are in `GPIO.BOARD` mode,
+limit times are in minutes):
 
     DELAY = 15
     PIN_DOWN = 15
     PIN_UP = 13
     LIMIT_DOWN = 50
     LIMIT_UP = 10
-    DATABASE = '/home/user/var/desk.db'
-    TIMER_PATH = '/home/user/var/timer'
+    DATABASE = '/var/local/autodesk/desk.db'
+    TIMER_PATH = '/var/local/autodesk/timer'
 
 Also, start the timer server like this:
 
-    tail -n1 -f ~/var/timer | autodesk-timer http://localhost:8000
+    tail -n1 -f /var/local/autodesk/timer | autodesk-timer http://localhost:8000
 
 Finally, install `logger.py` on your workstation, setup a SSH tunnel (if using,
 here local port 8000 is tunneled to the Pi) and run the logger like this:
