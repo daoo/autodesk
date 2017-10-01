@@ -7,7 +7,7 @@ setup(
     version='1.0',
     packages=['autodesk', 'timer'],
     include_package_data=True,
-    install_requires=['flask', 'RPi.GPIO', 'requests'],
+    install_requires=['flask', 'flask-httpauth', 'RPi.GPIO', 'requests'],
     test_suite='tests',
     scripts=['bin/logger.py'],
     entry_points={'console_scripts': ['autodesk-timer=timer.timer:main']},

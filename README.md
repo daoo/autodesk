@@ -56,6 +56,7 @@ Add a configuration in `/var/local/autodesk/settings.cfg` (pins are in
     PIN_UP = 13
     LIMIT_DOWN = 50
     LIMIT_UP = 10
+    PASSWORD = 'password'
     DATABASE = '/var/local/autodesk/desk.db'
     TIMER_PATH = '/var/local/autodesk/timer'
 
