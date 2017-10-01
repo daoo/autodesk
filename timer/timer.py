@@ -1,22 +1,16 @@
 #!/usr/bin/env python
 
 from datetime import datetime, timedelta
-from requests.auth import HTTPBasicAuth
 import requests
 import sys
 import threading
 
 
-class Server:
-    def __init__(self, url, password):
-        self.url = url
-        self.auth = HTTPBasicAuth('admin', password)
+def set_desk(server, target):
+    requests.put(server + '/api/desk', data=str(target))
 
-    def set_desk(self, target):
-        requests.put(self.url + '/api/desk', data=str(target), auth=self.auth)
-
-    def update_timer(self):
-        requests.get(self.url + '/api/timer/update', auth=self.auth)
+def update_timer(server):
+    requests.get(server + '/api/timer/update')
 
 
 class DeskTimer:
@@ -39,14 +33,19 @@ class DeskTimer:
             self.timer.cancel()
 
     def run(self, target):
-        self.server.set_desk(target)
+        set_desk(self.server, target)
+
+    def __repr__(self):
+        return 'DeskTimer(server={}, timer={})'.format(
+            self.server,
+            self.timer)
 
 
 def program(server):
     timer = DeskTimer(server)
 
     try:
-        server.update_timer()
+        update_timer(server)
     except requests.exceptions.ConnectionError:
         # Timer service started first, let
         # webserver update us when it starts.
@@ -77,21 +76,8 @@ def program(server):
 
 
 def main():
-    if len(sys.argv) != 3:
-        sys.stderr.write("Usage: {} CONFIG SERVER\n".format(sys.argv[0]))
+    if len(sys.argv) != 2:
+        sys.stderr.write("Usage: {} SERVER\n".format(sys.argv[0]))
         sys.exit(1)
     else:
-        password = None
-        with open(sys.argv[1], 'r') as file:
-            for line in file:
-                if line.startswith('PASSWORD'):
-                    password = line[line.index('\'')+1:line.rindex('\'')]
-
-        if not password:
-            sys.stderr.write('Error: no password found\n')
-            sys.exit(1)
-
-        program(Server(sys.argv[2], password))
-
-if __name__ == '__main__':
-    main()
+        program(sys.argv[1])

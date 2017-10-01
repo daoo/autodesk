@@ -5,7 +5,6 @@ from autodesk.timer import Timer
 from datetime import datetime, timedelta
 import autodesk.stats as stats
 import flask
-import flask_httpauth
 import json
 import os
 
@@ -16,19 +15,10 @@ app.config.update(dict(
     PIN_UP=13,
     LIMIT_DOWN=50,
     LIMIT_UP=10,
-    PASSWORD='password',
     DATABASE=('/tmp/autodesk.db'),
     TIMER_PATH=('/tmp/autodesk.timer')
 ))
 app.config.from_envvar('AUTODESK_CONFIG', silent=True)
-auth = flask_httpauth.HTTPBasicAuth()
-
-
-@auth.verify_password
-def verify_pw(username, password):
-    if not app.config['PASSWORD']:
-        flask.abort(403)
-    return username == 'admin' and password == app.config['PASSWORD']
 
 
 def get_database():
@@ -57,7 +47,6 @@ def close_database(_):
 
 
 @app.route('/api/session', methods=['GET', 'PUT'])
-@auth.login_required
 def route_api_session():
     if flask.request.method == 'PUT':
         get_controller().set_session(
@@ -72,7 +61,6 @@ def route_api_session():
 
 
 @app.route('/api/desk', methods=['GET', 'PUT'])
-@auth.login_required
 def route_api_desk():
     if flask.request.method == 'PUT':
         if not get_controller().set_desk(
@@ -88,14 +76,12 @@ def route_api_desk():
 
 
 @app.route('/api/timer/update')
-@auth.login_required
 def route_api_timer_update():
     get_controller().update_timer(datetime.now())
     return ''
 
 
 @app.route('/api/sessions.json')
-@auth.login_required
 def route_api_get_session():
     def format(hour, minute, value):
         return {
@@ -133,13 +119,11 @@ def route_api_get_session():
 
 
 @app.route('/static/<path>')
-@auth.login_required
 def route_static(path):
     return flask.send_from_directory('static', path)
 
 
 @app.route('/')
-@auth.login_required
 def route_index():
     beginning = datetime.fromtimestamp(0)
     now = datetime.now()

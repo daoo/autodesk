@@ -4,7 +4,7 @@ Description=autodesk timer server
 [Service]
 Type=simple
 User=autodesk
-ExecStart=/usr/bin/bash -c 'tail -n1 -f /var/local/autodesk/timer | /var/local/autodesk/venv/bin/python /var/local/autodesk/venv/bin/autodesk-timer /var/local/autodesk/settings.cfg http://localhost:8000'
+ExecStart=/usr/bin/bash -c 'tail -n1 -f /var/local/autodesk/timer | /var/local/autodesk/venv/bin/python /var/local/autodesk/venv/bin/autodesk-timer http://localhost:8000'
 
 [Install]
 WantedBy=multi-user.target
