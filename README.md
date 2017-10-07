@@ -43,10 +43,17 @@ Blue, brown and white are used for up and down like this:
 
 ### Software
 
-Setup a virtualenv and install autodesk:
+Setup a user and install the software:
 
-    virtualenv /var/local/autodesk/venv
-    /var/local/autodesk/venv/bin/pip install ./autodesk
+    sudo useradd -d /var/local/autodesk -r -s /usr/bin/nologin autodesk
+    sudo cp sys/nginx.conf /etc/nginx.conf
+    sudo cp sys/autodesk-{uwsgi,timer}.service /etc/systemd/system
+    sudo -u autodesk virtualenv /var/local/autodesk/venv
+    sudo -u autodesk /var/local/autodesk/venv/bin/pip install /path/to/autodesk uwsgi
+    sudo -u autodesk mkfifo /var/local/autodesk/timer
+    sudo -u autodesk openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /var/local/autodesk/certs/autodesk.key -out /var/local/autodesk/certs/autodesk.crt
+    sudo -u autodesk openssl dhparam -out /var/local/certs/dhparam.pem 4096
+    sudo -u autodesk htpasswd -c /var/local/autodesk/htpasswd admin
 
 Add a configuration in `/var/local/autodesk/settings.cfg` (pins are in
 `GPIO.BOARD` mode, limit times are in minutes):
@@ -59,20 +66,15 @@ Add a configuration in `/var/local/autodesk/settings.cfg` (pins are in
     DATABASE = '/var/local/autodesk/desk.db'
     TIMER_PATH = '/var/local/autodesk/timer'
 
-Run the flask app (use whatever port you like):
+Finally start the services:
 
-    AUTODESK_CONFIG=/var/local/autodesk/settings.cfg FLASK_APP=autodesk.webserver flask run -p 8000
+    sudo systemctl enable --now autodesk-{uwsgi,timer}.service nginx.service
 
-Also, start the timer server like this:
+### Desktop Software
 
-    tail -n1 -f /var/local/autodesk/timer | autodesk-timer http://localhost:8000
+Run the `logger.py` script to listen for lock/unlock events via DBus.
 
-Finally, install `logger.py` on your workstation, setup a SSH tunnel (if using,
-here local port 8000 is tunneled to the Pi) and run the logger like this:
-
-    logger.py http://localhost:8000/api/set/session
-
-It prints what DBus sessions it will monitor when starting.
+    logger.py https://autodesk/api/session
 
 ## TODO
 
