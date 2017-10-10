@@ -33,13 +33,35 @@ state).
 
 ### Hardware
 
-Setup your Raspberry Pi with some relays (you probably need two relays).
+Setup your Raspberry Pi with two relays circuits (you could probably use
+transistors directly as the voltage and current are usually pretty low for the
+control switches). Then setup the cables and connector as needed depending on
+what your desk controller uses.
 
-The desk used in my setup connects control dongles via regular Ethernet cables.
-Blue, brown and white are used for up and down like this:
+#### 8P8C jack (AKA RJ45 or Ethernet)
 
-  * Blue to blue/white is up.
-  * Blue to brown is down.
+Some desk controllers uses 8P8C connectors, i.e. you can use a regular (RJ45)
+ethernet cable, see image below. One of those desks uses blue, brown and white
+like this:
+
+```
+  blue <-> blue/white => up
+  blue <-> brown      => down
+```
+
+![RJ45 connector with coloring](docs/8p8c.png)
+
+#### 7-pin DIN jack
+
+Other desk controllers uses 7-pin DIN connectors, see image below. One of those
+desks uses pins 1, 2 and three like this:
+
+```
+  1 <-> 2 => up
+  1 <-> 3 => down
+```
+
+![7-pin DIN jack with numbers](docs/7-pin-din.png)
 
 ### Software
 
