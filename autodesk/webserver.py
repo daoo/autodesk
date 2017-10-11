@@ -128,7 +128,12 @@ def route_index():
     beginning = datetime.fromtimestamp(0)
     now = datetime.now()
     session_spans = get_database().get_session_spans(beginning, now)
+    session_state = session_spans[-1].data.test("inactive", "active")
     desk_spans = get_database().get_desk_spans(beginning, now)
-    state = desk_spans[-1].data.test("Down", "Up")
+    desk_state = desk_spans[-1].data.test("down", "up")
     active_time = stats.compute_active_time(session_spans, desk_spans)
-    return flask.render_template('index.html', state=state, active_time=active_time)
+    return flask.render_template(
+            'index.html',
+            session=session_state,
+            desk=desk_state,
+            active_time=active_time)
