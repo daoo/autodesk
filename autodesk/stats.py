@@ -15,7 +15,8 @@ def compute_daily_active_time(spans):
             for i in range(index(span.start), index(span.end)):
                 buckets[i] += 1
 
-    return buckets
+    factor = max(buckets)
+    return [bucket / factor for bucket in buckets]
 
 
 def group_into_days(buckets):
