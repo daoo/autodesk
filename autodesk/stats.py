@@ -4,6 +4,8 @@ import autodesk.spans as spans
 
 
 def compute_daily_active_time(spans):
+    assert spans
+
     def index(time):
         day = 60 * 24
         hour = 60
