@@ -44,6 +44,9 @@ class Controller:
 
     def set_session(self, time, state):
         self.database.insert_session_event(Event(time, state))
+        self.hardware.setup()
+        self.hardware.light(state)
+        self.hardware.cleanup()
         self.update_timer(time)
 
     def set_desk(self, time, state):

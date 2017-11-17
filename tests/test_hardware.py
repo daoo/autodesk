@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, call, patch
-from autodesk.model import Down, Up
+from autodesk.model import Down, Up, Active, Inactive
 
 
 class TestHardware(unittest.TestCase):
@@ -21,14 +21,15 @@ class TestHardware(unittest.TestCase):
         # The hardware module must also be removed since it is cached and
         # maintains a reference to the mock RPi module.
         self.addCleanup(sys.modules.pop, 'autodesk.hardware')
-        self.hardware = Hardware(5, (0, 1))
+        self.hardware = Hardware(5, (0, 1), 2)
 
     def test_hardware_setup(self):
         self.hardware.setup()
         self.gpio.setmode.assert_called_with(self.gpio.BOARD)
         self.gpio.setup.assert_has_calls([
             call(0, self.gpio.OUT),
-            call(1, self.gpio.OUT)
+            call(1, self.gpio.OUT),
+            call(2, self.gpio.OUT)
         ])
         self.gpio.cleanup.assert_not_called()
 
@@ -52,3 +53,11 @@ class TestHardware(unittest.TestCase):
             call(1, self.gpio.LOW)
         ])
         self.time_sleep.assert_called_once_with(5)
+
+    def test_hardware_light_on(self):
+        self.hardware.light(Active())
+        self.gpio.output.assert_called_once_with(2, self.gpio.HIGH)
+
+    def test_hardware_light_off(self):
+        self.hardware.light(Inactive())
+        self.gpio.output.assert_called_once_with(2, self.gpio.LOW)

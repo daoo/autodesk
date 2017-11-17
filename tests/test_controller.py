@@ -112,11 +112,17 @@ class TestController(unittest.TestCase):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Active())
         self.controller.set_session(event.index, event.data)
         self.database.insert_session_event.assert_called_with(event)
+        self.hardware.setup.assert_called_once()
+        self.hardware.light.assert_called_with(event.data)
+        self.hardware.cleanup.assert_called_once()
 
     def test_set_session_inactive(self):
         event = Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
         self.controller.set_session(event.index, event.data)
         self.database.insert_session_event.assert_called_with(event)
+        self.hardware.setup.assert_called_once()
+        self.hardware.light.assert_called_with(event.data)
+        self.hardware.cleanup.assert_called_once()
 
     @patch('autodesk.controller.stats.compute_active_time', autospec=True)
     def test_set_desk_up(self, compute_active_time):

@@ -13,6 +13,7 @@ app.config.update(dict(
     DELAY=15,
     PIN_DOWN=15,
     PIN_UP=13,
+    PIN_LIGHT=16,
     LIMIT_DOWN=50,
     LIMIT_UP=10,
     DATABASE=('/tmp/autodesk.db'),
@@ -29,12 +30,13 @@ def get_database():
 
 def get_controller():
     delay = app.config['DELAY']
-    pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
+    motor_pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
+    light_pin = app.config['PIN_LIGHT']
     limit = (
         timedelta(minutes=app.config['LIMIT_DOWN']),
         timedelta(minutes=app.config['LIMIT_UP']))
     return Controller(
-        Hardware(delay, pins),
+        Hardware(delay, motor_pins, light_pin),
         limit,
         Timer(app.config['TIMER_PATH']),
         get_database())
