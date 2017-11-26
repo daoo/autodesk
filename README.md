@@ -65,33 +65,7 @@ desks uses pins 1, 2 and three like this:
 
 ### Software
 
-Setup a user and install the software:
-
-    sudo useradd -d /var/local/autodesk -r -s /usr/bin/nologin autodesk
-    sudo cp sys/nginx.conf /etc/nginx.conf
-    sudo cp sys/autodesk-{uwsgi,timer}.service /etc/systemd/system
-    sudo -u autodesk virtualenv /var/local/autodesk/venv
-    sudo -u autodesk /var/local/autodesk/venv/bin/pip install /path/to/autodesk uwsgi
-    sudo -u autodesk mkfifo /var/local/autodesk/timer
-    sudo -u autodesk openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /var/local/autodesk/certs/autodesk.key -out /var/local/autodesk/certs/autodesk.crt
-    sudo -u autodesk openssl dhparam -out /var/local/certs/dhparam.pem 4096
-    sudo -u autodesk htpasswd -c /var/local/autodesk/htpasswd admin
-
-Add a configuration in `/var/local/autodesk/settings.cfg` (pins are in
-`GPIO.BOARD` mode, limit times are in minutes):
-
-    DELAY = 15
-    PIN_DOWN = 15
-    PIN_UP = 13
-    PIN_LIGHT = 16
-    LIMIT_DOWN = 50
-    LIMIT_UP = 10
-    DATABASE = '/var/local/autodesk/desk.db'
-    TIMER_PATH = '/var/local/autodesk/timer'
-
-Finally start the services:
-
-    sudo systemctl enable --now autodesk-{uwsgi,timer}.service nginx.service
+Check out [](install.sh) for installation steps.
 
 ### Desktop Software
 
