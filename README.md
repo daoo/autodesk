@@ -83,7 +83,7 @@ Add a configuration in `/var/local/autodesk/settings.cfg` (pins are in
     DELAY = 15
     PIN_DOWN = 15
     PIN_UP = 13
-    PIN_LIGHT=16
+    PIN_LIGHT = 16
     LIMIT_DOWN = 50
     LIMIT_UP = 10
     DATABASE = '/var/local/autodesk/desk.db'
