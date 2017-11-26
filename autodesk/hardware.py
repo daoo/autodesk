@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+import autodesk.gpio as GPIO
 import time
 
 

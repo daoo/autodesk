@@ -1,6 +1,7 @@
-import unittest
-from unittest.mock import MagicMock, call, patch
 from autodesk.model import Down, Up, Active, Inactive
+from unittest.mock import MagicMock, call, patch
+import sys
+import unittest
 
 
 class TestHardware(unittest.TestCase):
@@ -9,17 +10,14 @@ class TestHardware(unittest.TestCase):
         self.time_sleep = self.time_patcher.start()
         self.addCleanup(self.time_patcher.stop)
 
-        self.rpi = MagicMock()
-        self.gpio = self.rpi.GPIO
-        import sys
-        sys.modules['RPi'] = self.rpi
-        self.addCleanup(sys.modules.pop, 'RPi')
-        sys.modules['RPi.GPIO'] = self.gpio
-        self.addCleanup(sys.modules.pop, 'RPi.GPIO')
+        import autodesk.gpio
+        self.gpio_patcher = patch('autodesk.gpio')
+        self.gpio = self.gpio_patcher.start()
+        self.addCleanup(self.gpio_patcher.stop)
 
         from autodesk.hardware import Hardware
         # The hardware module must also be removed since it is cached and
-        # maintains a reference to the mock RPi module.
+        # maintains a reference to the mock gpio module.
         self.addCleanup(sys.modules.pop, 'autodesk.hardware')
         self.hardware = Hardware(5, (0, 1), 2)
 
