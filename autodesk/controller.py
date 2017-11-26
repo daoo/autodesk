@@ -34,7 +34,7 @@ class Controller:
 
         self.update_timer(time)
 
-    def teardown(self):
+    def close(self):
         self.timer.stop()
         self.timer.action = None
         self.hardware.light(Inactive())
