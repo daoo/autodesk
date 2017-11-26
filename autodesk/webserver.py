@@ -34,7 +34,7 @@ def get_hardware():
         motor_pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
         light_pin = app.config['PIN_LIGHT']
         flask.g.hardware = Hardware(delay, motor_pins, light_pin)
-        flask.g.hardware.__enter__()
+        flask.g.hardware.init()
     return flask.g.hardware
 
 
@@ -58,7 +58,7 @@ def close_database(_):
 @app.teardown_appcontext
 def close_hardware(_):
     if hasattr(flask.g, 'hardware'):
-        flask.g.hardware.__exit__()
+        flask.g.hardware.close()
 
 
 @app.route('/api/session', methods=['GET', 'PUT'])
