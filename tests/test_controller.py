@@ -114,17 +114,13 @@ class TestController(unittest.TestCase):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Active())
         self.controller.set_session(event.index, event.data)
         self.database.insert_session_event.assert_called_with(event)
-        self.hardware.setup.assert_called_once()
         self.hardware.light.assert_called_with(event.data)
-        self.hardware.cleanup.assert_called_once()
 
     def test_set_session_inactive(self):
         event = Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
         self.controller.set_session(event.index, event.data)
         self.database.insert_session_event.assert_called_with(event)
-        self.hardware.setup.assert_called_once()
         self.hardware.light.assert_called_with(event.data)
-        self.hardware.cleanup.assert_called_once()
 
     @patch('autodesk.controller.stats.compute_active_time', autospec=True)
     def test_set_desk_up(self, compute_active_time):
@@ -139,9 +135,7 @@ class TestController(unittest.TestCase):
 
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
-        self.hardware.setup.assert_called_once()
         self.hardware.go.assert_called_with(event.data)
-        self.hardware.cleanup.assert_called_once()
         self.timer.stop.assert_not_called()
         self.timer.schedule.assert_called_with(
             timedelta(minutes=10), model.Down())
@@ -159,9 +153,7 @@ class TestController(unittest.TestCase):
 
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
-        self.hardware.setup.assert_called_once()
         self.hardware.go.assert_called_with(event.data)
-        self.hardware.cleanup.assert_called_once()
         self.timer.stop.assert_not_called()
         self.timer.schedule.assert_called_with(
             timedelta(minutes=50), model.Up())
@@ -170,8 +162,6 @@ class TestController(unittest.TestCase):
         event = Event(datetime(2017, 2, 13, 7, 0, 0), model.Down())
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_not_called()
-        self.hardware.setup.assert_not_called()
         self.hardware.go.assert_not_called()
-        self.hardware.cleanup.assert_not_called()
         self.timer.schedule.assert_not_called()
         self.timer.stop.assert_called_once()

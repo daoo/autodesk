@@ -28,15 +28,22 @@ def get_database():
     return flask.g.sqlite_database
 
 
+def get_hardware():
+    if not hasattr(flask.g, 'hardware'):
+        delay = app.config['DELAY']
+        motor_pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
+        light_pin = app.config['PIN_LIGHT']
+        flask.g.hardware = Hardware(delay, motor_pins, light_pin)
+        flask.g.hardware.__enter__()
+    return flask.g.hardware
+
+
 def get_controller():
-    delay = app.config['DELAY']
-    motor_pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
-    light_pin = app.config['PIN_LIGHT']
     limit = (
         timedelta(minutes=app.config['LIMIT_DOWN']),
         timedelta(minutes=app.config['LIMIT_UP']))
     return Controller(
-        Hardware(delay, motor_pins, light_pin),
+        get_hardware(),
         limit,
         Timer(app.config['TIMER_PATH']),
         get_database())
@@ -46,6 +53,12 @@ def get_controller():
 def close_database(_):
     if hasattr(flask.g, 'sqlite_database'):
         flask.g.sqlite_database.close()
+
+
+@app.teardown_appcontext
+def close_hardware(_):
+    if hasattr(flask.g, 'hardware'):
+        flask.g.hardware.__exit__()
 
 
 @app.route('/api/session', methods=['GET', 'PUT'])

@@ -8,13 +8,14 @@ class Hardware:
         self.motor_pins = motor_pins
         self.light_pin = light_pin
 
-    def setup(self):
+    def __enter__(self):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.motor_pins[0], GPIO.OUT)
         GPIO.setup(self.motor_pins[1], GPIO.OUT)
         GPIO.setup(self.light_pin, GPIO.OUT)
+        return self
 
-    def cleanup(self):
+    def __exit__(self, type, value, traceback):
         GPIO.cleanup()
 
     def go(self, state):
