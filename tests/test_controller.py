@@ -84,6 +84,22 @@ class TestController(unittest.TestCase):
         limits = (timedelta(minutes=50), timedelta(minutes=10))
         self.controller = Controller(
             self.hardware, limits, self.timer, self.database)
+        self.addCleanup(self.controller.teardown)
+
+    def test_init_inactive_and_down(self):
+        self.controller.init(self.beginning)
+        self.timer.stop.assert_called_once()
+        self.hardware.light.assert_called_once_with(model.Inactive())
+        self.hardware.go.assert_not_called()
+
+    def test_init_active_and_down(self):
+        self.database.get_session_spans.return_value = [
+            Span(self.beginning, self.now, model.Active())
+        ]
+        self.controller.init(self.now)
+        self.timer.schedule.assert_called_once_with(timedelta(0), model.Up())
+        self.hardware.light.assert_called_once_with(model.Active())
+        self.hardware.go.assert_not_called()
 
     def test_update_timer_inactive(self):
         self.controller.update_timer(self.now)

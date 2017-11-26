@@ -1,10 +1,11 @@
 [Unit]
 Description=AutoDesk uwsgi server
+After=autodesk-server.service
 
 [Service]
 Type=simple
 User=autodesk
-Environment=AUTODESK_CONFIG=/var/local/autodesk/settings.cfg
+Environment=AUTODESK_CONFIG=/var/local/autodesk/flask.cfg
 ExecStart=/var/local/autodesk/venv/bin/uwsgi -s /var/local/autodesk/uwsgi.sock --manage-script-name --mount /=autodesk.webserver:app
 
 [Install]

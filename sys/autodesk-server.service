@@ -1,0 +1,13 @@
+[Unit]
+Description=AutoDesk controller server
+Requires=autodesk-server.service
+Before=autodesk-uwsgi.service autodesk-flask.service
+
+[Service]
+Type=simple
+User=autodesk
+EnvironmentFile=/var/local/autodesk/server.cfg
+ExecStart=/var/local/autodesk/venv/bin/python -m autodesk.server
+
+[Install]
+WantedBy=multi-user.target

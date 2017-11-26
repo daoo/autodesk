@@ -1,4 +1,5 @@
 from autodesk.spans import Event
+from autodesk.model import Inactive
 from datetime import datetime, time, timedelta
 import autodesk.stats as stats
 
@@ -23,6 +24,20 @@ class Controller:
         self.limits = limits
         self.timer = timer
         self.database = database
+
+    def init(self, time):
+        self.timer.set_action(lambda target: self.set_desk(time, target))
+
+        beginning = datetime.fromtimestamp(0)
+        session_spans = self.database.get_session_spans(beginning, time)
+        self.hardware.light(session_spans[-1].data)
+
+        self.update_timer(time)
+
+    def teardown(self):
+        self.timer.stop()
+        self.timer.action = None
+        self.hardware.light(Inactive())
 
     def update_timer(self, time):
         if not allow_desk_operation(time):
