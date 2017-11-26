@@ -1,5 +1,5 @@
 [Unit]
-Description=autodesk uwsgi server
+Description=AutoDesk uwsgi server
 
 [Service]
 Type=simple

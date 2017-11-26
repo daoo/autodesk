@@ -1,5 +1,5 @@
 [Unit]
-Description=autodesk timer server
+Description=AutoDesk timer server
 
 [Service]
 Type=simple
