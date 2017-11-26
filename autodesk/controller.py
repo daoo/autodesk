@@ -40,7 +40,7 @@ class Controller:
         active_time = stats.compute_active_time(session_spans, desk_spans)
         limit = desk.test(*self.limits)
         delay = max(timedelta(0), limit - active_time)
-        self.timer.set(delay, desk.next())
+        self.timer.schedule(delay, desk.next())
 
     def set_session(self, time, state):
         self.database.insert_session_event(Event(time, state))

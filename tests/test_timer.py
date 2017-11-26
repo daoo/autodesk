@@ -16,12 +16,12 @@ class TestTimer(unittest.TestCase):
         with open(self.timer_path, 'r') as fobj:
             self.assertEqual(fobj.read(), 'stop\n')
 
-    def test_set_down(self):
-        Timer(self.timer_path).set(timedelta(seconds=42), Down())
+    def test_schedule_down(self):
+        Timer(self.timer_path).schedule(timedelta(seconds=42), Down())
         with open(self.timer_path, 'r') as fobj:
             self.assertEqual(fobj.read(), '42 0\n')
 
-    def test_set_up(self):
-        Timer(self.timer_path).set(timedelta(seconds=42), Up())
+    def test_schedule_up(self):
+        Timer(self.timer_path).schedule(timedelta(seconds=42), Up())
         with open(self.timer_path, 'r') as fobj:
             self.assertEqual(fobj.read(), '42 1\n')

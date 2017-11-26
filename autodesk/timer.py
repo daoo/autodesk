@@ -5,7 +5,7 @@ class Timer:
     def __init__(self, path):
         self.path = path
 
-    def set(self, delay, target):
+    def schedule(self, delay, target):
         assert delay >= timedelta(0)
         with open(self.path, 'w') as timer_file:
             seconds = int(delay.total_seconds())

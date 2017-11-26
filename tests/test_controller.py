@@ -97,7 +97,8 @@ class TestController(unittest.TestCase):
             Span(self.beginning, self.now, model.Active())
         ]
         self.controller.update_timer(self.now)
-        self.timer.set.assert_called_with(timedelta(minutes=50), model.Up())
+        self.timer.schedule.assert_called_with(
+            timedelta(minutes=50), model.Up())
 
     @patch('autodesk.controller.stats.compute_active_time', autospec=True)
     def test_update_timer_active_duration(self, compute_active_time):
@@ -106,7 +107,8 @@ class TestController(unittest.TestCase):
             Span(self.beginning, self.now, model.Active())
         ]
         self.controller.update_timer(self.now)
-        self.timer.set.assert_called_with(timedelta(minutes=40), model.Up())
+        self.timer.schedule.assert_called_with(
+            timedelta(minutes=40), model.Up())
 
     def test_set_session_active(self):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Active())
@@ -141,7 +143,8 @@ class TestController(unittest.TestCase):
         self.hardware.go.assert_called_with(event.data)
         self.hardware.cleanup.assert_called_once()
         self.timer.stop.assert_not_called()
-        self.timer.set.assert_called_with(timedelta(minutes=10), model.Down())
+        self.timer.schedule.assert_called_with(
+            timedelta(minutes=10), model.Down())
 
     @patch('autodesk.controller.stats.compute_active_time', autospec=True)
     def test_set_desk_down(self, compute_active_time):
@@ -160,7 +163,8 @@ class TestController(unittest.TestCase):
         self.hardware.go.assert_called_with(event.data)
         self.hardware.cleanup.assert_called_once()
         self.timer.stop.assert_not_called()
-        self.timer.set.assert_called_with(timedelta(minutes=50), model.Up())
+        self.timer.schedule.assert_called_with(
+            timedelta(minutes=50), model.Up())
 
     def test_set_desk_disallow(self):
         event = Event(datetime(2017, 2, 13, 7, 0, 0), model.Down())
@@ -169,5 +173,5 @@ class TestController(unittest.TestCase):
         self.hardware.setup.assert_not_called()
         self.hardware.go.assert_not_called()
         self.hardware.cleanup.assert_not_called()
-        self.timer.set.assert_not_called()
+        self.timer.schedule.assert_not_called()
         self.timer.stop.assert_called_once()
