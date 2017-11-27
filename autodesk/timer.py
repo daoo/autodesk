@@ -2,11 +2,8 @@ import threading
 
 
 class Timer:
-    def __init__(self):
+    def __init__(self, action):
         self.timer = None
-        self.action = None
-
-    def set_action(self, action):
         self.action = action
 
     def schedule(self, delay, target):

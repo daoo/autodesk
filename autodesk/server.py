@@ -33,6 +33,12 @@ def server(address, controller):
                 sys.stderr.write(repr(e) + '\n')
 
 
+def send_desk_msg(address, target):
+    with Socket(PUSH) as socket:
+        socket.connect(address)
+        socket.send(message.packb(['desk', target.test(0, 1)]))
+
+
 class Args:
     def __init__(self, envs):
         self.database = envs.get('AUTODESK_DATABASE', '/tmp/autodesk.db')
@@ -55,7 +61,7 @@ def start(args):
     limit = (
         timedelta(minutes=args.limit_down),
         timedelta(minutes=args.limit_up))
-    timer = Timer()
+    timer = Timer(lambda target: send_desk_msg(args.server_address, target))
     controller = Controller(hardware, limit, timer, database)
     hardware.init()
     controller.init(datetime.now())
