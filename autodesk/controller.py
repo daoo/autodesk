@@ -36,9 +36,15 @@ class Controller:
         self.timer.stop()
         self.hardware.light(Inactive())
 
-    def update_timer(self, time):
+    def check_time(self, time):
         if not allow_desk_operation(time):
+            print('controller: desk operation not allowed at {}'.format(time))
             self.timer.stop()
+            return False
+        return True
+
+    def update_timer(self, time):
+        if not self.check_time(time):
             return
 
         beginning = datetime.fromtimestamp(0)
@@ -60,11 +66,9 @@ class Controller:
         self.update_timer(time)
 
     def set_desk(self, time, state):
-        if not allow_desk_operation(time):
-            self.update_timer(time)
-            return False
+        if not self.check_time(time):
+            return
 
         self.hardware.go(state)
         self.database.insert_desk_event(Event(time, state))
         self.update_timer(time)
-        return True

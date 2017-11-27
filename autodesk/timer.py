@@ -8,6 +8,7 @@ class Timer:
 
     def schedule(self, delay, target):
         assert self.action
+        print('timer: scheduling {} in {}'.format(target, delay))
         if self.timer:
             self.timer.cancel()
         self.timer = threading.Timer(
@@ -17,6 +18,7 @@ class Timer:
         self.timer.start()
 
     def stop(self):
+        print('timer: stopping')
         if self.timer:
             self.timer.cancel()
 
