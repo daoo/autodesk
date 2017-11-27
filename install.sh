@@ -41,4 +41,9 @@ DATABASE="/var/local/autodesk/desk.db"
 SERVER_ADDRESS="tcp://127.0.0.1:12345"
 HERE
 
+sudo -u autodesk sqlite3 desk.db <<HERE
+CREATE TABLE session(date INTEGER NOT NULL, active INTEGER NOT NULL);
+CREATE TABLE desk(date INTEGER NOT NULL, state INTEGER NOT NULL);
+HERE
+
 systemctl enable --now autodesk-{uwsgi,server}.service nginx.service

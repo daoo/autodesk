@@ -1,8 +1,10 @@
 from autodesk.model import Database, Up, Down, Active, Inactive
 from autodesk.spans import Event, Span
+from contextlib import closing
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 import autodesk.model as model
+import sqlite3
 import tempfile
 import unittest
 
@@ -44,6 +46,9 @@ class TestFactoryMethods(unittest.TestCase):
 class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.database_file = tempfile.NamedTemporaryFile()
+        with closing(sqlite3.connect(self.database_file.name)) as db:
+            db.execute('CREATE TABLE session(date INTEGER NOT NULL, active INTEGER NOT NULL)');
+            db.execute('CREATE TABLE desk(date INTEGER NOT NULL, state INTEGER NOT NULL)');
         self.database = Database(self.database_file.name)
         self.addCleanup(self.database.close)
         self.addCleanup(self.database_file.close)
