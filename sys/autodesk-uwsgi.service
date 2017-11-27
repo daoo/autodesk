@@ -1,5 +1,7 @@
 [Unit]
 Description=AutoDesk uwsgi server
+Requires=autodesk-timer.service
+Before=autodesk-timer.service
 
 [Service]
 Type=simple
