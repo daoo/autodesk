@@ -13,5 +13,5 @@ def interpolate(str):
 
 
 with Socket(PUSH) as socket:
-    socket.connect('tcp://127.0.0.1:12345')
+    socket.connect(b'tcp://127.0.0.1:12345')
     socket.send(msgpack.packb([interpolate(arg) for arg in sys.argv[1:]]))

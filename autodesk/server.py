@@ -11,7 +11,7 @@ import sys
 
 def server(address, controller):
     with Socket(PULL) as socket:
-        socket.bind(address)
+        socket.bind(str.encode(address))
 
         while True:
             try:
