@@ -1,6 +1,5 @@
 [Unit]
 Description=AutoDesk uwsgi server
-Requires=autodesk-server.service
 After=autodesk-server.service
 
 [Service]

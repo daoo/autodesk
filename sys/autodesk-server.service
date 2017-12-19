@@ -1,5 +1,6 @@
 [Unit]
 Description=AutoDesk controller server
+Requires=autodesk-server.service
 Before=autodesk-uwsgi.service autodesk-flask.service
 
 [Service]
