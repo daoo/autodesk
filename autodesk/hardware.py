@@ -18,12 +18,10 @@ class Hardware:
         GPIO.cleanup()
 
     def go(self, state):
-        print('hardware: go {}'.format(state))
         pin = state.test(*self.motor_pins)
         GPIO.output(pin, GPIO.HIGH)
         time.sleep(self.delay)
         GPIO.output(pin, GPIO.LOW)
 
     def light(self, state):
-        print('hardware: light {}'.format(state))
         GPIO.output(self.light_pin, state.test(GPIO.LOW, GPIO.HIGH))

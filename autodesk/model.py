@@ -95,13 +95,11 @@ class Database:
         self.db.close()
 
     def insert_desk_event(self, event):
-        print('database: inserting desk {}'.format(event))
         self.db.execute('INSERT INTO desk values(?, ?)',
                         (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
 
     def insert_session_event(self, event):
-        print('database: inserting session {}'.format(event))
         self.db.execute('INSERT INTO session values(?, ?)',
                         (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
