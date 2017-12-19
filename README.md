@@ -8,26 +8,26 @@ The software consists of three components:
 
   * Session logger
   * Web server
-  * Controller server
+  * Timer server
 
-The web and controller servers run on the Pi and the session logger runs on the
+The web and timer servers run on the Pi and the session logger runs on the
 workstation.
 
-The session logger monitors DBus and notifies the web server over HTTPS (wrap
-it with SSH for security) of session activation and inactivation (lock/unlock)
-events. The web server then notifies the controller server. Note that it is
-possible to talk to the controller server directly but HTTPS is available by
-default on all platforms (web browser).
+The session logger monitors DBus and notifies the web server over HTTP (wrap it
+with SSH for security) of session activation and inactivation (lock/unlock)
+events.
 
-The controller server maintains a database (SQLite) of desk (up/down) and
-session (active/inactive) events. Every time an event occurs, the active time
-is computed for the current desk state (that is how long have I been sitting or
-standing). This time is compared against a fixed limit and an internal timer is
-updated to when the desk state should be changed next. The server also provides
-an API for manually forcing the desk to a desired state.
+The web server maintains a database (SQLite) of desk (up/down) and session
+(active/inactive) events. Every time an event occurs, the active time is
+computed for the current desk state (that is how long have I been sitting or
+standing). This time is compared against a fixed limit and the timer server is
+notified about when the desk state should be changed next. The web server also
+provides an API for manually forcing the desk to a desired state.
 
-The communication happens over a nanomsg TCP socket with messages encoded using
-messagepack.
+The timer server is communicated to over a named pipe with a dumb text
+protocol. It maintains a timer (fixed delay) and what the next state should be.
+The timer can be stopped and updated (shorter/longer delay or different next
+state).
 
 ## Usage
 
@@ -69,34 +69,29 @@ Setup a user and install the software:
 
     sudo useradd -d /var/local/autodesk -r -s /usr/bin/nologin autodesk
     sudo cp sys/nginx.conf /etc/nginx.conf
-    sudo cp sys/autodesk-{server,uwsgi}.service /etc/systemd/system
+    sudo cp sys/autodesk-{uwsgi,timer}.service /etc/systemd/system
     sudo -u autodesk virtualenv /var/local/autodesk/venv
     sudo -u autodesk /var/local/autodesk/venv/bin/pip install /path/to/autodesk uwsgi
+    sudo -u autodesk mkfifo /var/local/autodesk/timer
     sudo -u autodesk openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /var/local/autodesk/certs/autodesk.key -out /var/local/autodesk/certs/autodesk.crt
     sudo -u autodesk openssl dhparam -out /var/local/certs/dhparam.pem 4096
     sudo -u autodesk htpasswd -c /var/local/autodesk/htpasswd admin
 
-Add a server configuration in `/var/local/autodesk/server.cfg` (pins are in
+Add a configuration in `/var/local/autodesk/settings.cfg` (pins are in
 `GPIO.BOARD` mode, limit times are in minutes):
 
-    AUTODESK_DELAY=15
-    AUTODESK_PIN_DOWN=15
-    AUTODESK_PIN_UP=13
-    AUTODESK_PIN_LIGHT=16
-    AUTODESK_LIMIT_DOWN=50
-    AUTODESK_LIMIT_UP=10
-    AUTODESK_DATABASE=/var/local/autodesk/desk.db
-    AUTODESK_SERVER_ADDRESS=tcp://127.0.0.1:12345
-
-Add a flask configuration in `/var/local/autodesk/flask.cfg` (make sure the
-database path and server address matches):
-
-    DATABASE=/var/local/autodesk/desk.db
-    SERVER_ADDRESS=tcp://127.0.0.1:12345
+    DELAY = 15
+    PIN_DOWN = 15
+    PIN_UP = 13
+    PIN_LIGHT = 16
+    LIMIT_DOWN = 50
+    LIMIT_UP = 10
+    DATABASE = '/var/local/autodesk/desk.db'
+    TIMER_PATH = '/var/local/autodesk/timer'
 
 Finally start the services:
 
-    sudo systemctl enable --now autodesk-{uwsgi,server}.service nginx.service
+    sudo systemctl enable --now autodesk-{uwsgi,timer}.service nginx.service
 
 ### Desktop Software
 

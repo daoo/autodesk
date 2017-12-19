@@ -1,28 +1,16 @@
-import threading
+from datetime import timedelta
 
 
 class Timer:
-    def __init__(self):
-        self.timer = None
-        self.action = None
-
-    def set_action(self, action):
-        self.action = action
+    def __init__(self, path):
+        self.path = path
 
     def schedule(self, delay, target):
-        assert self.action
-        if self.timer:
-            self.timer.cancel()
-        self.timer = threading.Timer(
-            delay.total_seconds(),
-            self.action,
-            args=[target])
-        self.timer.start()
+        assert delay >= timedelta(0)
+        with open(self.path, 'w') as timer_file:
+            seconds = int(delay.total_seconds())
+            timer_file.write(str(seconds) + ' ' + target.test('0', '1') + '\n')
 
     def stop(self):
-        if self.timer:
-            self.timer.cancel()
-
-    def __repr__(self):
-        return 'DeskTimer(timer={}, action={})'.format(
-            self.timer, self.action)
+        with open(self.path, 'w') as timer_file:
+            timer_file.write('stop\n')

@@ -1,51 +1,72 @@
-from autodesk.model import Database
-from datetime import datetime
-from nanomsg import Socket, PUSH
+from autodesk.controller import Controller
+from autodesk.hardware import Hardware
+from autodesk.model import Database, session_from_int, desk_from_int
+from autodesk.timer import Timer
+from datetime import datetime, timedelta
 import autodesk.stats as stats
 import flask
 import json
-import msgpack
+import os
 
 app = flask.Flask(__name__)
 app.config.update(dict(
-    SERVER_ADDRESS='tcp://127.0.0.1:12345',
-    DATABASE='/tmp/autodesk.db',
+    DELAY=15,
+    PIN_DOWN=15,
+    PIN_UP=13,
+    PIN_LIGHT=16,
+    LIMIT_DOWN=50,
+    LIMIT_UP=10,
+    DATABASE=('/tmp/autodesk.db'),
+    TIMER_PATH=('/tmp/autodesk.timer')
 ))
 app.config.from_envvar('AUTODESK_CONFIG', silent=True)
 
 
 def get_database():
-    if not hasattr(flask.g, 'database'):
-        flask.g.database = Database(app.config['DATABASE'])
-    return flask.g.database
+    if not hasattr(flask.g, 'sqlite_database'):
+        flask.g.sqlite_database = Database(app.config['DATABASE'])
+    return flask.g.sqlite_database
 
 
-def get_socket():
-    if not hasattr(flask.g, 'socket'):
-        flask.g.socket = Socket(PUSH)
-        flask.g.socket.connect(str.encode(app.config['SERVER_ADDRESS']))
-    return flask.g.socket
+def get_hardware():
+    if not hasattr(flask.g, 'hardware'):
+        delay = app.config['DELAY']
+        motor_pins = (app.config['PIN_DOWN'], app.config['PIN_UP'])
+        light_pin = app.config['PIN_LIGHT']
+        flask.g.hardware = Hardware(delay, motor_pins, light_pin)
+        flask.g.hardware.__enter__()
+    return flask.g.hardware
+
+
+def get_controller():
+    limit = (
+        timedelta(minutes=app.config['LIMIT_DOWN']),
+        timedelta(minutes=app.config['LIMIT_UP']))
+    return Controller(
+        get_hardware(),
+        limit,
+        Timer(app.config['TIMER_PATH']),
+        get_database())
 
 
 @app.teardown_appcontext
 def close_database(_):
-    if hasattr(flask.g, 'database'):
-        flask.g.database.close()
+    if hasattr(flask.g, 'sqlite_database'):
+        flask.g.sqlite_database.close()
 
 
 @app.teardown_appcontext
-def close_socket(_):
-    if hasattr(flask.g, 'database'):
-        flask.g.database.close()
+def close_hardware(_):
+    if hasattr(flask.g, 'hardware'):
+        flask.g.hardware.__exit__()
 
 
 @app.route('/api/session', methods=['GET', 'PUT'])
 def route_api_session():
     if flask.request.method == 'PUT':
-        get_socket().send(msgpack.packb([
-            'session',
-            int(flask.request.data)
-        ]))
+        get_controller().set_session(
+            datetime.now(),
+            session_from_int(int(flask.request.data)))
         return ''
     elif flask.request.method == 'GET':
         return get_database().get_session_spans(
@@ -57,16 +78,22 @@ def route_api_session():
 @app.route('/api/desk', methods=['GET', 'PUT'])
 def route_api_desk():
     if flask.request.method == 'PUT':
-        get_socket().send(msgpack.packb([
-            'desk',
-            int(flask.request.data)
-        ]))
+        if not get_controller().set_desk(
+            datetime.now(),
+            desk_from_int(int(flask.request.data))):
+            flask.abort(403)
         return ''
     elif flask.request.method == 'GET':
         return get_database().get_desk_spans(
             datetime.fromtimestamp(0),
             datetime.now()
         )[-1].data.test('0', '1')
+
+
+@app.route('/api/timer/update')
+def route_api_timer_update():
+    get_controller().update_timer(datetime.now())
+    return ''
 
 
 @app.route('/api/sessions.json')
