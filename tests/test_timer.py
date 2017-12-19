@@ -8,8 +8,9 @@ import unittest
 
 class TestTimer(unittest.TestCase):
     def setUp(self):
+        self.timer = Timer()
         self.action = MagicMock()
-        self.timer = Timer(self.action)
+        self.timer.set_action(self.action)
 
     def test_stop(self):
         self.timer.schedule(timedelta(seconds=0.05), Down())

@@ -26,6 +26,8 @@ class Controller:
         self.database = database
 
     def init(self, time):
+        self.timer.set_action(lambda target: self.set_desk(time, target))
+
         beginning = datetime.fromtimestamp(0)
         session_spans = self.database.get_session_spans(beginning, time)
         self.hardware.light(session_spans[-1].data)
@@ -34,6 +36,7 @@ class Controller:
 
     def close(self):
         self.timer.stop()
+        self.timer.action = None
         self.hardware.light(Inactive())
 
     def update_timer(self, time):
