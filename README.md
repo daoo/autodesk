@@ -65,7 +65,38 @@ desks uses pins 1, 2 and three like this:
 
 ### Software
 
-Check out [](install.sh) for installation steps.
+Setup a user and install the software:
+
+    sudo useradd -d /var/local/autodesk -r -s /usr/bin/nologin autodesk
+    sudo cp sys/nginx.conf /etc/nginx.conf
+    sudo cp sys/autodesk-{server,uwsgi}.service /etc/systemd/system
+    sudo -u autodesk virtualenv /var/local/autodesk/venv
+    sudo -u autodesk /var/local/autodesk/venv/bin/pip install /path/to/autodesk uwsgi
+    sudo -u autodesk openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /var/local/autodesk/certs/autodesk.key -out /var/local/autodesk/certs/autodesk.crt
+    sudo -u autodesk openssl dhparam -out /var/local/certs/dhparam.pem 4096
+    sudo -u autodesk htpasswd -c /var/local/autodesk/htpasswd admin
+
+Add a server configuration in `/var/local/autodesk/server.cfg` (pins are in
+`GPIO.BOARD` mode, limit times are in minutes):
+
+    AUTODESK_DELAY=15
+    AUTODESK_PIN_DOWN=15
+    AUTODESK_PIN_UP=13
+    AUTODESK_PIN_LIGHT=16
+    AUTODESK_LIMIT_DOWN=50
+    AUTODESK_LIMIT_UP=10
+    AUTODESK_DATABASE=/var/local/autodesk/desk.db
+    AUTODESK_SERVER_ADDRESS=tcp://127.0.0.1:12345
+
+Add a flask configuration in `/var/local/autodesk/flask.cfg` (make sure the
+database path and server address matches):
+
+    DATABASE=/var/local/autodesk/desk.db
+    SERVER_ADDRESS=tcp://127.0.0.1:12345
+
+Finally start the services:
+
+    sudo systemctl enable --now autodesk-{uwsgi,server}.service nginx.service
 
 ### Desktop Software
 
