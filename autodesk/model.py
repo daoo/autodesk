@@ -90,6 +90,14 @@ class Database:
     def __init__(self, path):
         self.db = sqlite3.connect(path)
         self.db.row_factory = event_from_row
+        self.db.execute(
+            'CREATE TABLE IF NOT EXISTS session('
+            'date INTEGER NOT NULL,'
+            'active INTEGER NOT NULL)')
+        self.db.execute(
+            'CREATE TABLE IF NOT EXISTS desk('
+            'date INTEGER NOT NULL,'
+            'state INTEGER NOT NULL)')
 
     def close(self):
         self.db.close()
