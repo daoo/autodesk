@@ -84,7 +84,7 @@ class TestController(unittest.TestCase):
         limits = (timedelta(minutes=50), timedelta(minutes=10))
         self.controller = Controller(
             self.hardware, limits, self.timer, self.database)
-        self.addCleanup(self.controller.close)
+        self.addCleanup(self.controller.teardown)
 
     def test_init_inactive_and_down(self):
         self.controller.init(self.beginning)

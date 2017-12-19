@@ -57,12 +57,9 @@ def start(args):
         timedelta(minutes=args.limit_up))
     timer = Timer()
     controller = Controller(hardware, limit, timer, database)
-    hardware.init()
     controller.init(datetime.now())
     server(args.server_address, controller)
-    controller.close()
-    hardware.close()
-    database.close()
+    controller.teardown()
 
 
 start(Args(os.environ))
