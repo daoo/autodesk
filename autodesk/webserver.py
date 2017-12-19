@@ -23,7 +23,7 @@ def get_database():
 def get_socket():
     if not hasattr(flask.g, 'socket'):
         flask.g.socket = Socket(PUSH)
-        flask.g.socket.connect(app.config['SERVER_ADDRESS'])
+        flask.g.socket.connect(str.encode(app.config['SERVER_ADDRESS']))
     return flask.g.socket
 
 
