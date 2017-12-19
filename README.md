@@ -65,7 +65,7 @@ desks uses pins 1, 2 and three like this:
 
 ### Software
 
-Check out [](install.sh) for installation steps.
+Check out [install.sh](install.sh) for installation steps.
 
 ### Desktop Software
 
