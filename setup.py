@@ -10,5 +10,5 @@ setup(
     install_requires=['flask', 'RPi.GPIO', 'requests'],
     test_suite='tests',
     scripts=['bin/logger.py'],
-    entry_points={'console_scripts': ['autodesk-timer=timer.timer:main']},
+    entry_points={'console_scripts': ['autodesk-timer=timer.server:main']},
 )

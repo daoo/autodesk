@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from autodesk.desktimer import DeskTimer
 from datetime import datetime, timedelta
 import requests
 import sys
@@ -13,36 +14,9 @@ def update_timer(server):
     requests.get(server + '/api/timer/update')
 
 
-class DeskTimer:
-    def __init__(self, server):
-        self.server = server
-        self.timer = None
-
-    def schedule(self, next_state):
-        (delay, target) = next_state
-        if self.timer:
-            self.timer.cancel()
-        self.timer = threading.Timer(
-            delay.total_seconds(),
-            DeskTimer.run,
-            (self, target))
-        self.timer.start()
-
-    def cancel(self):
-        if self.timer:
-            self.timer.cancel()
-
-    def run(self, target):
-        set_desk(self.server, target)
-
-    def __repr__(self):
-        return 'DeskTimer(server={}, timer={})'.format(
-            self.server,
-            self.timer)
-
-
 def program(server):
-    timer = DeskTimer(server)
+    action = lambda target: set_desk(server, target)
+    timer = DeskTimer(action)
 
     try:
         update_timer(server)
@@ -81,3 +55,6 @@ def main():
         sys.exit(1)
     else:
         program(sys.argv[1])
+
+if __name__ == "__main__":
+    main()
