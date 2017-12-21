@@ -81,11 +81,6 @@ def event_from_row(cursor, values):
     return spans.Event(time, state)
 
 
-def get(db, query):
-    with closing(db.execute(query)) as cursor:
-        return cursor.fetchall()
-
-
 class Database:
     def __init__(self, path):
         self.db = sqlite3.connect(path)
@@ -112,11 +107,15 @@ class Database:
                         (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
 
+    def get(self, query):
+        with closing(self.db.execute(query)) as cursor:
+            return cursor.fetchall()
+
     def get_desk_events(self):
-        return get(self.db, 'SELECT * FROM desk ORDER BY date ASC')
+        return self.get('SELECT * FROM desk ORDER BY date ASC')
 
     def get_session_events(self):
-        return get(self.db, 'SELECT * FROM session ORDER BY date ASC')
+        return self.get('SELECT * FROM session ORDER BY date ASC')
 
     def get_desk_spans(self, initial, final):
         return list(spans.collect(
