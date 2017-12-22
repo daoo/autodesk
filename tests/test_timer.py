@@ -11,10 +11,10 @@ class TestTimer(unittest.TestCase):
         self.timer_path = self.timer_file.name
         self.addCleanup(self.timer_file.close)
 
-    def test_stop(self):
-        Timer(self.timer_path).stop()
+    def test_cancel(self):
+        Timer(self.timer_path).cancel()
         with open(self.timer_path, 'r') as fobj:
-            self.assertEqual(fobj.read(), 'stop\n')
+            self.assertEqual(fobj.read(), 'cancel\n')
 
     def test_schedule_down(self):
         Timer(self.timer_path).schedule(timedelta(seconds=42), Down())

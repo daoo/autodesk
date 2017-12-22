@@ -26,13 +26,13 @@ class Controller:
 
     def update_timer(self, time):
         if not allow_desk_operation(time):
-            self.timer.stop()
+            self.timer.cancel()
             return
 
         beginning = datetime.fromtimestamp(0)
         session_spans = self.database.get_session_spans(beginning, time)
         if not session_spans[-1].data.active():
-            self.timer.stop()
+            self.timer.cancel()
             return
 
         desk_spans = self.database.get_desk_spans(beginning, time)

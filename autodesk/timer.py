@@ -11,6 +11,6 @@ class Timer:
             seconds = int(delay.total_seconds())
             timer_file.write(str(seconds) + ' ' + target.test('0', '1') + '\n')
 
-    def stop(self):
+    def cancel(self):
         with open(self.path, 'w') as timer_file:
-            timer_file.write('stop\n')
+            timer_file.write('cancel\n')

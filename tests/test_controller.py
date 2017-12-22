@@ -87,7 +87,7 @@ class TestController(unittest.TestCase):
 
     def test_update_timer_inactive(self):
         self.controller.update_timer(self.now)
-        self.timer.stop.assert_called_once()
+        self.timer.cancel.assert_called_once()
         self.database.get_desk_spans.assert_not_called()
 
     @patch('autodesk.controller.stats.compute_active_time', autospec=True)
@@ -136,7 +136,7 @@ class TestController(unittest.TestCase):
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
         self.hardware.go.assert_called_with(event.data)
-        self.timer.stop.assert_not_called()
+        self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_called_with(
             timedelta(minutes=10), model.Down())
 
@@ -154,7 +154,7 @@ class TestController(unittest.TestCase):
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
         self.hardware.go.assert_called_with(event.data)
-        self.timer.stop.assert_not_called()
+        self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_called_with(
             timedelta(minutes=50), model.Up())
 
@@ -164,4 +164,4 @@ class TestController(unittest.TestCase):
         self.database.insert_desk_event.assert_not_called()
         self.hardware.go.assert_not_called()
         self.timer.schedule.assert_not_called()
-        self.timer.stop.assert_called_once()
+        self.timer.cancel.assert_called_once()

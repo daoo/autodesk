@@ -28,7 +28,7 @@ def program(server):
     try:
         while True:
             cmd = input()
-            if cmd == 'stop':
+            if cmd == 'cancel':
                 timer.cancel()
                 print('{} stopping timer'.format(datetime.now()))
             else:
@@ -38,7 +38,7 @@ def program(server):
                     target = int(target_str)
                     print('{} next state is {} in {}s'.format(
                         datetime.now(), target, delay))
-                    timer.schedule((delay, target))
+                    timer.schedule(delay, target)
                 except ValueError:
                     sys.stderr.write('Warning: invalid data "{}"\n'.format(cmd))
     except EOFError:

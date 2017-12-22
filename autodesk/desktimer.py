@@ -5,8 +5,7 @@ class DeskTimer:
         self.action = action
         self.timer = None
 
-    def schedule(self, next_state):
-        (delay, target) = next_state
+    def schedule(self, delay, target):
         if self.timer:
             self.timer.cancel()
         self.timer = threading.Timer(
