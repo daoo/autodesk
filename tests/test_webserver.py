@@ -6,30 +6,26 @@ import unittest
 
 class TestWebServer(unittest.TestCase):
     def setUp(self):
-        self.datetime_patcher = patch(
-            'autodesk.webserver.datetime',
-            autospec=True)
-        self.datetime = self.datetime_patcher.start()
-        self.addCleanup(self.datetime_patcher.stop)
-        self.now = self.datetime.now()
+        datetime_patcher = patch(
+            'autodesk.webserver.datetime', autospec=True)
+        datetime = datetime_patcher.start()
+        self.addCleanup(datetime_patcher.stop)
+        self.now = datetime.now()
 
-        self.hardware_patcher = patch(
-            'autodesk.webserver.Hardware',
-            autospec=True)
-        self.hardware = self.hardware_patcher.start()
-        self.addCleanup(self.hardware_patcher.stop)
+        hardware_patcher = patch(
+            'autodesk.webserver.Hardware', autospec=True)
+        hardware = hardware_patcher.start()
+        self.addCleanup(hardware_patcher.stop)
 
-        self.controller_patcher = patch(
-            'autodesk.webserver.Controller',
-            autospec=True)
-        self.controller = self.controller_patcher.start()
-        self.addCleanup(self.controller_patcher.stop)
+        controller_patcher = patch(
+            'autodesk.webserver.Controller', autospec=True)
+        self.controller = controller_patcher.start()
+        self.addCleanup(controller_patcher.stop)
 
-        self.database_patcher = patch(
-            'autodesk.webserver.Database',
-            autospec=True)
-        self.database = self.database_patcher.start()
-        self.addCleanup(self.database_patcher.stop)
+        database_patcher = patch(
+            'autodesk.webserver.Database', autospec=True)
+        self.database = database_patcher.start()
+        self.addCleanup(database_patcher.stop)
 
         from autodesk.webserver import app
         self.app = app.test_client()

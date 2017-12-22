@@ -7,9 +7,9 @@ import unittest
 
 class TestTimer(unittest.TestCase):
     def setUp(self):
-        self.timer_file = tempfile.NamedTemporaryFile()
-        self.timer_path = self.timer_file.name
-        self.addCleanup(self.timer_file.close)
+        timer_file = tempfile.NamedTemporaryFile()
+        self.timer_path = timer_file.name
+        self.addCleanup(timer_file.close)
 
     def test_cancel(self):
         Timer(self.timer_path).cancel()

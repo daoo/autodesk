@@ -7,13 +7,13 @@ import unittest
 
 class TestHardware(unittest.TestCase):
     def setUp(self):
-        self.time_patcher = patch('time.sleep')
-        self.time_sleep = self.time_patcher.start()
-        self.addCleanup(self.time_patcher.stop)
+        time_patcher = patch('time.sleep')
+        self.time_sleep = time_patcher.start()
+        self.addCleanup(time_patcher.stop)
 
-        self.gpio_patcher = patch('autodesk.hardware.GPIO')
-        self.gpio = self.gpio_patcher.start()
-        self.addCleanup(self.gpio_patcher.stop)
+        gpio_patcher = patch('autodesk.hardware.GPIO')
+        self.gpio = gpio_patcher.start()
+        self.addCleanup(gpio_patcher.stop)
 
         self.hardware = Hardware(5, (0, 1), 2)
 
