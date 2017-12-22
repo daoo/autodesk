@@ -1,42 +1,19 @@
 from autodesk.model import Down, Up, Inactive, Active
 from autodesk.spans import Span
-from autodesk.timer import Communicator, Timer
+from autodesk.timer import Timer
 from datetime import datetime, timedelta
 from unittest.mock import patch
-import tempfile
 import unittest
-
-
-class TestCommunicator(unittest.TestCase):
-    def setUp(self):
-        timer_file = tempfile.NamedTemporaryFile()
-        self.timer_path = timer_file.name
-        self.addCleanup(timer_file.close)
-
-    def test_communicator_cancel(self):
-        Communicator(self.timer_path).cancel()
-        with open(self.timer_path, 'r') as fobj:
-            self.assertEqual(fobj.read(), 'cancel\n')
-
-    def test_communicator_schedule_down(self):
-        Communicator(self.timer_path).schedule(timedelta(seconds=42), Down())
-        with open(self.timer_path, 'r') as fobj:
-            self.assertEqual(fobj.read(), '42 0\n')
-
-    def test_communicator_schedule_up(self):
-        Communicator(self.timer_path).schedule(timedelta(seconds=42), Up())
-        with open(self.timer_path, 'r') as fobj:
-            self.assertEqual(fobj.read(), '42 1\n')
 
 
 class TestTimer(unittest.TestCase):
     def setUp(self):
         limits = (timedelta(minutes=50), timedelta(minutes=10))
 
-        communicator_patcher = patch(
-            'autodesk.timer.Communicator', autospec=True)
-        self.communicator = communicator_patcher.start()
-        self.addCleanup(communicator_patcher.stop)
+        factory_patcher = patch(
+            'autodesk.timer.TimerFactory', autospec=True)
+        self.factory = factory_patcher.start()
+        self.addCleanup(factory_patcher.stop)
 
         database_patcher = patch(
             'autodesk.model.Database', autospec=True)
@@ -52,11 +29,11 @@ class TestTimer(unittest.TestCase):
             Span(self.beginning, self.now, Inactive())
         ]
 
-        self.timer = Timer(limits, self.communicator, self.database)
+        self.timer = Timer(limits, self.database, self.factory)
 
     def test_timer_update_inactive(self):
         self.timer.update(self.now)
-        self.communicator.cancel.assert_called_once()
+        self.factory.start.assert_not_called()
         self.database.get_desk_spans.assert_not_called()
 
     def test_timer_update_active(self):
@@ -65,8 +42,7 @@ class TestTimer(unittest.TestCase):
             Span(self.now, self.now, Active()),
         ]
         self.timer.update(self.now)
-        self.communicator.schedule.assert_called_with(timedelta(minutes=50),
-                                                      Up())
+        self.factory.start.assert_called_with(timedelta(minutes=50), Up())
 
     def test_timer_update_active_with_duration(self):
         later = self.now + timedelta(minutes=10)
@@ -78,5 +54,4 @@ class TestTimer(unittest.TestCase):
             Span(self.beginning, later, Down())
         ]
         self.timer.update(self.now)
-        self.communicator.schedule.assert_called_with(timedelta(minutes=40),
-                                                      Up())
+        self.factory.start.assert_called_with(timedelta(minutes=40), Up())

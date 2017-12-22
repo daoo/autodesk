@@ -4,30 +4,14 @@ Automatic standing desk control using a Raspberry Pi.
 
 ## Design
 
-The software consists of three components:
-
-  * Session logger
-  * Web server
-  * Timer server
-
-The web and timer servers run on the Pi and the session logger runs on the
-workstation.
+The software is built around a server `autodesk.server`. It runs on the Pi and
+controls the desk motors via GPIO, maintains the current desk and session state
+in a sqlite database, and also runs a timer that changes the desk state based
+on the current active time.
 
 The session logger monitors DBus and notifies the web server over HTTP (wrap it
 with SSH for security) of session activation and inactivation (lock/unlock)
 events.
-
-The web server maintains a database (SQLite) of desk (up/down) and session
-(active/inactive) events. Every time an event occurs, the active time is
-computed for the current desk state (that is how long have I been sitting or
-standing). This time is compared against a fixed limit and the timer server is
-notified about when the desk state should be changed next. The web server also
-provides an API for manually forcing the desk to a desired state.
-
-The timer server is communicated to over a named pipe with a dumb text
-protocol. It maintains a timer (fixed delay) and what the next state should be.
-The timer can be stopped and updated (shorter/longer delay or different next
-state).
 
 ## Usage
 
@@ -63,15 +47,21 @@ desks uses pins 1, 2 and three like this:
 
 ![7-pin DIN jack with numbers](docs/7-pin-din.png)
 
-### Software
+### Server Software
 
 Check out [install.sh](install.sh) for installation steps.
 
-### Desktop Software
+### Workstation Software
 
-Run the `logger.py` script to listen for lock/unlock events via DBus.
+On Linux, run the `logger.py` script to listen for lock/unlock events via DBus.
 
-    logger.py https://autodesk/api/session
+    logger.py http://autodesk/api/session
+
+On Windows, use the task scheduler to setup tasks that sets the session state
+with curl and the HTTP API:
+
+    curl -X PUT -d "0" http://autodesk/api/session
+    curl -X PUT -d "1" http://autodesk/api/session
 
 ## TODO
 

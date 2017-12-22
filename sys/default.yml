@@ -1,0 +1,13 @@
+desk:
+  delay: 15
+  limits:
+    down: 3000
+    up: 600
+  motor_pins:
+    down: 15
+    up: 13
+  light_pin: 16
+server:
+  database_path: "/var/local/autodesk/autodesk.db"
+  address: "localhost"
+  port: 8080

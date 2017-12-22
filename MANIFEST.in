@@ -1,2 +1,2 @@
-recursive-include autodesk/templates *
-recursive-include autodesk/static *
+recursive-include srv/templates *
+recursive-include srv/static *
