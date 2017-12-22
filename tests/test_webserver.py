@@ -1,23 +1,23 @@
 from autodesk.spans import Span
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import autodesk.model as model
 import unittest
 
 
 class TestWebServer(unittest.TestCase):
     def setUp(self):
-        # Importing hardware imports RPi which fails on non-raspberry
-        # computers, mocking out hardware fixes the issue.
-        import sys
-        sys.modules['autodesk.hardware'] = MagicMock()
-        self.addCleanup(sys.modules.pop, 'autodesk.hardware')
-
         self.datetime_patcher = patch(
             'autodesk.webserver.datetime',
             autospec=True)
         self.datetime = self.datetime_patcher.start()
         self.addCleanup(self.datetime_patcher.stop)
         self.now = self.datetime.now()
+
+        self.hardware_patcher = patch(
+            'autodesk.webserver.Hardware',
+            autospec=True)
+        self.hardware = self.hardware_patcher.start()
+        self.addCleanup(self.hardware_patcher.stop)
 
         self.controller_patcher = patch(
             'autodesk.webserver.Controller',
