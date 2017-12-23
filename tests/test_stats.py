@@ -6,7 +6,7 @@ import autodesk.stats as stats
 import unittest
 
 class TestStats(unittest.TestCase):
-    def test_compute_daily_active_time_sum(self):
+    def test_stats_compute_daily_active_time_sum(self):
         spans = [Span(
             datetime(2017, 4, 12, 10, 0, 0),
             datetime(2017, 4, 12, 10, 30, 0),
@@ -17,7 +17,7 @@ class TestStats(unittest.TestCase):
             30
         )
 
-    def test_group_into_days_identity(self):
+    def test_stats_group_into_days_identity(self):
         spans = [Span(
             datetime(2017, 4, 12, 10, 0, 0),
             datetime(2017, 4, 12, 10, 30, 0),
@@ -30,10 +30,10 @@ class TestStats(unittest.TestCase):
             daily_active_time
         )
 
-    def test_compute_active_time_empty(self):
+    def test_stats_compute_active_time_empty(self):
         self.assertRaises(IndexError, stats.compute_active_time, [], [])
 
-    def test_compute_active_time_inactive(self):
+    def test_stats_compute_active_time_inactive(self):
         desk_span = Span(
             datetime.fromtimestamp(0),
             datetime.fromtimestamp(1000),
@@ -47,7 +47,7 @@ class TestStats(unittest.TestCase):
             timedelta(0)
         )
 
-    def test_compute_active_time_active(self):
+    def test_stats_compute_active_time_active(self):
         desk_span = Span(
             datetime.fromtimestamp(0),
             datetime.fromtimestamp(1000),

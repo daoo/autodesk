@@ -43,7 +43,7 @@ class TestWebServer(unittest.TestCase):
         self.assertTrue(b'12:34:56' in rv.data)
 
     @patch('autodesk.webserver.stats.compute_daily_active_time', autospec=True)
-    def test_webserver_get_session(self, compute_daily_active_time):
+    def test_webserver_get_sessions(self, compute_daily_active_time):
         compute_daily_active_time.return_value = [0]
         rv = self.app.get('/api/sessions.json')
         self.assertEqual(200, rv.status_code)

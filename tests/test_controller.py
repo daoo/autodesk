@@ -1,4 +1,4 @@
-from autodesk.controller import Controller, allow_desk_operation
+from autodesk.controller import Controller, Operation
 from autodesk.spans import Event
 from datetime import date, datetime, time
 from unittest.mock import MagicMock, patch
@@ -7,7 +7,7 @@ import unittest
 
 
 class TestOperation(unittest.TestCase):
-    def test_allow_operation_workday(self):
+    def test_operation_allow_workday(self):
         monday = date(2017, 2, 13)
         tuesday = date(2017, 2, 14)
         wednesday = date(2017, 2, 15)
@@ -15,50 +15,50 @@ class TestOperation(unittest.TestCase):
         friday = date(2017, 2, 17)
         stroke = time(12, 0, 0)
         self.assertTrue(
-            allow_desk_operation(datetime.combine(monday, stroke)))
+            Operation.allow(datetime.combine(monday, stroke)))
         self.assertTrue(
-            allow_desk_operation(datetime.combine(tuesday, stroke)))
+            Operation.allow(datetime.combine(tuesday, stroke)))
         self.assertTrue(
-            allow_desk_operation(datetime.combine(wednesday, stroke)))
+            Operation.allow(datetime.combine(wednesday, stroke)))
         self.assertTrue(
-            allow_desk_operation(datetime.combine(thursday, stroke)))
+            Operation.allow(datetime.combine(thursday, stroke)))
         self.assertTrue(
-            allow_desk_operation(datetime.combine(friday, stroke)))
+            Operation.allow(datetime.combine(friday, stroke)))
 
-    def test_disallow_operation_night_time(self):
+    def test_operation_disallow_night_time(self):
         workday = datetime(2017, 2, 13)
         self.assertFalse(
-            allow_desk_operation(datetime.combine(workday, time(7, 59, 0))))
+            Operation.allow(datetime.combine(workday, time(7, 59, 0))))
         self.assertFalse(
-            allow_desk_operation(datetime.combine(workday, time(18, 1, 0))))
+            Operation.allow(datetime.combine(workday, time(18, 1, 0))))
         self.assertFalse(
-            allow_desk_operation(datetime.combine(workday, time(23, 0, 0))))
+            Operation.allow(datetime.combine(workday, time(23, 0, 0))))
         self.assertFalse(
-            allow_desk_operation(datetime.combine(workday, time(3, 0, 0))))
+            Operation.allow(datetime.combine(workday, time(3, 0, 0))))
         self.assertFalse(
-            allow_desk_operation(datetime.combine(workday, time(6, 0, 0))))
+            Operation.allow(datetime.combine(workday, time(6, 0, 0))))
 
-    def test_disallow_operation_weekend(self):
+    def test_operation_disallow_weekend(self):
         saturday = date(2017, 2, 18)
         sunday = date(2017, 2, 19)
         stroke = time(12, 0, 0)
         self.assertFalse(
-            allow_desk_operation(datetime.combine(saturday, stroke)))
+            Operation.allow(datetime.combine(saturday, stroke)))
         self.assertFalse(
-            allow_desk_operation(datetime.combine(sunday, stroke)))
+            Operation.allow(datetime.combine(sunday, stroke)))
 
 
 class TestController(unittest.TestCase):
     def setUp(self):
-        self.database_patcher = patch(
+        database_patcher = patch(
             'autodesk.model.Database', autospec=True)
-        self.database = self.database_patcher.start()
-        self.addCleanup(self.database_patcher.stop)
+        self.database = database_patcher.start()
+        self.addCleanup(database_patcher.stop)
 
-        self.hardware_patcher = patch(
+        hardware_patcher = patch(
             'autodesk.hardware.Hardware', autospec=True)
-        self.hardware = self.hardware_patcher.start()
-        self.addCleanup(self.hardware_patcher.stop)
+        self.hardware = hardware_patcher.start()
+        self.addCleanup(hardware_patcher.stop)
 
         self.controller = Controller(self.hardware, self.database)
         self.observer = MagicMock()
