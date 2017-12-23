@@ -1,7 +1,7 @@
 from autodesk.controller import Controller, allow_desk_operation
-from autodesk.spans import Event, Span
-from datetime import date, datetime, time, timedelta
-from unittest.mock import patch
+from autodesk.spans import Event
+from datetime import date, datetime, time
+from unittest.mock import MagicMock, patch
 import autodesk.model as model
 import unittest
 
@@ -55,106 +55,48 @@ class TestController(unittest.TestCase):
         self.database = self.database_patcher.start()
         self.addCleanup(self.database_patcher.stop)
 
-        self.timer_patcher = patch(
-            'autodesk.timer.Timer', autospec=True)
-        self.timer = self.timer_patcher.start()
-        self.addCleanup(self.timer_patcher.stop)
-
         self.hardware_patcher = patch(
             'autodesk.hardware.Hardware', autospec=True)
         self.hardware = self.hardware_patcher.start()
         self.addCleanup(self.hardware_patcher.stop)
 
-        self.beginning = datetime.fromtimestamp(0)
-        self.now = datetime(2017, 4, 14, 10, 0, 0)
-        self.database.get_desk_spans.return_value = [
-            Span(self.beginning, self.now, model.Down())
-        ]
-        self.database.get_session_spans.return_value = [
-            Span(self.beginning, self.now, model.Inactive())
-        ]
+        self.controller = Controller(self.hardware, self.database)
+        self.observer = MagicMock()
+        self.controller.add_observer(self.observer)
 
-        limits = (timedelta(minutes=50), timedelta(minutes=10))
-        self.controller = Controller(
-            self.hardware, limits, self.timer, self.database)
-
-    def test_update_timer_inactive(self):
-        self.controller.update_timer(self.now)
-        self.timer.cancel.assert_called_once()
-        self.database.get_desk_spans.assert_not_called()
-
-    @patch('autodesk.controller.stats.compute_active_time', autospec=True)
-    def test_update_timer_active(self, compute_active_time):
-        compute_active_time.return_value = timedelta(0)
-        self.database.get_session_spans.return_value = [
-            Span(self.beginning, self.now, model.Active())
-        ]
-        self.controller.update_timer(self.now)
-        self.timer.schedule.assert_called_with(
-            timedelta(minutes=50), model.Up())
-
-    @patch('autodesk.controller.stats.compute_active_time', autospec=True)
-    def test_update_timer_active_duration(self, compute_active_time):
-        compute_active_time.return_value = timedelta(minutes=10)
-        self.database.get_session_spans.return_value = [
-            Span(self.beginning, self.now, model.Active())
-        ]
-        self.controller.update_timer(self.now)
-        self.timer.schedule.assert_called_with(
-            timedelta(minutes=40), model.Up())
-
-    def test_set_session_active(self):
+    def test_controller_set_session_active(self):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Active())
         self.controller.set_session(event.index, event.data)
         self.database.insert_session_event.assert_called_with(event)
         self.hardware.light.assert_called_with(event.data)
+        self.observer.session_changed.assert_called_with(event.index,
+                                                         event.data)
 
-    def test_set_session_inactive(self):
+    def test_controller_set_session_inactive(self):
         event = Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
         self.controller.set_session(event.index, event.data)
         self.database.insert_session_event.assert_called_with(event)
         self.hardware.light.assert_called_with(event.data)
+        self.observer.session_changed.assert_called_with(event.index,
+                                                         event.data)
 
-    @patch('autodesk.controller.stats.compute_active_time', autospec=True)
-    def test_set_desk_up(self, compute_active_time):
-        compute_active_time.return_value = timedelta(0)
-        self.database.get_session_spans.return_value = [
-            Span(self.beginning, self.now, model.Active())
-        ]
-        self.database.get_desk_spans.return_value = [
-            Span(self.beginning, self.now, model.Up())
-        ]
+    def test_controller_set_desk_up(self):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Up())
-
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
         self.hardware.go.assert_called_with(event.data)
-        self.timer.cancel.assert_not_called()
-        self.timer.schedule.assert_called_with(
-            timedelta(minutes=10), model.Down())
+        self.observer.desk_changed.assert_called_with(event.index, event.data)
 
-    @patch('autodesk.controller.stats.compute_active_time', autospec=True)
-    def test_set_desk_down(self, compute_active_time):
-        compute_active_time.return_value = timedelta(0)
-        self.database.get_session_spans.return_value = [
-            Span(self.beginning, self.now, model.Active())
-        ]
-        self.database.get_desk_spans.return_value = [
-            Span(self.beginning, self.now, model.Down())
-        ]
+    def test_controller_set_desk_down(self):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
-
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_called_with(event)
         self.hardware.go.assert_called_with(event.data)
-        self.timer.cancel.assert_not_called()
-        self.timer.schedule.assert_called_with(
-            timedelta(minutes=50), model.Up())
+        self.observer.desk_changed.assert_called_with(event.index, event.data)
 
-    def test_set_desk_disallow(self):
+    def test_controller_set_desk_disallow(self):
         event = Event(datetime(2017, 2, 13, 7, 0, 0), model.Down())
         self.controller.set_desk(event.index, event.data)
         self.database.insert_desk_event.assert_not_called()
         self.hardware.go.assert_not_called()
-        self.timer.schedule.assert_not_called()
-        self.timer.cancel.assert_called_once()
+        self.observer.desk_change_disallowed.assert_called_with(event.index)

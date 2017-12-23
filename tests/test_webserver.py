@@ -17,6 +17,11 @@ class TestWebServer(unittest.TestCase):
         hardware = hardware_patcher.start()
         self.addCleanup(hardware_patcher.stop)
 
+        timer_patcher = patch(
+            'autodesk.webserver.Timer', autospec=True)
+        self.timer = timer_patcher.start()
+        self.addCleanup(timer_patcher.stop)
+
         controller_patcher = patch(
             'autodesk.webserver.Controller', autospec=True)
         self.controller = controller_patcher.start()
@@ -97,5 +102,5 @@ class TestWebServer(unittest.TestCase):
 
     def test_webserver_update_timer(self):
         rv = self.app.get('/api/timer/update')
-        self.controller.return_value.update_timer.assert_called_with(self.now)
+        self.timer.return_value.update.assert_called_with(self.now)
         self.assertEqual(200, rv.status_code)

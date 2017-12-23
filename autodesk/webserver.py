@@ -38,15 +38,20 @@ def get_hardware():
     return flask.g.hardware
 
 
+def get_timer():
+    if not hasattr(flask.g, 'timer'):
+        limits = (
+            timedelta(minutes=app.config['LIMIT_DOWN']),
+            timedelta(minutes=app.config['LIMIT_UP']))
+        flask.g.timer = Timer(app.config['TIMER_PATH'], limits, get_database())
+    return flask.g.timer
+
+
 def get_controller():
-    limit = (
-        timedelta(minutes=app.config['LIMIT_DOWN']),
-        timedelta(minutes=app.config['LIMIT_UP']))
-    return Controller(
-        get_hardware(),
-        limit,
-        Timer(app.config['TIMER_PATH']),
-        get_database())
+    if not hasattr(flask.g, 'controller'):
+        flask.g.controller = Controller(get_hardware(), get_database())
+        flask.g.controller.add_observer(get_timer())
+    return flask.g.controller
 
 
 @app.teardown_appcontext
@@ -92,7 +97,7 @@ def route_api_desk():
 
 @app.route('/api/timer/update')
 def route_api_timer_update():
-    get_controller().update_timer(datetime.now())
+    get_timer().update(datetime.now())
     return ''
 
 

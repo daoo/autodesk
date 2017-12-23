@@ -1,6 +1,5 @@
 from autodesk.spans import Event
-from datetime import datetime, time, timedelta
-import autodesk.stats as stats
+from datetime import time
 
 DESK_OPERATION_ALLOWANCE_START = time(8, 0, 0)
 DESK_OPERATION_ALLOWANCE_END = time(18, 0, 0)
@@ -18,41 +17,28 @@ def allow_desk_operation(at):
 
 
 class Controller:
-    def __init__(self, hardware, limits, timer, database):
+    def __init__(self, hardware, database):
         self.hardware = hardware
-        self.limits = limits
-        self.timer = timer
         self.database = database
+        self.observers = []
 
-    def update_timer(self, time):
-        if not allow_desk_operation(time):
-            self.timer.cancel()
-            return
-
-        beginning = datetime.fromtimestamp(0)
-        session_spans = self.database.get_session_spans(beginning, time)
-        if not session_spans[-1].data.active():
-            self.timer.cancel()
-            return
-
-        desk_spans = self.database.get_desk_spans(beginning, time)
-        desk = desk_spans[-1].data
-        active_time = stats.compute_active_time(session_spans, desk_spans)
-        limit = desk.test(*self.limits)
-        delay = max(timedelta(0), limit - active_time)
-        self.timer.schedule(delay, desk.next())
+    def add_observer(self, observer):
+        self.observers.append(observer)
 
     def set_session(self, time, state):
         self.database.insert_session_event(Event(time, state))
         self.hardware.light(state)
-        self.update_timer(time)
+        for observer in self.observers:
+            observer.session_changed(time, state)
 
     def set_desk(self, time, state):
         if not allow_desk_operation(time):
-            self.update_timer(time)
+            for observer in self.observers:
+                observer.desk_change_disallowed(time)
             return False
 
         self.hardware.go(state)
         self.database.insert_desk_event(Event(time, state))
-        self.update_timer(time)
+        for observer in self.observers:
+            observer.desk_changed(time, state)
         return True
