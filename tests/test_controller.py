@@ -1,7 +1,7 @@
 from autodesk.controller import Controller, allow_desk_operation
 from autodesk.spans import Event, Span
 from datetime import date, datetime, time, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import autodesk.model as model
 import unittest
 
@@ -52,23 +52,16 @@ class TestController(unittest.TestCase):
     def setUp(self):
         self.database_patcher = patch(
             'autodesk.model.Database', autospec=True)
-        self.timer_patcher = patch(
-            'autodesk.timer.Timer', autospec=True)
-        self.hardware_patcher = patch(
-            'autodesk.hardware.Hardware', autospec=True)
-
-        # Starting the patch will import hardware and thus try to import the
-        # RPi modules which fails on non raspberry computers.
-        import sys
-        sys.modules['RPi'] = MagicMock()
-        self.addCleanup(sys.modules.pop, 'RPi')
-        sys.modules['RPi.GPIO'] = MagicMock()
-        self.addCleanup(sys.modules.pop, 'RPi.GPIO')
-
         self.database = self.database_patcher.start()
         self.addCleanup(self.database_patcher.stop)
+
+        self.timer_patcher = patch(
+            'autodesk.timer.Timer', autospec=True)
         self.timer = self.timer_patcher.start()
         self.addCleanup(self.timer_patcher.stop)
+
+        self.hardware_patcher = patch(
+            'autodesk.hardware.Hardware', autospec=True)
         self.hardware = self.hardware_patcher.start()
         self.addCleanup(self.hardware_patcher.stop)
 
