@@ -30,6 +30,7 @@ class Timer:
         self.update(time)
 
     def desk_change_disallowed(self, time):
+        # TODO: Calculate and schedule next allowed time
         self.communicator.cancel()
 
     def update(self, time):
