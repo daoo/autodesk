@@ -59,21 +59,23 @@ class TestTimer(unittest.TestCase):
         self.communicator.cancel.assert_called_once()
         self.database.get_desk_spans.assert_not_called()
 
-    @patch('autodesk.timer.stats.compute_active_time', autospec=True)
-    def test_timer_update_active(self, compute_active_time):
-        compute_active_time.return_value = timedelta(0)
+    def test_timer_update_active(self):
         self.database.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Active())
+            Span(self.beginning, self.now, Inactive()),
+            Span(self.now, self.now, Active()),
         ]
         self.timer.update(self.now)
         self.communicator.schedule.assert_called_with(timedelta(minutes=50),
                                                       Up())
 
-    @patch('autodesk.timer.stats.compute_active_time', autospec=True)
-    def test_timer_update_active_with_duration(self, compute_active_time):
-        compute_active_time.return_value = timedelta(minutes=10)
+    def test_timer_update_active_with_duration(self):
+        later = self.now + timedelta(minutes=10)
         self.database.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Active())
+            Span(self.beginning, self.now, Inactive()),
+            Span(self.now, later, Active()),
+        ]
+        self.database.get_desk_spans.return_value = [
+            Span(self.beginning, later, Down())
         ]
         self.timer.update(self.now)
         self.communicator.schedule.assert_called_with(timedelta(minutes=40),
