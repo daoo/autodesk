@@ -43,10 +43,7 @@ class TestFactoryMethods(unittest.TestCase):
 
 class TestDatabase(unittest.TestCase):
     def setUp(self):
-        self.database_file = tempfile.NamedTemporaryFile()
-        self.database = Database(self.database_file.name)
-        self.addCleanup(self.database.close)
-        self.addCleanup(self.database_file.close)
+        self.database = Database(':memory:')
 
     def test_database_empty_events(self):
         self.assertEqual(self.database.get_desk_events(), [])
