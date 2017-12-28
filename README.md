@@ -2,6 +2,8 @@
 
 Automatic standing desk control using a Raspberry Pi.
 
+[![Build Status](https://travis-ci.org/daoo/autodesk.svg?branch=master)](https://travis-ci.org/daoo/autodesk)
+
 ## Design
 
 The software is built around a server `autodesk.server`. It runs on the Pi and
