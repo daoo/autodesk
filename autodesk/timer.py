@@ -31,16 +31,6 @@ class Timer:
         self.factory = factory
         self.timer = None
 
-    def session_changed(self, time, state):
-        self.update(time)
-
-    def desk_changed(self, time, state):
-        self.update(time)
-
-    def desk_change_disallowed(self, time):
-        # TODO: Calculate and schedule next allowed time
-        self.cancel()
-
     def update(self, time):
         beginning = datetime.fromtimestamp(0)
         session_spans = self.model.get_session_spans(beginning, time)

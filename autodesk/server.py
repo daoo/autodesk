@@ -1,7 +1,7 @@
 from aiohttp import web
-from autodesk.controller import Controller
 from autodesk.hardware import Hardware
-from autodesk.model import Model, desk_from_int, session_from_int
+from autodesk.model import Model, Operation, desk_from_int, session_from_int
+from autodesk.spans import Event
 from autodesk.timer import Timer, TimerFactory
 from datetime import datetime, timedelta
 import aiohttp_jinja2
@@ -15,7 +15,7 @@ import yaml
 async def route_set_session(request):
     body = await request.text()
     state = session_from_int(int(body))
-    request.app['controller'].set_session(datetime.now(), state)
+    request.app['model'].set_session(Event(datetime.now(), state))
     return web.Response()
 
 
@@ -28,7 +28,7 @@ async def route_get_session(request):
 async def route_set_desk(request):
     body = await request.text()
     state = desk_from_int(int(body))
-    ok = request.app['controller'].set_desk(datetime.now(), state)
+    ok = request.app['model'].set_desk(Event(datetime.now(), state))
     return web.Response(status=200 if ok else 403)
 
 
@@ -102,11 +102,10 @@ def cleanup(app):
     app['timer'].cancel()
 
 
-def setup_app(hardware, model, controller, timer):
+def setup_app(hardware, model, timer):
     app = web.Application()
     app['hardware'] = hardware
     app['model'] = model
-    app['controller'] = controller
     app['timer'] = timer
 
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('srv/templates'))
@@ -125,6 +124,24 @@ def setup_app(hardware, model, controller, timer):
     return app
 
 
+class Observer:
+    def __init__(self, timer, hardware):
+        self.timer = timer
+        self.hardware = hardware
+
+    def session_changed(self, event):
+        self.hardware.light(event.data)
+        self.timer.update(event.index)
+
+    def desk_changed(self, event):
+        self.hardware.go(event.data)
+        self.timer.update(event.index)
+
+    def desk_change_disallowed(self, event):
+        # TODO: Calculate and schedule next allowed time
+        self.timer.cancel()
+
+
 def main(config):
     limit_down = timedelta(seconds=config['desk']['limits']['down'])
     limit_up = timedelta(seconds=config['desk']['limits']['up'])
@@ -134,16 +151,15 @@ def main(config):
 
     hardware = Hardware(config['desk']['delay'], motor_pins,
                         config['desk']['light_pin'])
-    model = Model(config['server']['database_path'])
-    controller = Controller(hardware, model)
+    model = Model(config['server']['database_path'], Operation())
 
     async def action(target):
-        controller.set_desk(datetime.now(), target)
+        model.set_desk(Event(datetime.now(), target))
     timer = Timer(limits, model, TimerFactory(action))
 
-    controller.add_observer(timer)
+    model.add_observer(Observer(timer, hardware))
 
-    return setup_app(hardware, model, controller, timer)
+    return setup_app(hardware, model, timer)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 from contextlib import closing
-from datetime import datetime, timedelta
+from datetime import datetime, time
 import autodesk.spans as spans
 import sqlite3
 
@@ -81,8 +81,26 @@ def event_from_row(cursor, values):
     return spans.Event(time, state)
 
 
+class Operation:
+    def __init__(self):
+        self.allowance_start = time(8, 0, 0)
+        self.allowance_end = time(18, 0, 0)
+
+    def allow(self, at):
+        monday = 0
+        friday = 4
+        time_at = time(at.hour, at.minute, at.second)
+        weekday = at.weekday()
+        return \
+            time_at >= self.allowance_start and \
+            time_at <= self.allowance_end and \
+            weekday >= monday and weekday <= friday
+
+
 class Model:
-    def __init__(self, path):
+    def __init__(self, path, operation):
+        self.observers = []
+        self.operation = operation
         self.db = sqlite3.connect(path)
         self.db.row_factory = event_from_row
         self.db.execute(
@@ -94,28 +112,41 @@ class Model:
             'date INTEGER NOT NULL,'
             'state INTEGER NOT NULL)')
 
+    def add_observer(self, observer):
+        self.observers.append(observer)
+
     def close(self):
         self.db.close()
 
-    def insert_desk_event(self, event):
+    def set_desk(self, event):
+        if not self.operation.allow(event.index):
+            for observer in self.observers:
+                observer.desk_change_disallowed(event)
+            return False
+
         self.db.execute('INSERT INTO desk values(?, ?)',
                         (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
+        for observer in self.observers:
+            observer.desk_changed(event)
+        return True
 
-    def insert_session_event(self, event):
+    def set_session(self, event):
         self.db.execute('INSERT INTO session values(?, ?)',
                         (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
+        for observer in self.observers:
+            observer.session_changed(event)
 
-    def get(self, query):
+    def _get(self, query):
         with closing(self.db.execute(query)) as cursor:
             return cursor.fetchall()
 
     def get_desk_events(self):
-        return self.get('SELECT * FROM desk ORDER BY date ASC')
+        return self._get('SELECT * FROM desk ORDER BY date ASC')
 
     def get_session_events(self):
-        return self.get('SELECT * FROM session ORDER BY date ASC')
+        return self._get('SELECT * FROM session ORDER BY date ASC')
 
     def get_desk_spans(self, initial, final):
         return list(spans.collect(
