@@ -81,7 +81,7 @@ def event_from_row(cursor, values):
     return spans.Event(time, state)
 
 
-class Database:
+class Model:
     def __init__(self, path):
         self.db = sqlite3.connect(path)
         self.db.row_factory = event_from_row

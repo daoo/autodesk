@@ -1,4 +1,4 @@
-from autodesk.model import Database, Up, Down, Active, Inactive
+from autodesk.model import Model, Up, Down, Active, Inactive
 from autodesk.spans import Event, Span
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock
@@ -41,49 +41,49 @@ class TestFactoryMethods(unittest.TestCase):
         self.assertRaises(ValueError, model.event_from_row, cursor, values)
 
 
-class TestDatabase(unittest.TestCase):
+class TestModel(unittest.TestCase):
     def setUp(self):
-        self.database = Database(':memory:')
-        self.addCleanup(self.database.close)
+        self.model = Model(':memory:')
+        self.addCleanup(self.model.close)
 
-    def test_database_empty_events(self):
-        self.assertEqual(self.database.get_desk_events(), [])
-        self.assertEqual(self.database.get_session_events(), [])
+    def test_model_empty_events(self):
+        self.assertEqual(self.model.get_desk_events(), [])
+        self.assertEqual(self.model.get_session_events(), [])
 
-    def test_database_empty_spans(self):
+    def test_model_empty_spans(self):
         a = datetime.fromtimestamp(0)
         b = datetime.fromtimestamp(1)
         self.assertEqual(
-            list(self.database.get_desk_spans(a, b)),
+            list(self.model.get_desk_spans(a, b)),
             [Span(a, b, Down())]
         )
         self.assertEqual(
-            list(self.database.get_session_spans(a, b)),
+            list(self.model.get_session_spans(a, b)),
             [Span(a, b, Inactive())]
         )
 
-    def test_database_insert_desk(self):
+    def test_model_insert_desk(self):
         a = datetime(2017, 1, 1)
         b = datetime(2017, 1, 2)
         c = datetime(2017, 1, 3)
 
         event = Event(b, Up())
-        self.database.insert_desk_event(event)
-        events = self.database.get_desk_events()
+        self.model.insert_desk_event(event)
+        events = self.model.get_desk_events()
         self.assertEqual(events, [event])
 
-        spans = list(self.database.get_desk_spans(a, c))
+        spans = list(self.model.get_desk_spans(a, c))
         self.assertEqual(spans, [Span(a, b, Down()), Span(b, c, Up())])
 
-    def test_database_insert_session(self):
+    def test_model_insert_session(self):
         a = datetime(2017, 1, 1)
         b = datetime(2017, 1, 2)
         c = datetime(2017, 1, 3)
 
         event = Event(b, Active())
-        self.database.insert_session_event(event)
-        events = self.database.get_session_events()
+        self.model.insert_session_event(event)
+        events = self.model.get_session_events()
         self.assertEqual(events, [event])
 
-        spans = list(self.database.get_session_spans(a, c))
+        spans = list(self.model.get_session_spans(a, c))
         self.assertEqual(spans, [Span(a, b, Inactive()), Span(b, c, Active())])

@@ -25,9 +25,9 @@ class TimerFactory:
 
 
 class Timer:
-    def __init__(self, limits, database, factory):
+    def __init__(self, limits, model, factory):
         self.limits = limits
-        self.database = database
+        self.model = model
         self.factory = factory
         self.timer = None
 
@@ -43,12 +43,12 @@ class Timer:
 
     def update(self, time):
         beginning = datetime.fromtimestamp(0)
-        session_spans = self.database.get_session_spans(beginning, time)
+        session_spans = self.model.get_session_spans(beginning, time)
         if not session_spans[-1].data.active():
             self.cancel()
             return
 
-        desk_spans = self.database.get_desk_spans(beginning, time)
+        desk_spans = self.model.get_desk_spans(beginning, time)
         desk = desk_spans[-1].data
         active_time = stats.compute_active_time(session_spans, desk_spans)
         limit = desk.test(*self.limits)

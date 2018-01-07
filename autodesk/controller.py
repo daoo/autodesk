@@ -19,16 +19,16 @@ class Operation:
 
 
 class Controller:
-    def __init__(self, hardware, database):
+    def __init__(self, hardware, model):
         self.hardware = hardware
-        self.database = database
+        self.model = model
         self.observers = []
 
     def add_observer(self, observer):
         self.observers.append(observer)
 
     def set_session(self, time, state):
-        self.database.insert_session_event(Event(time, state))
+        self.model.insert_session_event(Event(time, state))
         self.hardware.light(state)
         for observer in self.observers:
             observer.session_changed(time, state)
@@ -40,7 +40,7 @@ class Controller:
             return False
 
         self.hardware.go(state)
-        self.database.insert_desk_event(Event(time, state))
+        self.model.insert_desk_event(Event(time, state))
         for observer in self.observers:
             observer.desk_changed(time, state)
         return True

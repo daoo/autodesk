@@ -15,29 +15,29 @@ class TestTimer(unittest.TestCase):
         self.factory = factory_patcher.start()
         self.addCleanup(factory_patcher.stop)
 
-        database_patcher = patch(
-            'autodesk.model.Database', autospec=True)
-        self.database = database_patcher.start()
-        self.addCleanup(database_patcher.stop)
+        model_patcher = patch(
+            'autodesk.model.Model', autospec=True)
+        self.model = model_patcher.start()
+        self.addCleanup(model_patcher.stop)
 
         self.beginning = datetime.fromtimestamp(0)
         self.now = datetime(2017, 4, 14, 10, 0, 0)
-        self.database.get_desk_spans.return_value = [
+        self.model.get_desk_spans.return_value = [
             Span(self.beginning, self.now, Down())
         ]
-        self.database.get_session_spans.return_value = [
+        self.model.get_session_spans.return_value = [
             Span(self.beginning, self.now, Inactive())
         ]
 
-        self.timer = Timer(limits, self.database, self.factory)
+        self.timer = Timer(limits, self.model, self.factory)
 
     def test_timer_update_inactive(self):
         self.timer.update(self.now)
         self.factory.start.assert_not_called()
-        self.database.get_desk_spans.assert_not_called()
+        self.model.get_desk_spans.assert_not_called()
 
     def test_timer_update_active(self):
-        self.database.get_session_spans.return_value = [
+        self.model.get_session_spans.return_value = [
             Span(self.beginning, self.now, Inactive()),
             Span(self.now, self.now, Active()),
         ]
@@ -46,11 +46,11 @@ class TestTimer(unittest.TestCase):
 
     def test_timer_update_active_with_duration(self):
         later = self.now + timedelta(minutes=10)
-        self.database.get_session_spans.return_value = [
+        self.model.get_session_spans.return_value = [
             Span(self.beginning, self.now, Inactive()),
             Span(self.now, later, Active()),
         ]
-        self.database.get_desk_spans.return_value = [
+        self.model.get_desk_spans.return_value = [
             Span(self.beginning, later, Down())
         ]
         self.timer.update(self.now)

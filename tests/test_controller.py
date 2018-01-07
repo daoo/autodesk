@@ -50,24 +50,24 @@ class TestOperation(unittest.TestCase):
 
 class TestController(unittest.TestCase):
     def setUp(self):
-        database_patcher = patch(
-            'autodesk.model.Database', autospec=True)
-        self.database = database_patcher.start()
-        self.addCleanup(database_patcher.stop)
+        model_patcher = patch(
+            'autodesk.model.Model', autospec=True)
+        self.model = model_patcher.start()
+        self.addCleanup(model_patcher.stop)
 
         hardware_patcher = patch(
             'autodesk.hardware.Hardware', autospec=True)
         self.hardware = hardware_patcher.start()
         self.addCleanup(hardware_patcher.stop)
 
-        self.controller = Controller(self.hardware, self.database)
+        self.controller = Controller(self.hardware, self.model)
         self.observer = MagicMock()
         self.controller.add_observer(self.observer)
 
     def test_controller_set_session_active(self):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Active())
         self.controller.set_session(event.index, event.data)
-        self.database.insert_session_event.assert_called_with(event)
+        self.model.insert_session_event.assert_called_with(event)
         self.hardware.light.assert_called_with(event.data)
         self.observer.session_changed.assert_called_with(event.index,
                                                          event.data)
@@ -75,7 +75,7 @@ class TestController(unittest.TestCase):
     def test_controller_set_session_inactive(self):
         event = Event(datetime(2017, 2, 13, 13, 0, 0), model.Inactive())
         self.controller.set_session(event.index, event.data)
-        self.database.insert_session_event.assert_called_with(event)
+        self.model.insert_session_event.assert_called_with(event)
         self.hardware.light.assert_called_with(event.data)
         self.observer.session_changed.assert_called_with(event.index,
                                                          event.data)
@@ -83,20 +83,20 @@ class TestController(unittest.TestCase):
     def test_controller_set_desk_up(self):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Up())
         self.controller.set_desk(event.index, event.data)
-        self.database.insert_desk_event.assert_called_with(event)
+        self.model.insert_desk_event.assert_called_with(event)
         self.hardware.go.assert_called_with(event.data)
         self.observer.desk_changed.assert_called_with(event.index, event.data)
 
     def test_controller_set_desk_down(self):
         event = Event(datetime(2017, 2, 13, 12, 0, 0), model.Down())
         self.controller.set_desk(event.index, event.data)
-        self.database.insert_desk_event.assert_called_with(event)
+        self.model.insert_desk_event.assert_called_with(event)
         self.hardware.go.assert_called_with(event.data)
         self.observer.desk_changed.assert_called_with(event.index, event.data)
 
     def test_controller_set_desk_disallow(self):
         event = Event(datetime(2017, 2, 13, 7, 0, 0), model.Down())
         self.controller.set_desk(event.index, event.data)
-        self.database.insert_desk_event.assert_not_called()
+        self.model.insert_desk_event.assert_not_called()
         self.hardware.go.assert_not_called()
         self.observer.desk_change_disallowed.assert_called_with(event.index)

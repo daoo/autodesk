@@ -18,10 +18,10 @@ class TestServer(AioHTTPTestCase):
         self.hardware = hardware_patcher.start()
         self.addCleanup(hardware_patcher.stop)
 
-        database_patcher = patch(
-            'autodesk.model.Database', autospec=True)
-        self.database = database_patcher.start()
-        self.addCleanup(database_patcher.stop)
+        model_patcher = patch(
+            'autodesk.model.Model', autospec=True)
+        self.model = model_patcher.start()
+        self.addCleanup(model_patcher.stop)
 
         controller_patcher = patch(
             'autodesk.controller.Controller', autospec=True)
@@ -35,7 +35,7 @@ class TestServer(AioHTTPTestCase):
 
         return server.setup_app(
             self.hardware,
-            self.database,
+            self.model,
             self.controller,
             self.timer)
 
@@ -43,9 +43,9 @@ class TestServer(AioHTTPTestCase):
     @unittest_run_loop
     async def test_server_index(self, compute_active_time):
         compute_active_time.return_value = '12:34:56'
-        self.database.get_session_spans.return_value = \
+        self.model.get_session_spans.return_value = \
                 [Span(0, 1, model.Inactive())]
-        self.database.get_desk_spans.return_value = \
+        self.model.get_desk_spans.return_value = \
                 [Span(0, 1, model.Down())]
         response = await self.client.get('/')
         self.assertEqual(200, response.status)
@@ -61,11 +61,11 @@ class TestServer(AioHTTPTestCase):
 
     @unittest_run_loop
     async def test_server_get_desk(self):
-        self.database.get_desk_spans.return_value = [Span(0, 1, model.Down())]
+        self.model.get_desk_spans.return_value = [Span(0, 1, model.Down())]
         response = await self.client.get('/api/desk')
         self.assertEqual('0', await response.text())
 
-        self.database.get_desk_spans.return_value = [Span(0, 1, model.Up())]
+        self.model.get_desk_spans.return_value = [Span(0, 1, model.Up())]
         response = await self.client.get('/api/desk')
         self.assertEqual('1', await response.text())
 
@@ -89,12 +89,12 @@ class TestServer(AioHTTPTestCase):
 
     @unittest_run_loop
     async def test_server_get_session(self):
-        self.database.get_session_spans.return_value = \
+        self.model.get_session_spans.return_value = \
                 [Span(0, 1, model.Inactive())]
         response = await self.client.get('/api/session')
         self.assertEqual('0', await response.text())
 
-        self.database.get_session_spans.return_value = \
+        self.model.get_session_spans.return_value = \
                 [Span(0, 1, model.Active())]
         response = await self.client.get('/api/session')
         self.assertEqual('1', await response.text())

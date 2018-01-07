@@ -1,7 +1,7 @@
 from aiohttp import web
 from autodesk.controller import Controller
 from autodesk.hardware import Hardware
-from autodesk.model import Database, desk_from_int, session_from_int
+from autodesk.model import Model, desk_from_int, session_from_int
 from autodesk.timer import Timer, TimerFactory
 from datetime import datetime, timedelta
 import aiohttp_jinja2
@@ -20,7 +20,7 @@ async def route_set_session(request):
 
 
 async def route_get_session(request):
-    sessions = request.app['database'].get_session_spans(
+    sessions = request.app['model'].get_session_spans(
         datetime.fromtimestamp(0), datetime.now())
     return web.Response(text=sessions[-1].data.test('0', '1'))
 
@@ -33,7 +33,7 @@ async def route_set_desk(request):
 
 
 async def route_get_desk(request):
-    desks = request.app['database'].get_desk_spans(
+    desks = request.app['model'].get_desk_spans(
         datetime.fromtimestamp(0), datetime.now())
     return web.Response(text=desks[-1].data.test('0', '1'))
 
@@ -61,7 +61,7 @@ async def route_get_sessions(request):
             index += 1
 
     daily_active_time = stats.compute_daily_active_time(
-        request.app['database'].get_session_spans(
+        request.app['model'].get_session_spans(
             datetime.fromtimestamp(0),
             datetime.now()
         ))
@@ -78,10 +78,10 @@ async def route_get_sessions(request):
 async def route_index(request):
     beginning = datetime.fromtimestamp(0)
     now = datetime.now()
-    database = request.app['database']
-    session_spans = database.get_session_spans(beginning, now)
+    model = request.app['model']
+    session_spans = model.get_session_spans(beginning, now)
     session_state = session_spans[-1].data.test('inactive', 'active')
-    desk_spans = database.get_desk_spans(beginning, now)
+    desk_spans = model.get_desk_spans(beginning, now)
     desk_state = desk_spans[-1].data.test('down', 'up')
     active_time = stats.compute_active_time(session_spans, desk_spans)
     return {
@@ -98,14 +98,14 @@ def init(app):
 
 def cleanup(app):
     app['hardware'].close()
-    app['database'].close()
+    app['model'].close()
     app['timer'].cancel()
 
 
-def setup_app(hardware, database, controller, timer):
+def setup_app(hardware, model, controller, timer):
     app = web.Application()
     app['hardware'] = hardware
-    app['database'] = database
+    app['model'] = model
     app['controller'] = controller
     app['timer'] = timer
 
@@ -134,16 +134,16 @@ def main(config):
 
     hardware = Hardware(config['desk']['delay'], motor_pins,
                         config['desk']['light_pin'])
-    database = Database(config['server']['database_path'])
-    controller = Controller(hardware, database)
+    model = Model(config['server']['database_path'])
+    controller = Controller(hardware, model)
 
     async def action(target):
         controller.set_desk(datetime.now(), target)
-    timer = Timer(limits, database, TimerFactory(action))
+    timer = Timer(limits, model, TimerFactory(action))
 
     controller.add_observer(timer)
 
-    return setup_app(hardware, database, controller, timer)
+    return setup_app(hardware, model, controller, timer)
 
 
 if __name__ == '__main__':
