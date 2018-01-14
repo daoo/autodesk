@@ -4,7 +4,8 @@ Description=AutoDesk server
 [Service]
 Type=simple
 User=autodesk
-ExecStart=/var/local/autodesk/venv/bin/python -m autodesk.server /var/local/autodesk/config.yml
+WorkingDirectory=/var/local/autodesk
+ExecStart=/var/local/autodesk/venv/bin/python -m autodesk.server config.yml
 
 [Install]
 WantedBy=multi-user.target
