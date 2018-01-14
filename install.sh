@@ -10,9 +10,11 @@ id -u autodesk &>/dev/null || \
   sudo useradd -d /var/local/autodesk -m -r -s /usr/bin/nologin autodesk
 
 cd /var/local/autodesk
-sudo -u autodesk git clone https://github.com/daoo/autodesk.git
+[[ -d autodesk/.git ]] || \
+  sudo -u autodesk git clone https://github.com/daoo/autodesk.git
 
-sudo -u autodesk virtualenv venv
+[[ -d venv ]] || \
+  sudo -u autodesk virtualenv venv
 sudo -u autodesk venv/bin/pip install ./autodesk uwsgi
 
 sudo -u autodesk ln -fsn autodesk/srv srv
