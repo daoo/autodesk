@@ -16,6 +16,7 @@ sudo -u autodesk virtualenv venv
 sudo -u autodesk venv/bin/pip install ./autodesk uwsgi
 
 cp autodesk/sys/autodesk.service /etc/systemd/system
+cp autodesk/sys/99-gpio.rules /etc/udev/rules.d
 
 sudo -u autodesk cp sys/default.yml config.yml
 
