@@ -8,6 +8,7 @@ import aiohttp_jinja2
 import autodesk.stats as stats
 import jinja2
 import json
+import logging
 import sys
 import yaml
 
@@ -166,6 +167,8 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         sys.stderr.write('Usage: {} CONFIG.YML\n'.format(sys.argv[0]))
         sys.exit(1)
+
+    logging.basicConfig(level=logging.DEBUG)
 
     config = None
     with open(sys.argv[1], 'r') as file:

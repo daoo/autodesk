@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import asyncio
 import autodesk.stats as stats
+import logging
 
 class AsyncTimer:
     def __init__(self, timeout, callback):
@@ -26,6 +27,7 @@ class TimerFactory:
 
 class Timer:
     def __init__(self, limits, model, factory):
+        self.logger = logging.getLogger('timer')
         self.limits = limits
         self.model = model
         self.factory = factory
@@ -44,9 +46,14 @@ class Timer:
         limit = desk.test(*self.limits)
         delay = max(timedelta(0), limit - active_time)
 
+        self.logger.info(
+            'next is %s in %s',
+            desk.next().test('down', 'up'),
+            delay)
         self.timer = self.factory.start(delay, desk.next())
 
     def cancel(self):
+        self.logger.info('cancling')
         if self.timer:
             self.timer.cancel()
             self.timer = None

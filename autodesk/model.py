@@ -1,6 +1,7 @@
 from contextlib import closing
 from datetime import datetime, time
 import autodesk.spans as spans
+import logging
 import sqlite3
 
 
@@ -99,6 +100,7 @@ class Operation:
 
 class Model:
     def __init__(self, path, operation):
+        self.logger = logging.getLogger('model')
         self.observers = []
         self.operation = operation
         self.db = sqlite3.connect(path)
@@ -119,7 +121,12 @@ class Model:
         self.db.close()
 
     def set_desk(self, event):
+        self.logger.debug(
+            'set desk %s %s',
+            event.index,
+            event.data.test('down', 'up'))
         if not self.operation.allow(event.index):
+            self.logger.warning('desk operation not allowed')
             for observer in self.observers:
                 observer.desk_change_disallowed(event)
             return False
@@ -132,6 +139,10 @@ class Model:
         return True
 
     def set_session(self, event):
+        self.logger.debug(
+            'set session %s %s',
+            event.index,
+            event.data.test('inactive', 'active'))
         self.db.execute('INSERT INTO session values(?, ?)',
                         (event.index.timestamp(), event.data.test(0, 1)))
         self.db.commit()
