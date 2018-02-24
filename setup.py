@@ -7,7 +7,7 @@ setup(
     version='1.0',
     packages=['autodesk'],
     include_package_data=True,
-    install_requires=['aiohttp', 'aiohttp_jinja2', 'pyyaml', 'RPi.GPIO', 'requests'],
+    install_requires=['aiohttp', 'aiohttp_jinja2', 'pyyaml', 'requests'],
     test_suite='tests',
     scripts=['bin/logger.py'],
 )

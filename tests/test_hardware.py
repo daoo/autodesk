@@ -1,7 +1,6 @@
 from autodesk.hardware import Hardware
 from autodesk.model import Down, Up, Active, Inactive
-from unittest.mock import MagicMock, call, patch
-import sys
+from unittest.mock import call, patch
 import unittest
 
 
@@ -19,7 +18,6 @@ class TestHardware(unittest.TestCase):
 
     def test_hardware_init(self):
         self.hardware.init()
-        self.gpio.setmode.assert_called_with(self.gpio.BOARD)
         self.gpio.setup.assert_has_calls([
             call(0, self.gpio.OUT),
             call(1, self.gpio.OUT),

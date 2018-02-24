@@ -17,6 +17,10 @@ cd /var/local/autodesk
   sudo -u autodesk virtualenv venv
 sudo -u autodesk venv/bin/pip install ./autodesk uwsgi
 
+# TODO: install gpio libs
+# sudo -u autodesk venv/bin/pip install RPi.GPIO
+# sudo -u autodesk venv/bin/pip install Adafruit_GPIO FT232H
+
 sudo -u autodesk ln -fsn autodesk/srv srv
 sudo -u autodesk cp autodesk/sys/default.yml config.yml
 

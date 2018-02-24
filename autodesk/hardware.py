@@ -12,7 +12,6 @@ class Hardware:
 
     def init(self):
         self.logger.info('init')
-        GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.motor_pins[0], GPIO.OUT)
         GPIO.setup(self.motor_pins[1], GPIO.OUT)
         GPIO.setup(self.light_pin, GPIO.OUT)
