@@ -92,12 +92,12 @@ async def route_index(request):
     }
 
 
-def init(app):
+async def init(app):
     app['hardware'].init()
     app['timer'].update(datetime.now())
 
 
-def cleanup(app):
+async def cleanup(app):
     app['hardware'].close()
     app['model'].close()
     app['timer'].cancel()
