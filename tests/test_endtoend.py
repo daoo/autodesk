@@ -29,6 +29,7 @@ class TestServer(unittest.TestCase):
 
         cmd = ['python', '-u', '-m', 'autodesk.server', config_file.name]
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                        stderr=subprocess.DEVNULL,
                                         encoding='utf-8')
         while True:
             line = self.process.stdout.readline()

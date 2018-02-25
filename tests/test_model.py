@@ -3,6 +3,7 @@ from autodesk.spans import Event, Span
 from datetime import datetime, date, time
 from unittest.mock import MagicMock, patch
 import autodesk.model as model
+import logging
 import unittest
 
 
@@ -87,6 +88,8 @@ class TestOperation(unittest.TestCase):
 
 class TestModel(unittest.TestCase):
     def setUp(self):
+        logging.disable(logging.CRITICAL)
+
         operation_patcher = patch(
             'autodesk.model.Operation', autospec=True)
         self.operation = operation_patcher.start()

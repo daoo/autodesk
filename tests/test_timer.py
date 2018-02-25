@@ -3,11 +3,14 @@ from autodesk.spans import Span
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
 from unittest.mock import patch
+import logging
 import unittest
 
 
 class TestTimer(unittest.TestCase):
     def setUp(self):
+        logging.disable(logging.CRITICAL)
+
         limits = (timedelta(minutes=50), timedelta(minutes=10))
 
         factory_patcher = patch(

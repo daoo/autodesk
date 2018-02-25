@@ -3,10 +3,13 @@ from autodesk.spans import Event, Span
 from unittest.mock import patch
 import autodesk.model as model
 import autodesk.server as server
+import logging
 
 
 class TestServer(AioHTTPTestCase):
     async def get_application(self):
+        logging.disable(logging.CRITICAL)
+
         datetime_patcher = patch(
             'autodesk.server.datetime', autospec=True)
         datetime = datetime_patcher.start()
