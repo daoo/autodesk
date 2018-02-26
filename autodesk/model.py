@@ -68,7 +68,7 @@ def desk_from_int(value):
 
 
 def event_from_row(cursor, values):
-    time = datetime.fromtimestamp(values[0])
+    time = values[0]
     assert cursor.description[0][0] == 'date'
     col_name = cursor.description[1][0]
     state = None
@@ -103,15 +103,15 @@ class Model:
         self.logger = logging.getLogger('model')
         self.observers = []
         self.operation = operation
-        self.db = sqlite3.connect(path)
+        self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = event_from_row
         self.db.execute(
             'CREATE TABLE IF NOT EXISTS session('
-            'date INTEGER NOT NULL,'
+            'date TIMESTAMP NOT NULL,'
             'active INTEGER NOT NULL)')
         self.db.execute(
             'CREATE TABLE IF NOT EXISTS desk('
-            'date INTEGER NOT NULL,'
+            'date TIMESTAMP NOT NULL,'
             'state INTEGER NOT NULL)')
 
     def add_observer(self, observer):
@@ -132,7 +132,7 @@ class Model:
             return False
 
         self.db.execute('INSERT INTO desk values(?, ?)',
-                        (event.index.timestamp(), event.data.test(0, 1)))
+                        (event.index, event.data.test(0, 1)))
         self.db.commit()
         for observer in self.observers:
             observer.desk_changed(event)
@@ -144,7 +144,7 @@ class Model:
             event.index,
             event.data.test('inactive', 'active'))
         self.db.execute('INSERT INTO session values(?, ?)',
-                        (event.index.timestamp(), event.data.test(0, 1)))
+                        (event.index, event.data.test(0, 1)))
         self.db.commit()
         for observer in self.observers:
             observer.session_changed(event)
