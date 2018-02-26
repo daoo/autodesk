@@ -8,6 +8,6 @@ desk:
     up: 2
   light_pin: 3
 server:
-  database_path: "/tmp/testing.db"
+  database_path: ":memory:"
   address: "localhost"
   port: 8080
