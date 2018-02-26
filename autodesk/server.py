@@ -22,7 +22,7 @@ async def route_set_session(request):
 
 async def route_get_session(request):
     sessions = request.app['model'].get_session_spans(
-        datetime.fromtimestamp(0), datetime.now())
+        datetime.min, datetime.now())
     return web.Response(text=sessions[-1].data.test('0', '1'))
 
 
@@ -35,7 +35,7 @@ async def route_set_desk(request):
 
 async def route_get_desk(request):
     desks = request.app['model'].get_desk_spans(
-        datetime.fromtimestamp(0), datetime.now())
+        datetime.min, datetime.now())
     return web.Response(text=desks[-1].data.test('0', '1'))
 
 
@@ -63,7 +63,7 @@ async def route_get_sessions(request):
 
     daily_active_time = stats.compute_daily_active_time(
         request.app['model'].get_session_spans(
-            datetime.fromtimestamp(0),
+            datetime.min,
             datetime.now()
         ))
     grouped = stats.group_into_days(daily_active_time)
@@ -77,7 +77,7 @@ async def route_get_sessions(request):
 
 @aiohttp_jinja2.template('index.html')
 async def route_index(request):
-    beginning = datetime.fromtimestamp(0)
+    beginning = datetime.min
     now = datetime.now()
     model = request.app['model']
     session_spans = model.get_session_spans(beginning, now)

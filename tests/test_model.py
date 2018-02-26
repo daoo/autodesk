@@ -105,8 +105,8 @@ class TestModel(unittest.TestCase):
         self.assertEqual(self.model.get_session_events(), [])
 
     def test_model_empty_spans(self):
-        a = datetime.fromtimestamp(0)
-        b = datetime.fromtimestamp(1)
+        a = datetime.min
+        b = datetime.max
         self.assertEqual(
             self.model.get_desk_spans(a, b),
             [Span(a, b, Down())])

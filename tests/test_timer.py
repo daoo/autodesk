@@ -23,7 +23,7 @@ class TestTimer(unittest.TestCase):
         self.model = model_patcher.start()
         self.addCleanup(model_patcher.stop)
 
-        self.beginning = datetime.fromtimestamp(0)
+        self.beginning = datetime.min
         self.now = datetime(2017, 4, 14, 10, 0, 0)
         self.model.get_desk_spans.return_value = [
             Span(self.beginning, self.now, Down())

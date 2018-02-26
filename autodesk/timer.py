@@ -34,7 +34,7 @@ class Timer:
         self.timer = None
 
     def update(self, time):
-        beginning = datetime.fromtimestamp(0)
+        beginning = datetime.min
         session_spans = self.model.get_session_spans(beginning, time)
         if not session_spans[-1].data.active():
             self.cancel()
