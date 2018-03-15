@@ -1,5 +1,6 @@
 import requests
 import subprocess
+import sys
 import unittest
 
 
@@ -7,13 +8,17 @@ class TestServer(unittest.TestCase):
     def setUp(self):
         cmd = ['python', '-u', '-m', 'autodesk.server', 'sys/testing.yml']
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                        stderr=subprocess.DEVNULL,
+                                        stderr=subprocess.PIPE,
                                         encoding='utf-8')
+        self.addCleanup(self.process.stdout.close)
+        self.addCleanup(self.process.stderr.close)
+
         while True:
             line = self.process.stdout.readline()
-            if not line or 'Running on ' in line:
+            if not line:
+                raise RuntimeError(self.process.stderr.read())
+            elif 'Running on ' in line:
                 break
-        self.addCleanup(self.process.stdout.close)
 
         def stop():
             self.process.terminate()
