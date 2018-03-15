@@ -1,4 +1,5 @@
 desk:
+  hardware: ""
   delay: 1
   limits:
     down: 5

@@ -1,5 +1,5 @@
 from aiohttp import web
-from autodesk.hardware import Hardware
+from autodesk.hardware import HardwareFactory
 from autodesk.model import Model, Operation, desk_from_int, session_from_int
 from autodesk.spans import Event
 from autodesk.timer import Timer, TimerFactory
@@ -135,7 +135,7 @@ class Observer:
         self.timer.update(event.index)
 
     def desk_changed(self, event):
-        self.hardware.go(event.data)
+        self.hardware.desk(event.data)
         self.timer.update(event.index)
 
     def desk_change_disallowed(self, event):
@@ -147,11 +147,8 @@ def main(config):
     limit_down = timedelta(seconds=config['desk']['limits']['down'])
     limit_up = timedelta(seconds=config['desk']['limits']['up'])
     limits = (limit_down, limit_up)
-    motor_pins = (config['desk']['motor_pins']['down'],
-                  config['desk']['motor_pins']['up'])
-
-    hardware = Hardware(config['desk']['delay'], motor_pins,
-                        config['desk']['light_pin'])
+    hardware_factory = HardwareFactory()
+    hardware = hardware_factory.create(config)
     model = Model(config['server']['database_path'], Operation())
 
     async def action(target):

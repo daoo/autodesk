@@ -1,6 +1,6 @@
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
 from autodesk.spans import Event, Span
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import autodesk.model as model
 import autodesk.server as server
 import logging
@@ -16,10 +16,7 @@ class TestServer(AioHTTPTestCase):
         self.addCleanup(datetime_patcher.stop)
         self.now = datetime.now()
 
-        hardware_patcher = patch(
-            'autodesk.hardware.Hardware', autospec=True)
-        self.hardware = hardware_patcher.start()
-        self.addCleanup(hardware_patcher.stop)
+        self.hardware = MagicMock()
 
         model_patcher = patch(
             'autodesk.model.Model', autospec=True)

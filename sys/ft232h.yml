@@ -1,4 +1,5 @@
 desk:
+  hardware: "ft232h"
   delay: 20
   limits:
     down: 3000
@@ -8,6 +9,6 @@ desk:
     up: 10
   light_pin: 8
 server:
-  database_path: "/var/local/autodesk/autodesk.db"
+  database_path: "C:\\temp\\autodesk.db"
   address: "localhost"
   port: 8080

@@ -1,4 +1,5 @@
 desk:
+  hardware: "raspberrypi"
   delay: 15
   limits:
     down: 3000
