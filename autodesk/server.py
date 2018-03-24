@@ -93,8 +93,25 @@ async def route_index(request):
 
 
 async def init(app):
-    app['hardware'].init()
-    app['timer'].update(datetime.now())
+    config = app['config']
+    limit_down = timedelta(seconds=config['desk']['limits']['down'])
+    limit_up = timedelta(seconds=config['desk']['limits']['up'])
+    limits = (limit_down, limit_up)
+    hardware_factory = HardwareFactory()
+    hardware = hardware_factory.create(config)
+    model = Model(config['server']['database_path'], Operation())
+
+    action = lambda target: model.set_desk(Event(datetime.now(), target))
+    timer = Timer(limits, model, TimerFactory(app.loop, action))
+
+    model.add_observer(Observer(timer, hardware))
+
+    hardware.init()
+    timer.update(datetime.now())
+
+    app['hardware'] = hardware
+    app['model'] = model
+    app['timer'] = timer
 
 
 async def cleanup(app):
@@ -103,11 +120,10 @@ async def cleanup(app):
     app['timer'].cancel()
 
 
-def setup_app(hardware, model, timer):
+def setup_app(config):
     app = web.Application()
-    app['hardware'] = hardware
-    app['model'] = model
-    app['timer'] = timer
+
+    app['config'] = config
 
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('srv/templates'))
 
@@ -143,23 +159,6 @@ class Observer:
         self.timer.cancel()
 
 
-def main(config):
-    limit_down = timedelta(seconds=config['desk']['limits']['down'])
-    limit_up = timedelta(seconds=config['desk']['limits']['up'])
-    limits = (limit_down, limit_up)
-    hardware_factory = HardwareFactory()
-    hardware = hardware_factory.create(config)
-    model = Model(config['server']['database_path'], Operation())
-
-    async def action(target):
-        model.set_desk(Event(datetime.now(), target))
-    timer = Timer(limits, model, TimerFactory(action))
-
-    model.add_observer(Observer(timer, hardware))
-
-    return setup_app(hardware, model, timer)
-
-
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         sys.stderr.write('Usage: {} CONFIG.YML\n'.format(sys.argv[0]))
@@ -172,6 +171,6 @@ if __name__ == '__main__':
         config = yaml.load(file)
 
     web.run_app(
-        main(config),
+        setup_app(config),
         host=config['server']['address'],
         port=int(config['server']['port']))

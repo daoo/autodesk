@@ -3,26 +3,18 @@ import asyncio
 import autodesk.stats as stats
 import logging
 
-class AsyncTimer:
-    def __init__(self, timeout, callback):
-        self.timeout = timeout
-        self.callback = callback
-        self.task = asyncio.ensure_future(self.run())
-
-    async def run(self):
-        await asyncio.sleep(self.timeout.total_seconds())
-        await self.callback()
-
-    def cancel(self):
-        self.task.cancel()
-
 
 class TimerFactory:
-    def __init__(self, callback):
+    def __init__(self, loop, callback):
+        assert loop
+        self.loop = loop
         self.callback = callback
 
     def start(self, timeout, state):
-        return AsyncTimer(timeout, lambda: self.callback(state))
+        return self.loop.call_later(
+            timeout.total_seconds(),
+            self.callback,
+            state)
 
 
 class Timer:

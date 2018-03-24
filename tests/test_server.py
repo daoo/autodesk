@@ -16,19 +16,19 @@ class TestServer(AioHTTPTestCase):
         self.addCleanup(datetime_patcher.stop)
         self.now = datetime.now()
 
-        self.hardware = MagicMock()
-
         model_patcher = patch(
             'autodesk.model.Model', autospec=True)
         self.model = model_patcher.start()
         self.addCleanup(model_patcher.stop)
 
-        timer_patcher = patch(
-            'autodesk.timer.Timer', autospec=True)
-        self.timer = timer_patcher.start()
-        self.addCleanup(timer_patcher.stop)
+        app = server.setup_app(None)
 
-        return server.setup_app(self.hardware, self.model, self.timer)
+        app.on_cleanup.clear()
+        app.on_startup.clear()
+
+        app['model'] = self.model
+
+        return app
 
     @patch('autodesk.server.stats.compute_active_time', autospec=True)
     @unittest_run_loop
