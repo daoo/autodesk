@@ -14,4 +14,4 @@ class TestNoop(unittest.TestCase):
         Noop().desk(Up())
 
     def test_noop_light(self):
-        Noop().desk(Active())
+        Noop().light(Active())
