@@ -1,10 +1,21 @@
 from autodesk.model import Down, Up, Inactive, Active
 from autodesk.spans import Span
-from autodesk.timer import Timer
+from autodesk.timer import Timer, TimerFactory
 from datetime import datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import logging
 import unittest
+
+
+class TestTimerFactor(unittest.TestCase):
+    def setUp(self):
+        self.loop = MagicMock()
+        self.callback = MagicMock()
+        self.factory = TimerFactory(self.loop, self.callback)
+
+    def test_timer_factory_start(self):
+        self.factory.start(timedelta(seconds=5), True)
+        self.loop.call_later.assert_called_with(5, self.callback, True)
 
 
 class TestTimer(unittest.TestCase):
@@ -58,3 +69,12 @@ class TestTimer(unittest.TestCase):
         ]
         self.timer.update(self.now)
         self.factory.start.assert_called_with(timedelta(minutes=40), Up())
+
+    def test_timer_cancel(self):
+        self.model.get_session_spans.return_value = [
+            Span(self.beginning, self.now, Inactive()),
+            Span(self.now, self.now, Active()),
+        ]
+        self.timer.update(self.now)
+        self.timer.cancel()
+        self.factory.start.return_value.cancel.assert_called_once()

@@ -17,7 +17,8 @@ def compute_daily_active_time(spans):
             for i in range(index(span.start), index(span.end)):
                 buckets[i] += 1
 
-    factor = max(buckets)
+    maximum = max(buckets)
+    factor = maximum if maximum else 1
     return [bucket / factor for bucket in buckets]
 
 

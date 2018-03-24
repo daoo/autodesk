@@ -17,6 +17,14 @@ class TestStats(unittest.TestCase):
             30
         )
 
+    def test_stats_compute_daily_active_time_inactive_zero(self):
+        spans = [Span(
+            datetime(2017, 4, 12, 10, 0, 0),
+            datetime(2017, 4, 12, 10, 30, 0),
+            Inactive()
+        )]
+        self.assertEqual(sum(stats.compute_daily_active_time(spans)), 0)
+
     def test_stats_group_into_days_identity(self):
         spans = [Span(
             datetime(2017, 4, 12, 10, 0, 0),
