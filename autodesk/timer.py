@@ -39,7 +39,7 @@ class Timer:
         delay = max(timedelta(0), limit - active_time)
 
         self.logger.info(
-            'next is %s in %s',
+            'scheduling %s in %s',
             desk.next().test('down', 'up'),
             delay)
         self.timer = self.factory.start(delay, desk.next())
