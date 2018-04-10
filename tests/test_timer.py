@@ -78,3 +78,21 @@ class TestTimer(unittest.TestCase):
         self.timer.update(self.now)
         self.timer.cancel()
         self.factory.start.return_value.cancel.assert_called_once()
+
+    def test_timer_update_cancels_old_timer(self):
+        self.model.get_session_spans.return_value = [
+            Span(self.beginning, self.now, Inactive()),
+            Span(self.now, self.now, Active()),
+        ]
+        mock1 = MagicMock()
+        self.factory.start.return_value = mock1
+        self.timer.update(self.now)
+        later = self.now + timedelta(minutes=10)
+        self.model.get_session_spans.return_value = [
+            Span(self.beginning, self.now, Inactive()),
+            Span(self.now, later, Active()),
+        ]
+        mock2 = MagicMock()
+        self.factory.start.return_value = mock2
+        self.timer.update(self.now)
+        mock1.cancel.assert_called_once()

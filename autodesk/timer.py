@@ -26,10 +26,14 @@ class Timer:
         self.timer = None
 
     def update(self, time):
+        if self.timer:
+            self.timer.cancel()
+            self.timer = None
+
         beginning = datetime.min
         session_spans = self.model.get_session_spans(beginning, time)
         if not session_spans[-1].data.active():
-            self.cancel()
+            self.logger.info('session is inactive, not scheduling')
             return
 
         desk_spans = self.model.get_desk_spans(beginning, time)
