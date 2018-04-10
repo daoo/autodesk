@@ -27,4 +27,4 @@ class TestServer(unittest.TestCase):
         self.addCleanup(stop)
 
     def test_server_index(self):
-        self.assertTrue(requests.get('http://localhost:8080').ok)
+        self.assertTrue(requests.get('http://localhost:8081').ok)
