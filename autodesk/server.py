@@ -109,6 +109,8 @@ async def init(app):
     hardware.init()
     timer.update(datetime.now())
 
+    hardware.light(model.get_session_state())
+
     app['hardware'] = hardware
     app['model'] = model
     app['timer'] = timer

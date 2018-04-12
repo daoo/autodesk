@@ -172,3 +172,8 @@ class Model:
             initial=initial,
             final=final,
             events=self.get_session_events()))
+
+    def get_session_state(self):
+        events = self.get_session_events()
+        return events[-1].data if events else Inactive()
+

@@ -150,3 +150,16 @@ class TestModel(unittest.TestCase):
         self.assertEqual(self.model.get_session_spans(a, c), [
             Span(a, b, Inactive()),
             Span(b, c, Active())])
+
+    def test_model_get_session_state_empty(self):
+        self.assertEqual(self.model.get_session_state(), Inactive())
+
+    def test_model_get_session_state_active(self):
+        event = Event(datetime(2018, 1, 1), Active())
+        self.model.set_session(event)
+        self.assertEqual(self.model.get_session_state(), Active())
+
+    def test_model_get_session_state_inactive(self):
+        event = Event(datetime(2018, 1, 1), Inactive())
+        self.model.set_session(event)
+        self.assertEqual(self.model.get_session_state(), Inactive())
