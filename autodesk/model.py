@@ -1,5 +1,5 @@
 from contextlib import closing
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import autodesk.spans as spans
 import logging
 import sqlite3
@@ -177,3 +177,19 @@ class Model:
         events = self.get_session_events()
         return events[-1].data if events else Inactive()
 
+    def get_desk_state(self):
+        events = self.get_desk_events()
+        return events[-1].data if events else Down()
+
+    def get_active_time(self, initial, final):
+        session_spans = self.get_session_spans(initial, final)
+        if not session_spans[-1].data.active():
+            return None
+
+        desk_spans = self.get_desk_spans(initial, final)
+        active_spans = spans.cut(
+            desk_spans[-1].start,
+            desk_spans[-1].end,
+            session_spans)
+
+        return spans.count(active_spans, Active(), timedelta(0))

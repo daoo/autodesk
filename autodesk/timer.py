@@ -30,15 +30,11 @@ class Timer:
             self.timer.cancel()
             self.timer = None
 
-        beginning = datetime.min
-        session_spans = self.model.get_session_spans(beginning, time)
-        if not session_spans[-1].data.active():
+        desk = self.model.get_desk_state()
+        active_time = self.model.get_active_time(datetime.min, time)
+        if active_time == None:
             self.logger.info('session is inactive, not scheduling')
             return
-
-        desk_spans = self.model.get_desk_spans(beginning, time)
-        desk = desk_spans[-1].data
-        active_time = stats.compute_active_time(session_spans, desk_spans)
         limit = desk.test(*self.limits)
         delay = max(timedelta(0), limit - active_time)
 

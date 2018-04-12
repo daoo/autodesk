@@ -21,9 +21,8 @@ async def route_set_session(request):
 
 
 async def route_get_session(request):
-    sessions = request.app['model'].get_session_spans(
-        datetime.min, datetime.now())
-    return web.Response(text=sessions[-1].data.test('0', '1'))
+    return web.Response(
+        text=request.app['model'].get_session_state().test('0', '1'))
 
 
 async def route_set_desk(request):
@@ -34,9 +33,8 @@ async def route_set_desk(request):
 
 
 async def route_get_desk(request):
-    desks = request.app['model'].get_desk_spans(
-        datetime.min, datetime.now())
-    return web.Response(text=desks[-1].data.test('0', '1'))
+    return web.Response(
+        text=request.app['model'].get_desk_state().test('0', '1'))
 
 
 async def route_get_sessions(request):
@@ -80,11 +78,9 @@ async def route_index(request):
     beginning = datetime.min
     now = datetime.now()
     model = request.app['model']
-    session_spans = model.get_session_spans(beginning, now)
-    session_state = session_spans[-1].data.test('inactive', 'active')
-    desk_spans = model.get_desk_spans(beginning, now)
-    desk_state = desk_spans[-1].data.test('down', 'up')
-    active_time = stats.compute_active_time(session_spans, desk_spans)
+    session_state = model.get_session_state().test('inactive', 'active')
+    desk_state = model.get_desk_state().test('down', 'up')
+    active_time = model.get_active_time(beginning, now)
     return {
         'session': session_state,
         'desk': desk_state,

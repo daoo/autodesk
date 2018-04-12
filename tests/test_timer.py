@@ -36,63 +36,45 @@ class TestTimer(unittest.TestCase):
 
         self.beginning = datetime.min
         self.now = datetime(2017, 4, 14, 10, 0, 0)
-        self.model.get_desk_spans.return_value = [
-            Span(self.beginning, self.now, Down())
-        ]
-        self.model.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Inactive())
-        ]
 
         self.timer = Timer(limits, self.model, self.factory)
 
     def test_timer_update_inactive(self):
+        self.model.get_active_time.return_value = None
+        self.model.get_desk_state.return_value = Down()
         self.timer.update(self.now)
         self.factory.start.assert_not_called()
-        self.model.get_desk_spans.assert_not_called()
 
     def test_timer_update_active(self):
-        self.model.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Inactive()),
-            Span(self.now, self.now, Active()),
-        ]
+        self.model.get_active_time.return_value = timedelta(minutes=0)
+        self.model.get_desk_state.return_value = Down()
         self.timer.update(self.now)
         self.factory.start.assert_called_with(timedelta(minutes=50), Up())
 
     def test_timer_update_active_with_duration(self):
-        later = self.now + timedelta(minutes=10)
-        self.model.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Inactive()),
-            Span(self.now, later, Active()),
-        ]
-        self.model.get_desk_spans.return_value = [
-            Span(self.beginning, later, Down())
-        ]
+        self.model.get_active_time.return_value = timedelta(minutes=10)
+        self.model.get_desk_state.return_value = Down()
         self.timer.update(self.now)
         self.factory.start.assert_called_with(timedelta(minutes=40), Up())
 
     def test_timer_cancel(self):
-        self.model.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Inactive()),
-            Span(self.now, self.now, Active()),
-        ]
+        self.model.get_active_time.return_value = timedelta(minutes=0)
+        self.model.get_desk_state.return_value = Down()
         self.timer.update(self.now)
         self.timer.cancel()
         self.factory.start.return_value.cancel.assert_called_once()
 
     def test_timer_update_cancels_old_timer(self):
-        self.model.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Inactive()),
-            Span(self.now, self.now, Active()),
-        ]
+        self.model.get_desk_state.return_value = Down()
+
+        self.model.get_active_time.return_value = timedelta(minutes=0)
         mock1 = MagicMock()
         self.factory.start.return_value = mock1
         self.timer.update(self.now)
-        later = self.now + timedelta(minutes=10)
-        self.model.get_session_spans.return_value = [
-            Span(self.beginning, self.now, Inactive()),
-            Span(self.now, later, Active()),
-        ]
+
+        self.model.get_active_time.return_value = timedelta(minutes=10)
         mock2 = MagicMock()
         self.factory.start.return_value = mock2
         self.timer.update(self.now)
+
         mock1.cancel.assert_called_once()

@@ -37,24 +37,3 @@ class TestStats(unittest.TestCase):
             flatten(stats.group_into_days(daily_active_time)),
             daily_active_time
         )
-
-    def test_stats_compute_active_time_empty(self):
-        self.assertRaises(IndexError, stats.compute_active_time, [], [])
-
-    def test_stats_compute_active_time_inactive(self):
-        desk_span = Span(datetime.min, datetime.max, Down())
-        session_span = Span(datetime.min, datetime.max, Inactive())
-        self.assertEqual(
-            stats.compute_active_time([session_span], [desk_span]),
-            timedelta(0)
-        )
-
-    def test_stats_compute_active_time_active(self):
-        a = datetime.min
-        b = a + timedelta(seconds=1000)
-        desk_span = Span(a, b, Down())
-        session_span = Span(a, b, Active())
-        self.assertEqual(
-            stats.compute_active_time([session_span], [desk_span]),
-            timedelta(seconds=1000)
-        )

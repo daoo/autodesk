@@ -1,6 +1,6 @@
 from autodesk.model import Model, Operation, Up, Down, Active, Inactive
 from autodesk.spans import Event, Span
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 from unittest.mock import MagicMock, patch
 import autodesk.model as model
 import logging
@@ -163,3 +163,36 @@ class TestModel(unittest.TestCase):
         event = Event(datetime(2018, 1, 1), Inactive())
         self.model.set_session(event)
         self.assertEqual(self.model.get_session_state(), Inactive())
+
+    def test_model_get_desk_state_empty(self):
+        self.assertEqual(self.model.get_desk_state(), Down())
+
+    def test_model_get_desk_state_up(self):
+        event = Event(datetime(2018, 1, 1), Active())
+        self.model.set_desk(event)
+        self.assertEqual(self.model.get_desk_state(), Up())
+
+    def test_model_get_desk_state_down(self):
+        event = Event(datetime(2018, 1, 1), Inactive())
+        self.model.set_desk(event)
+        self.assertEqual(self.model.get_desk_state(), Down())
+
+    def test_model_get_active_time_empty(self):
+        self.assertEqual(
+            self.model.get_active_time(datetime.min, datetime.max),
+            None)
+
+    def test_model_get_active_time_active_zero(self):
+        event = Event(datetime(2018, 1, 1), Active())
+        self.model.set_session(event)
+        self.assertEqual(
+            self.model.get_active_time(datetime.min, event.index),
+            timedelta(0))
+
+    def test_model_get_active_time_active_10_minutes(self):
+        a = datetime(2018, 1, 1, 0, 0, 0)
+        b = datetime(2018, 1, 1, 0, 10, 0)
+        self.model.set_session(Event(a, Active()))
+        self.assertEqual(
+            self.model.get_active_time(datetime.min, b),
+            timedelta(minutes=10))
