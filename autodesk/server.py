@@ -1,4 +1,5 @@
 from aiohttp import web
+from autodesk.application import Application
 from autodesk.hardware import HardwareFactory
 from autodesk.model import Model, Operation, desk_from_int, session_from_int
 from autodesk.spans import Event
@@ -99,12 +100,10 @@ async def init(app):
 
     action = lambda target: model.set_desk(Event(datetime.now(), target))
     timer = Timer(limits, model, TimerFactory(app.loop, action))
+    application = Application(model, timer, hardware)
 
-    model.add_observer(Observer(timer, hardware))
-
-    timer.update(datetime.now())
-
-    hardware.light(model.get_session_state())
+    application.init()
+    model.add_observer(application)
 
     app['hardware'] = hardware
     app['model'] = model
@@ -136,24 +135,6 @@ def setup_app(config):
     app.on_cleanup.append(cleanup)
 
     return app
-
-
-class Observer:
-    def __init__(self, timer, hardware):
-        self.timer = timer
-        self.hardware = hardware
-
-    def session_changed(self, event):
-        self.hardware.light(event.data)
-        self.timer.update(event.index)
-
-    def desk_changed(self, event):
-        self.hardware.desk(event.data)
-        self.timer.update(event.index)
-
-    def desk_change_disallowed(self, event):
-        # TODO: Calculate and schedule next allowed time
-        self.timer.cancel()
 
 
 if __name__ == '__main__':
