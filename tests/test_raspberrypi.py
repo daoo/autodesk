@@ -24,8 +24,8 @@ class TestRaspberryPi(unittest.TestCase):
 
         self.hw = RaspberryPi(5, (0, 1), 2)
 
-    def test_raspberrypi_init(self):
-        self.hw.init()
+    def test_raspberrypi_constructor(self):
+        # constructor called by setUp
         self.gpio.setmode.assert_called_once_with(self.gpio.BOARD)
         self.gpio.setup.assert_has_calls([
             call(0, self.gpio.OUT),

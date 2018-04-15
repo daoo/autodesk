@@ -1,7 +1,4 @@
 class Noop:
-    def init(self):
-        pass
-
     def close(self):
         pass
 

@@ -12,7 +12,6 @@ class Ft232h:
         FT232H.use_FT232H()
         self.device = FT232H.FT232H()
 
-    def init(self):
         self.device.setup(self.motor_pins[0], GPIO.OUT)
         self.device.setup(self.motor_pins[1], GPIO.OUT)
         self.device.setup(self.light_pin, GPIO.OUT)

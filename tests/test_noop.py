@@ -4,8 +4,8 @@ import unittest
 
 
 class TestNoop(unittest.TestCase):
-    def test_noop_init(self):
-        Noop().init()
+    def test_noop_constructor(self):
+        Noop()
 
     def test_noop_close(self):
         Noop().close()

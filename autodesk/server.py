@@ -102,7 +102,6 @@ async def init(app):
 
     model.add_observer(Observer(timer, hardware))
 
-    hardware.init()
     timer.update(datetime.now())
 
     hardware.light(model.get_session_state())

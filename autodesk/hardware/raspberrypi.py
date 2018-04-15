@@ -7,7 +7,6 @@ class RaspberryPi:
         self.motor_pins = motor_pins
         self.light_pin = light_pin
 
-    def init(self):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.motor_pins[0], GPIO.OUT)
         GPIO.setup(self.motor_pins[1], GPIO.OUT)

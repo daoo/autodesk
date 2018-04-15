@@ -6,10 +6,6 @@ class LoggingWrapper:
         self.logger = logging.getLogger('hardware')
         self.inner = inner
 
-    def init(self):
-        self.logger.info('init')
-        self.inner.init()
-
     def close(self):
         self.logger.info('close')
         self.inner.close()
