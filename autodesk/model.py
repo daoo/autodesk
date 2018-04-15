@@ -82,27 +82,9 @@ def event_from_row(cursor, values):
     return spans.Event(time, state)
 
 
-class Operation:
-    def __init__(self):
-        self.allowance_start = time(8, 0, 0)
-        self.allowance_end = time(18, 0, 0)
-
-    def allow(self, at):
-        monday = 0
-        friday = 4
-        time_at = time(at.hour, at.minute, at.second)
-        weekday = at.weekday()
-        return \
-            time_at >= self.allowance_start and \
-            time_at <= self.allowance_end and \
-            weekday >= monday and weekday <= friday
-
-
 class Model:
-    def __init__(self, path, operation):
+    def __init__(self, path):
         self.logger = logging.getLogger('model')
-        self.observers = []
-        self.operation = operation
         self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = event_from_row
         self.db.execute(
@@ -114,9 +96,6 @@ class Model:
             'date TIMESTAMP NOT NULL,'
             'state INTEGER NOT NULL)')
 
-    def add_observer(self, observer):
-        self.observers.append(observer)
-
     def close(self):
         self.db.close()
 
@@ -125,18 +104,9 @@ class Model:
             'set desk %s %s',
             event.index,
             event.data.test('down', 'up'))
-        if not self.operation.allow(event.index):
-            self.logger.warning('desk operation not allowed')
-            for observer in self.observers:
-                observer.desk_change_disallowed(event)
-            return False
-
         self.db.execute('INSERT INTO desk values(?, ?)',
                         (event.index, event.data.test(0, 1)))
         self.db.commit()
-        for observer in self.observers:
-            observer.desk_changed(event)
-        return True
 
     def set_session(self, event):
         self.logger.debug(
@@ -146,8 +116,6 @@ class Model:
         self.db.execute('INSERT INTO session values(?, ?)',
                         (event.index, event.data.test(0, 1)))
         self.db.commit()
-        for observer in self.observers:
-            observer.session_changed(event)
 
     def _get(self, query):
         with closing(self.db.execute(query)) as cursor:

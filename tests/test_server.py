@@ -1,5 +1,4 @@
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
-from autodesk.spans import Event, Span
 from datetime import timedelta
 from unittest.mock import patch, MagicMock
 import autodesk.model as model
@@ -22,11 +21,18 @@ class TestServer(AioHTTPTestCase):
         self.model = model_patcher.start()
         self.addCleanup(model_patcher.stop)
 
+        application_patcher = patch(
+            'autodesk.application.Application', autospec=True)
+        self.application = application_patcher.start()
+        self.addCleanup(application_patcher.stop)
+
+
         app = server.setup_app(None)
 
         app.on_cleanup.clear()
         app.on_startup.clear()
 
+        app['application'] = self.application
         app['model'] = self.model
 
         return app
@@ -60,19 +66,17 @@ class TestServer(AioHTTPTestCase):
     async def test_server_set_desk_down(self):
         response = await self.client.put('/api/desk', data=b'0')
         self.assertEqual(200, response.status)
-        self.model.set_desk.assert_called_with(
-            Event(self.now, model.Down()))
+        self.application.set_desk.assert_called_with(self.now, model.Down())
 
     @unittest_run_loop
     async def test_server_set_desk_up(self):
         response = await self.client.put('/api/desk', data=b'1')
         self.assertEqual(200, response.status)
-        self.model.set_desk.assert_called_with(
-            Event(self.now, model.Up()))
+        self.application.set_desk.assert_called_with(self.now, model.Up())
 
     @unittest_run_loop
     async def test_server_set_desk_not_allowed(self):
-        self.model.set_desk.return_value = False
+        self.application.set_desk.return_value = False
         response = await self.client.put('/api/desk', data=b'1')
         self.assertEqual(403, response.status)
 
@@ -89,13 +93,11 @@ class TestServer(AioHTTPTestCase):
     @unittest_run_loop
     async def test_server_set_session_inactive(self):
         response = await self.client.put('/api/session', data=b'0')
-        self.model.set_session.assert_called_with(
-            Event(self.now, model.Inactive()))
+        self.application.set_session.assert_called_with(self.now, model.Inactive())
         self.assertEqual(200, response.status)
 
     @unittest_run_loop
     async def test_server_set_session_active(self):
         response = await self.client.put('/api/session', data=b'1')
-        self.model.set_session.assert_called_with(
-            Event(self.now, model.Active()))
+        self.application.set_session.assert_called_with(self.now, model.Active())
         self.assertEqual(200, response.status)

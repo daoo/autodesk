@@ -1,8 +1,7 @@
 from aiohttp import web
-from autodesk.application import Application
+from autodesk.application import Application, Operation
 from autodesk.hardware import HardwareFactory
-from autodesk.model import Model, Operation, desk_from_int, session_from_int
-from autodesk.spans import Event
+from autodesk.model import Model, desk_from_int, session_from_int
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
 import aiohttp_jinja2
@@ -17,7 +16,7 @@ import yaml
 async def route_set_session(request):
     body = await request.text()
     state = session_from_int(int(body))
-    request.app['model'].set_session(Event(datetime.now(), state))
+    request.app['application'].set_session(datetime.now(), state)
     return web.Response()
 
 
@@ -29,7 +28,7 @@ async def route_get_session(request):
 async def route_set_desk(request):
     body = await request.text()
     state = desk_from_int(int(body))
-    ok = request.app['model'].set_desk(Event(datetime.now(), state))
+    ok = request.app['application'].set_desk(datetime.now(), state)
     return web.Response(status=200 if ok else 403)
 
 
@@ -95,22 +94,19 @@ async def init(app):
     limit_up = timedelta(seconds=config['desk']['limits']['up'])
     limits = (limit_down, limit_up)
     hardware = HardwareFactory().create(config)
-    model = Model(config['server']['database_path'], Operation())
+    model = Model(config['server']['database_path'])
     timer = Timer(app.loop)
-    application = Application(model, timer, hardware, limits)
-
+    operation = Operation()
+    application = Application(model, timer, hardware, operation, limits)
     application.init()
-    model.add_observer(application)
 
-    app['hardware'] = hardware
+    app['application'] = application
     app['model'] = model
-    app['timer'] = timer
 
 
 async def cleanup(app):
-    app['hardware'].close()
+    app['application'].close()
     app['model'].close()
-    app['timer'].cancel()
 
 
 def setup_app(config):

@@ -1,14 +1,42 @@
 from autodesk.spans import Event
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 import logging
 
 
+class Operation:
+    def __init__(self):
+        self.logger = logging.getLogger('operation')
+        self.allowance_start = time(8, 0, 0)
+        self.allowance_end = time(18, 0, 0)
+
+    def allowed(self, at, session):
+        if not session.active():
+            self.logger.warning('operation not allowed when inactive')
+            return False
+
+        if not self.check_time.allow(time):
+            self.logger.warning('operation not allowed at this time')
+            return False
+
+        return True
+
+    def check_time(self, at):
+        monday = 0
+        friday = 4
+        time_at = time(at.hour, at.minute, at.second)
+        weekday = at.weekday()
+        return \
+            time_at >= self.allowance_start and \
+            time_at <= self.allowance_end and \
+            weekday >= monday and weekday <= friday
+
 class Application:
-    def __init__(self, model, timer, hardware, limits):
+    def __init__(self, model, timer, hardware, operation, limits):
         self.logger = logging.getLogger('application')
         self.model = model
         self.timer = timer
         self.hardware = hardware
+        self.operation = operation
         self.limits = limits
 
     def init(self):
@@ -18,26 +46,32 @@ class Application:
             self.model.get_desk_state(),
             self.model.get_session_state())
 
-    def session_changed(self, event):
-        self.hardware.light(event.data)
-        self._update_timer(event.index, self.model.get_desk_state(), event.data)
-
-    def desk_changed(self, event):
-        self.hardware.desk(event.data)
-        self._update_timer(event.index, event.data, self.model.get_session_state())
-
-    def desk_change_disallowed(self, event):
-        # TODO: Calculate and schedule next allowed time
+    def close(self):
         self.timer.cancel()
+        self.hardware.close()
+
+    def set_session(self, time, session):
+        self.model.set_session(Event(time, session))
+        self.hardware.light(session)
+        self._update_timer(time, self.model.get_desk_state(), session)
+
+    def set_desk(self, time, desk):
+        session = self.model.get_session_state()
+        if not self.operation.allowed(time, session):
+            self.timer.cancel()
+            return False
+
+        self.model.set_desk(Event(time, desk))
+        self.hardware.desk(desk)
+        self._update_timer(time, desk, session)
+        return True
 
     def _update_timer(self, time, desk, session):
-        if not session.active():
-            self.logger.info('session is inactive, not scheduling')
+        if not self.operation.allowed(time, session):
             self.timer.cancel()
             return
 
         active_time = self.model.get_active_time(datetime.min, time)
         limit = desk.test(*self.limits)
         delay = max(timedelta(0), limit - active_time)
-        event = Event(datetime.now(), desk.next())
-        self.timer.schedule(delay, lambda: self.model.set_desk(event))
+        self.timer.schedule(delay, lambda: self.set_desk(datetime.now(), desk.next()))
