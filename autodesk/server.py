@@ -3,7 +3,7 @@ from autodesk.application import Application
 from autodesk.hardware import HardwareFactory
 from autodesk.model import Model, Operation, desk_from_int, session_from_int
 from autodesk.spans import Event
-from autodesk.timer import Timer, TimerFactory
+from autodesk.timer import Timer
 from datetime import datetime, timedelta
 import aiohttp_jinja2
 import autodesk.stats as stats
@@ -94,13 +94,10 @@ async def init(app):
     limit_down = timedelta(seconds=config['desk']['limits']['down'])
     limit_up = timedelta(seconds=config['desk']['limits']['up'])
     limits = (limit_down, limit_up)
-    hardware_factory = HardwareFactory()
-    hardware = hardware_factory.create(config)
+    hardware = HardwareFactory().create(config)
     model = Model(config['server']['database_path'], Operation())
-
-    action = lambda target: model.set_desk(Event(datetime.now(), target))
-    timer = Timer(limits, model, TimerFactory(app.loop, action))
-    application = Application(model, timer, hardware)
+    timer = Timer(app.loop)
+    application = Application(model, timer, hardware, limits)
 
     application.init()
     model.add_observer(application)
