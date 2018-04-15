@@ -26,23 +26,21 @@ class Timer:
         self.timer = None
 
     def update(self, time):
-        if self.timer:
-            self.timer.cancel()
-            self.timer = None
-
         desk = self.model.get_desk_state()
         active_time = self.model.get_active_time(datetime.min, time)
         if active_time == None:
             self.logger.info('session is inactive, not scheduling')
+            self.cancel()
             return
         limit = desk.test(*self.limits)
         delay = max(timedelta(0), limit - active_time)
+        self.schedule(delay, desk.next())
 
-        self.logger.info(
-            'scheduling %s in %s',
-            desk.next().test('down', 'up'),
-            delay)
-        self.timer = self.factory.start(delay, desk.next())
+    def schedule(self, delay, arg):
+        self.logger.info('scheduling in %s with %s', delay, arg)
+        if self.timer:
+            self.timer.cancel()
+        self.timer = self.factory.start(delay, arg)
 
     def cancel(self):
         self.logger.info('cancling')
