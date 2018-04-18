@@ -9,18 +9,7 @@ class Operation:
         self.allowance_start = time(8, 0, 0)
         self.allowance_end = time(18, 0, 0)
 
-    def allowed(self, at, session):
-        if not session.active():
-            self.logger.warning('operation not allowed when inactive')
-            return False
-
-        if not self.check_time.allow(time):
-            self.logger.warning('operation not allowed at this time')
-            return False
-
-        return True
-
-    def check_time(self, at):
+    def allowed(self, at):
         monday = 0
         friday = 4
         time_at = time(at.hour, at.minute, at.second)
@@ -40,11 +29,14 @@ class Application:
         self.limits = limits
 
     def init(self):
-        self.hardware.light(self.model.get_session_state())
-        self._update_timer(
-            datetime.now(),
-            self.model.get_desk_state(),
-            self.model.get_session_state())
+        session = self.model.get_session_state()
+        self.hardware.light(session)
+
+        if session.active() and self.operation.allowed(time):
+            self._update_timer(
+                datetime.now(),
+                self.model.get_desk_state(),
+                self.model.get_session_state())
 
     def close(self):
         self.timer.cancel()
@@ -53,12 +45,20 @@ class Application:
     def set_session(self, time, session):
         self.model.set_session(Event(time, session))
         self.hardware.light(session)
-        self._update_timer(time, self.model.get_desk_state(), session)
+
+        if session.active() and self.operation.allowed(time):
+            self._update_timer(time, self.model.get_desk_state(), session)
+        else:
+            self.timer.cancel()
 
     def set_desk(self, time, desk):
+        if not self.operation.allowed(time):
+            self.logger.warning('desk operation not allowed at this time')
+            return False
+
         session = self.model.get_session_state()
-        if not self.operation.allowed(time, session):
-            self.timer.cancel()
+        if not session.active():
+            self.logger.warning('desk operation not allowed when inactive')
             return False
 
         self.model.set_desk(Event(time, desk))
@@ -67,10 +67,6 @@ class Application:
         return True
 
     def _update_timer(self, time, desk, session):
-        if not self.operation.allowed(time, session):
-            self.timer.cancel()
-            return
-
         active_time = self.model.get_active_time(datetime.min, time)
         limit = desk.test(*self.limits)
         delay = max(timedelta(0), limit - active_time)

@@ -19,37 +19,37 @@ class TestOperation(unittest.TestCase):
         friday = date(2017, 2, 17)
         stroke = time(12, 0, 0)
         self.assertTrue(
-            self.operation.check_time(datetime.combine(monday, stroke)))
+            self.operation.allowed(datetime.combine(monday, stroke)))
         self.assertTrue(
-            self.operation.check_time(datetime.combine(tuesday, stroke)))
+            self.operation.allowed(datetime.combine(tuesday, stroke)))
         self.assertTrue(
-            self.operation.check_time(datetime.combine(wednesday, stroke)))
+            self.operation.allowed(datetime.combine(wednesday, stroke)))
         self.assertTrue(
-            self.operation.check_time(datetime.combine(thursday, stroke)))
+            self.operation.allowed(datetime.combine(thursday, stroke)))
         self.assertTrue(
-            self.operation.check_time(datetime.combine(friday, stroke)))
+            self.operation.allowed(datetime.combine(friday, stroke)))
 
     def test_operation_disallow_night_time(self):
         workday = datetime(2017, 2, 13)
         self.assertFalse(
-            self.operation.check_time(datetime.combine(workday, time(7, 59, 0))))
+            self.operation.allowed(datetime.combine(workday, time(7, 59, 0))))
         self.assertFalse(
-            self.operation.check_time(datetime.combine(workday, time(18, 1, 0))))
+            self.operation.allowed(datetime.combine(workday, time(18, 1, 0))))
         self.assertFalse(
-            self.operation.check_time(datetime.combine(workday, time(23, 0, 0))))
+            self.operation.allowed(datetime.combine(workday, time(23, 0, 0))))
         self.assertFalse(
-            self.operation.check_time(datetime.combine(workday, time(3, 0, 0))))
+            self.operation.allowed(datetime.combine(workday, time(3, 0, 0))))
         self.assertFalse(
-            self.operation.check_time(datetime.combine(workday, time(6, 0, 0))))
+            self.operation.allowed(datetime.combine(workday, time(6, 0, 0))))
 
     def test_operation_disallow_weekend(self):
         saturday = date(2017, 2, 18)
         sunday = date(2017, 2, 19)
         stroke = time(12, 0, 0)
         self.assertFalse(
-            self.operation.check_time(datetime.combine(saturday, stroke)))
+            self.operation.allowed(datetime.combine(saturday, stroke)))
         self.assertFalse(
-            self.operation.check_time(datetime.combine(sunday, stroke)))
+            self.operation.allowed(datetime.combine(sunday, stroke)))
 
 
 class TestApplication(unittest.TestCase):
@@ -96,13 +96,23 @@ class TestApplication(unittest.TestCase):
         self.application.init()
         self.hardware.light.assert_called_with(Active())
 
-    def test_init_operation_not_allowed_timer_canceled(self):
+    def test_init_session_active_operation_not_allowed_timer_not_scheduled(self):
+        self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = False
         self.application.init()
-        self.timer.cancel.assert_called()
+        self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_not_called()
 
-    def test_init_operation_allowed_timer_scheduled(self):
+    def test_init_session_inactive_operation_allowed_timer_not_scheduled(self):
+        self.model.get_session_state.return_value = Inactive()
+        self.operation.allowed.return_value = True
+        self.model.get_active_time.return_value = timedelta(seconds=10)
+        self.application.init()
+        self.timer.schedule.assert_not_called()
+        self.timer.cancel.assert_not_called()
+
+    def test_init_session_active_operation_allowed_timer_scheduled(self):
+        self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = True
         self.model.get_active_time.return_value = timedelta(seconds=10)
         self.application.init()
@@ -117,19 +127,6 @@ class TestApplication(unittest.TestCase):
         self.application.set_session(datetime(2018, 1, 1), Active())
         self.hardware.light.assert_called_with(Active())
 
-    def test_set_session_operation_not_allowed_timer_cancelled(self):
-        self.operation.allowed.return_value = False
-        self.application.set_session(datetime(2018, 1, 1), Inactive())
-        self.timer.cancel.assert_called()
-        self.timer.schedule.assert_not_called()
-
-    def test_set_session_operation_allowed_timer_scheduled(self):
-        self.operation.allowed.return_value = True
-        self.model.get_active_time.return_value = timedelta(seconds=10)
-        self.application.set_session(datetime(2018, 1, 1), Active())
-        self.timer.schedule.assert_called_with(timedelta(seconds=10), ANY)
-        self.timer.cancel.assert_not_called()
-
     def test_set_session_inactive_model_set_inactive(self):
         event = Event(datetime(2018, 1, 1), Inactive())
         self.application.set_session(event.index, event.data)
@@ -140,7 +137,14 @@ class TestApplication(unittest.TestCase):
         self.application.set_session(event.index, event.data)
         self.model.set_session.assert_called_with(event)
 
-    def test_set_desk_down_operation_allowed_hardware_down(self):
+    def test_set_session_inactive_timer_cancelled(self):
+        self.operation.allowed.return_value = True
+        self.application.set_session(datetime(2018, 1, 1), Inactive())
+        self.timer.schedule.assert_not_called()
+        self.timer.cancel.assert_called_once()
+
+    def test_set_desk_down_session_active_operation_allowed_hardware_down(self):
+        self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = True
         self.application.set_desk(datetime(2018, 4, 16, 10, 0, 0), Down())
         self.hardware.desk.assert_called_with(Down())
@@ -157,10 +161,12 @@ class TestApplication(unittest.TestCase):
 
     def test_set_desk_up_operation_allowed_timer_scheduled_in_10_seconds(self):
         self.model.get_session_state.return_value = Active()
+        self.operation.allowed.return_value = True
         self.application.set_desk(datetime(2018, 1, 1), Up())
         self.timer.schedule.assert_called_with(timedelta(seconds=10), ANY)
 
-    def test_set_desk_down_operation_not_allowed_timer_cancelled(self):
+    def test_set_desk_down_operation_not_allowed_timer_not_scheduled(self):
         self.operation.allowed.return_value = False
         self.application.set_desk(datetime(2018, 1, 1), Down())
-        self.timer.cancel.assert_called_once()
+        self.timer.cancel.assert_not_called()
+        self.timer.schedule.assert_not_called()
