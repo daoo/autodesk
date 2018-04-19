@@ -4,7 +4,7 @@ python:
 install:
   pip install . coverage codecov pycodestyle pyflakes
 script:
-  - coverage run setup.py test
+  - coverage run --branch --source=autodesk setup.py test
   - pycodestyle autodesk bin tests
   - pyflakes autodesk bin tests
 after_success:
