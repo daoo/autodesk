@@ -66,8 +66,11 @@ class Application:
         self._update_timer(time, desk, session)
         return True
 
-    def _update_timer(self, time, desk, session):
+    def _compute_delay_to_next(self, time, desk):
         active_time = self.model.get_active_time(datetime.min, time)
-        limit = desk.test(*self.limits)
-        delay = max(timedelta(0), limit - active_time)
+        active_limit = desk.test(*self.limits)
+        return max(timedelta(0), active_limit - active_time)
+
+    def _update_timer(self, time, desk, session):
+        delay = self._compute_delay_to_next(time, desk)
         self.timer.schedule(delay, lambda: self.set_desk(datetime.now(), desk.next()))

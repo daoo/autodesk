@@ -1,6 +1,6 @@
 from aiohttp import web
 from autodesk.application import Application, Operation
-from autodesk.hardware import HardwareFactory
+from autodesk.hardware import create_hardware
 from autodesk.model import Model, desk_from_int, session_from_int
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
@@ -93,7 +93,7 @@ async def init(app):
     limit_down = timedelta(seconds=config['desk']['limits']['down'])
     limit_up = timedelta(seconds=config['desk']['limits']['up'])
     limits = (limit_down, limit_up)
-    hardware = HardwareFactory().create(config)
+    hardware = create_hardware(config)
     model = Model(config['server']['database_path'])
     timer = Timer(app.loop)
     operation = Operation()
