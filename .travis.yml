@@ -7,4 +7,5 @@ script:
   - coverage run setup.py test
   - pycodestyle autodesk bin tests
   - pyflakes autodesk bin tests
+after_success:
   - codecov
