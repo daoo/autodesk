@@ -2,8 +2,8 @@ desk:
   hardware: "raspberrypi"
   delay: 15
   limits:
-    down: 3000
-    up: 600
+    down: 2940
+    up: 660
   motor_pins:
     down: 15
     up: 13

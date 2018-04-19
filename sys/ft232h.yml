@@ -2,8 +2,8 @@ desk:
   hardware: "ft232h"
   delay: 20
   limits:
-    down: 3000
-    up: 600
+    down: 2940
+    up: 660
   motor_pins:
     down: 9
     up: 10
