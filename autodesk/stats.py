@@ -8,7 +8,7 @@ def compute_daily_active_time(spans):
     def index(time):
         day = 60 * 24
         hour = 60
-        return time.weekday() * day +  time.hour * hour + time.minute
+        return time.weekday() * day + time.hour * hour + time.minute
 
     buckets = [0] * 7 * 24 * 60
     for span in spans:

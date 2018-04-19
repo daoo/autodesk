@@ -19,6 +19,7 @@ class Operation:
             time_at <= self.allowance_end and \
             weekday >= monday and weekday <= friday
 
+
 class Application:
     def __init__(self, model, timer, hardware, operation, limits):
         self.logger = logging.getLogger('application')
@@ -72,5 +73,6 @@ class Application:
         return max(timedelta(0), active_limit - active_time)
 
     def _update_timer(self, time, desk, session):
-        delay = self._compute_delay_to_next(time, desk)
-        self.timer.schedule(delay, lambda: self.set_desk(datetime.now(), desk.next()))
+        self.timer.schedule(
+            self._compute_delay_to_next(time, desk),
+            lambda: self.set_desk(datetime.now(), desk.next()))

@@ -26,7 +26,6 @@ class TestServer(AioHTTPTestCase):
         self.application = application_patcher.start()
         self.addCleanup(application_patcher.stop)
 
-
         app = server.setup_app(None)
 
         app.on_cleanup.clear()
@@ -39,7 +38,8 @@ class TestServer(AioHTTPTestCase):
 
     @unittest_run_loop
     async def test_server_index(self):
-        self.model.get_active_time.return_value = timedelta(hours=12, minutes=34, seconds=56)
+        self.model.get_active_time.return_value = timedelta(
+            hours=12, minutes=34, seconds=56)
         self.model.get_session_state.return_value = model.Inactive()
         self.model.get_desk_state.return_value = model.Down()
         response = await self.client.get('/')
@@ -93,11 +93,13 @@ class TestServer(AioHTTPTestCase):
     @unittest_run_loop
     async def test_server_set_session_inactive(self):
         response = await self.client.put('/api/session', data=b'0')
-        self.application.set_session.assert_called_with(self.now, model.Inactive())
+        self.application.set_session.assert_called_with(
+            self.now, model.Inactive())
         self.assertEqual(200, response.status)
 
     @unittest_run_loop
     async def test_server_set_session_active(self):
         response = await self.client.put('/api/session', data=b'1')
-        self.application.set_session.assert_called_with(self.now, model.Active())
+        self.application.set_session.assert_called_with(
+            self.now, model.Active())
         self.assertEqual(200, response.status)

@@ -1,6 +1,7 @@
 from autodesk.hardware.logging import LoggingWrapper
 import logging
 
+
 def create_hardware(config):
     logger = logging.getLogger('hardware')
 
@@ -23,13 +24,16 @@ def create_hardware(config):
         logger.info('using noop hardware')
         return LoggingWrapper(create_noop())
 
+
 def create_raspberry_pi(delay, motor_pins, light_pin):
     from autodesk.hardware.raspberrypi import RaspberryPi
     return RaspberryPi(delay, motor_pins, light_pin)
 
+
 def create_ft232h(delay, motor_pins, light_pin):
     from autodesk.hardware.ft232h import Ft232h
     return Ft232h(delay, motor_pins, light_pin)
+
 
 def create_noop():
     from autodesk.hardware.noop import Noop

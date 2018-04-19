@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
+
 class RaspberryPi:
     def __init__(self, delay, motor_pins, light_pin):
         self.delay = delay
