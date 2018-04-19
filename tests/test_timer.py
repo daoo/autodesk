@@ -34,3 +34,8 @@ class TestTimer(unittest.TestCase):
         self.timer.schedule(timedelta(seconds=10), self.callback)
         self.timer.cancel()
         timer.cancel.assert_called_once()
+
+    def test_timer_not_running_cancel_nothing_happens(self):
+        self.loop.call_later.return_value = timer = Mock()
+        self.timer.cancel()
+        timer.cancel.assert_not_called()
