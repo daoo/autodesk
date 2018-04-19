@@ -1,5 +1,5 @@
 from contextlib import closing
-from datetime import datetime, time, timedelta
+from datetime import timedelta
 import autodesk.spans as spans
 import logging
 import sqlite3

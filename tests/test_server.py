@@ -1,6 +1,6 @@
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
 from datetime import timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import autodesk.model as model
 import autodesk.server as server
 import logging

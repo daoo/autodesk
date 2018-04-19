@@ -1,7 +1,3 @@
-from datetime import time, timedelta
-import autodesk.spans as spans
-
-
 def compute_daily_active_time(spans):
     assert spans
 

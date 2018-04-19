@@ -1,7 +1,7 @@
 from autodesk.model import Model, Up, Down, Active, Inactive
 from autodesk.spans import Event, Span
-from datetime import datetime, date, time, timedelta
-from unittest.mock import MagicMock, patch
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock
 import autodesk.model as model
 import logging
 import unittest

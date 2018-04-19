@@ -2,7 +2,8 @@ language: python
 python:
   - "3.6"
 install:
-  pip install . pycodestyle
+  pip install . pycodestyle pyflakes
 script:
   - python setup.py test
   - pycodestyle autodesk tests
+  - pyflakes autodesk tests

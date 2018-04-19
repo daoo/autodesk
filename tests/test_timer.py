@@ -1,5 +1,5 @@
 from autodesk.timer import Timer
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import patch, Mock
 import logging
 import unittest
@@ -27,6 +27,7 @@ class TestTimer(unittest.TestCase):
         self.loop.call_later.return_value = timer2 = Mock()
         self.timer.schedule(timedelta(seconds=10), self.callback)
         timer1.cancel.assert_called_once()
+        timer2.cancel.assert_not_called()
 
     def test_timer_cancel_cancels(self):
         self.loop.call_later.return_value = timer = Mock()

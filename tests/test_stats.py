@@ -1,7 +1,6 @@
-from autodesk.model import Inactive, Active, Down, Up
+from autodesk.model import Inactive, Active
 from autodesk.spans import Span
-from datetime import datetime, timedelta
-from unittest.mock import patch
+from datetime import datetime
 import autodesk.stats as stats
 import unittest
 
