@@ -1,8 +1,6 @@
 language: python
 python:
   - "3.6"
-install:
-  pip install . coverage codecov pycodestyle pyflakes
 script:
   - coverage run --branch --source=autodesk setup.py test
   - pycodestyle autodesk bin tests

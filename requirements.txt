@@ -1,0 +1,7 @@
+coverage
+pycodestyle
+pyflakes
+requests
+pyyaml
+aiohttp
+aiohttp_jinja2
