@@ -5,7 +5,7 @@ import unittest
 
 class TestServer(unittest.TestCase):
     def setUp(self):
-        cmd = ['python', '-u', '-m', 'autodesk.server', 'sys/testing.yml']
+        cmd = ['python', '-u', '-m', 'autodesk.program', 'sys/testing.yml']
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
                                         encoding='utf-8')
