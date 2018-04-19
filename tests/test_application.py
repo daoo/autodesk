@@ -120,6 +120,14 @@ class TestApplication(unittest.TestCase):
         self.timer.schedule.assert_called_with(timedelta(seconds=10), ANY)
         self.timer.cancel.assert_not_called()
 
+    def test_close_timer_cancelled(self):
+        self.application.close()
+        self.timer.cancel.assert_called_once()
+
+    def test_close_hardware_closed(self):
+        self.application.close()
+        self.hardware.close.assert_called_once()
+
     def test_set_session_inactive_light_off(self):
         self.application.set_session(datetime(2018, 1, 1), Inactive())
         self.hardware.light.assert_called_with(Inactive())
