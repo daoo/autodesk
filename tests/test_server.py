@@ -1,7 +1,7 @@
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
+from autodesk.model import Down, Up, Inactive, Active
 from datetime import timedelta
 from unittest.mock import patch
-import autodesk.model as model
 import autodesk.server as server
 import logging
 
@@ -16,32 +16,20 @@ class TestServer(AioHTTPTestCase):
         self.addCleanup(datetime_patcher.stop)
         self.now = datetime.now()
 
-        model_patcher = patch(
-            'autodesk.model.Model', autospec=True)
-        self.model = model_patcher.start()
-        self.addCleanup(model_patcher.stop)
+        application_factory_patcher = patch(
+            'autodesk.application.ApplicationFactory', autospec=True)
+        application_factory = application_factory_patcher.start()
+        self.addCleanup(application_factory_patcher.stop)
+        self.application = application_factory.create.return_value
 
-        application_patcher = patch(
-            'autodesk.application.Application', autospec=True)
-        self.application = application_patcher.start()
-        self.addCleanup(application_patcher.stop)
-
-        app = server.setup_app(None)
-
-        app.on_cleanup.clear()
-        app.on_startup.clear()
-
-        app['application'] = self.application
-        app['model'] = self.model
-
-        return app
+        return server.setup_app(application_factory)
 
     @unittest_run_loop
     async def test_server_index(self):
-        self.model.get_active_time.return_value = timedelta(
+        self.application.get_active_time.return_value = timedelta(
             hours=12, minutes=34, seconds=56)
-        self.model.get_session_state.return_value = model.Inactive()
-        self.model.get_desk_state.return_value = model.Down()
+        self.application.get_session_state.return_value = Inactive()
+        self.application.get_desk_state.return_value = Down()
         response = await self.client.get('/')
         self.assertEqual(200, response.status)
         str = 'Currently inactive with desk down for 12:34:56'
@@ -54,11 +42,11 @@ class TestServer(AioHTTPTestCase):
 
     @unittest_run_loop
     async def test_server_get_desk(self):
-        self.model.get_desk_state.return_value = model.Down()
+        self.application.get_desk_state.return_value = Down()
         response = await self.client.get('/api/desk')
         self.assertEqual('0', await response.text())
 
-        self.model.get_desk_state.return_value = model.Up()
+        self.application.get_desk_state.return_value = Up()
         response = await self.client.get('/api/desk')
         self.assertEqual('1', await response.text())
 
@@ -66,13 +54,13 @@ class TestServer(AioHTTPTestCase):
     async def test_server_set_desk_down(self):
         response = await self.client.put('/api/desk', data=b'0')
         self.assertEqual(200, response.status)
-        self.application.set_desk.assert_called_with(self.now, model.Down())
+        self.application.set_desk.assert_called_with(self.now, Down())
 
     @unittest_run_loop
     async def test_server_set_desk_up(self):
         response = await self.client.put('/api/desk', data=b'1')
         self.assertEqual(200, response.status)
-        self.application.set_desk.assert_called_with(self.now, model.Up())
+        self.application.set_desk.assert_called_with(self.now, Up())
 
     @unittest_run_loop
     async def test_server_set_desk_not_allowed(self):
@@ -82,24 +70,22 @@ class TestServer(AioHTTPTestCase):
 
     @unittest_run_loop
     async def test_server_get_session(self):
-        self.model.get_session_state.return_value = model.Inactive()
+        self.application.get_session_state.return_value = Inactive()
         response = await self.client.get('/api/session')
         self.assertEqual('0', await response.text())
 
-        self.model.get_session_state.return_value = model.Active()
+        self.application.get_session_state.return_value = Active()
         response = await self.client.get('/api/session')
         self.assertEqual('1', await response.text())
 
     @unittest_run_loop
     async def test_server_set_session_inactive(self):
         response = await self.client.put('/api/session', data=b'0')
-        self.application.set_session.assert_called_with(
-            self.now, model.Inactive())
+        self.application.set_session.assert_called_with(self.now, Inactive())
         self.assertEqual(200, response.status)
 
     @unittest_run_loop
     async def test_server_set_session_active(self):
         response = await self.client.put('/api/session', data=b'1')
-        self.application.set_session.assert_called_with(
-            self.now, model.Active())
+        self.application.set_session.assert_called_with(self.now, Active())
         self.assertEqual(200, response.status)

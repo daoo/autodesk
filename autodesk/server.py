@@ -1,9 +1,6 @@
 from aiohttp import web
-from autodesk.application import Application, Operation
-from autodesk.hardware import create_hardware
-from autodesk.model import Model, desk_from_int, session_from_int
-from autodesk.timer import Timer
-from datetime import datetime, timedelta
+from autodesk.model import desk_from_int, session_from_int
+from datetime import datetime
 import aiohttp_jinja2
 import autodesk.stats as stats
 import jinja2
@@ -19,7 +16,7 @@ async def route_set_session(request):
 
 async def route_get_session(request):
     return web.Response(
-        text=request.app['model'].get_session_state().test('0', '1'))
+        text=request.app['application'].get_session_state().test('0', '1'))
 
 
 async def route_set_desk(request):
@@ -31,7 +28,7 @@ async def route_set_desk(request):
 
 async def route_get_desk(request):
     return web.Response(
-        text=request.app['model'].get_desk_state().test('0', '1'))
+        text=request.app['application'].get_desk_state().test('0', '1'))
 
 
 async def route_get_sessions(request):
@@ -57,7 +54,7 @@ async def route_get_sessions(request):
             index += 1
 
     daily_active_time = stats.compute_daily_active_time(
-        request.app['model'].get_session_spans(
+        request.app['application'].get_session_spans(
             datetime.min,
             datetime.now()
         ))
@@ -74,10 +71,10 @@ async def route_get_sessions(request):
 async def route_index(request):
     beginning = datetime.min
     now = datetime.now()
-    model = request.app['model']
-    session_state = model.get_session_state().test('inactive', 'active')
-    desk_state = model.get_desk_state().test('down', 'up')
-    active_time = model.get_active_time(beginning, now)
+    application = request.app['application']
+    session_state = application.get_session_state().test('inactive', 'active')
+    desk_state = application.get_desk_state().test('down', 'up')
+    active_time = application.get_active_time(beginning, now)
     return {
         'session': session_state,
         'desk': desk_state,
@@ -86,30 +83,18 @@ async def route_index(request):
 
 
 async def init(app):
-    config = app['config']
-    limit_down = timedelta(seconds=config['desk']['limits']['down'])
-    limit_up = timedelta(seconds=config['desk']['limits']['up'])
-    limits = (limit_down, limit_up)
-    hardware = create_hardware(config)
-    model = Model(config['server']['database_path'])
-    timer = Timer(app.loop)
-    operation = Operation()
-    application = Application(model, timer, hardware, operation, limits)
-    application.init()
-
-    app['application'] = application
-    app['model'] = model
+    app['application'] = app['application_factory'].create(app.loop)
+    del app['application_factory']
+    app['application'].init()
 
 
 async def cleanup(app):
     app['application'].close()
-    app['model'].close()
 
 
-def setup_app(config):
+def setup_app(application_factory):
     app = web.Application()
-
-    app['config'] = config
+    app['application_factory'] = application_factory
 
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('srv/templates'))
 

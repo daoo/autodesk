@@ -1,4 +1,7 @@
+from autodesk.hardware import create_hardware
+from autodesk.model import Model
 from autodesk.spans import Event
+from autodesk.timer import Timer
 from datetime import datetime, time, timedelta
 import logging
 
@@ -39,8 +42,18 @@ class Application:
                 self.model.get_desk_state(),
                 self.model.get_session_state())
 
+    def get_active_time(self, initial, final):
+        return self.model.get_active_time(initial, final)
+
+    def get_session_state(self):
+        return self.model.get_session_state()
+
+    def get_desk_state(self):
+        return self.model.get_desk_state()
+
     def close(self):
         self.timer.cancel()
+        self.model.close()
         self.hardware.close()
 
     def set_session(self, time, session):
@@ -76,3 +89,25 @@ class Application:
         self.timer.schedule(
             self._compute_delay_to_next(time, desk),
             lambda: self.set_desk(datetime.now(), desk.next()))
+
+
+class ApplicationFactory:
+    def __init__(self, database_path, hardware_kind, limits, delay, motor_pins,
+                 light_pin):
+        self.database_path = database_path
+        self.hardware_kind = hardware_kind
+        self.limits = limits
+        self.delay = delay
+        self.motor_pins = motor_pins
+        self.light_pin = light_pin
+
+    def create(self, loop):
+        operation = Operation()
+        timer = Timer(loop)
+        model = Model(self.database_path)
+        hardware = create_hardware(
+            self.hardware_kind,
+            self.delay,
+            self.motor_pins,
+            self.light_pin)
+        return Application(model, timer, hardware, operation, self.limits)

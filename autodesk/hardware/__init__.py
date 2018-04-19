@@ -2,21 +2,14 @@ from autodesk.hardware.logging import LoggingWrapper
 import logging
 
 
-def create_hardware(config):
+def create_hardware(kind, delay, motor_pins, light_pin):
     logger = logging.getLogger('hardware')
 
-    desk = config['desk']
-    delay = desk['delay']
-    motor_pins = (
-        desk['motor_pins']['down'],
-        desk['motor_pins']['up'],
-    )
-    light_pin = desk['light_pin']
-    if desk['hardware'] == 'raspberrypi':
+    if kind == 'raspberrypi':
         logger.info('using rpi hardware')
         return LoggingWrapper(
             create_raspberry_pi(delay, motor_pins, light_pin))
-    elif desk['hardware'] == 'ft232h':
+    elif kind == 'ft232h':
         logger.info('using ft232h hardware')
         return LoggingWrapper(
             create_ft232h(delay, motor_pins, light_pin))
