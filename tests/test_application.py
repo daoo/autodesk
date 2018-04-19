@@ -226,3 +226,16 @@ class TestApplication(unittest.TestCase):
 
         self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_not_called()
+
+    @patch('autodesk.application.datetime', autospec=True)
+    def test_set_session_timer_lambda_called_desk_down(self, datetime_mock):
+        self.operation.allowed.return_value = True
+        self.model.get_active_time.return_value = timedelta(0)
+        self.model.get_session_state.return_value = Active()
+        self.model.get_desk_state.return_value = Down()
+        datetime_mock.now.return_value = datetime(2018, 4, 19, 12, 0)
+
+        self.application.set_session(datetime(2018, 1, 1), Active())
+        self.timer.schedule.call_args[0][1]()
+
+        self.hardware.desk.assert_called_with(Up())
