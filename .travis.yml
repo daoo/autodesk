@@ -2,8 +2,9 @@ language: python
 python:
   - "3.6"
 install:
-  pip install . pycodestyle pyflakes
+  pip install . coverage codecov pycodestyle pyflakes
 script:
-  - python setup.py test
+  - coverage run setup.py test
   - pycodestyle autodesk bin tests
   - pyflakes autodesk bin tests
+  - codecov
