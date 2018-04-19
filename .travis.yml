@@ -5,5 +5,5 @@ install:
   pip install . pycodestyle pyflakes
 script:
   - python setup.py test
-  - pycodestyle autodesk tests
-  - pyflakes autodesk tests
+  - pycodestyle autodesk bin tests
+  - pyflakes autodesk bin tests
