@@ -151,7 +151,14 @@ class TestApplication(unittest.TestCase):
         self.hardware.desk.assert_called_with(Down())
 
     def test_set_desk_down_operation_denied_hardware_unchanged(self):
+        self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = False
+        self.application.set_desk(datetime(2018, 4, 16, 10, 0, 0), Down())
+        self.hardware.desk.assert_not_called()
+
+    def test_set_desk_down_inactive_hardware_unchanged(self):
+        self.model.get_session_state.return_value = Inactive()
+        self.operation.allowed.return_value = True
         self.application.set_desk(datetime(2018, 4, 16, 10, 0, 0), Down())
         self.hardware.desk.assert_not_called()
 
@@ -167,6 +174,12 @@ class TestApplication(unittest.TestCase):
         self.timer.schedule.assert_called_with(timedelta(seconds=10), ANY)
 
     def test_set_desk_down_operation_denied_timer_not_scheduled(self):
+        self.operation.allowed.return_value = False
+        self.application.set_desk(datetime(2018, 1, 1), Down())
+        self.timer.cancel.assert_not_called()
+        self.timer.schedule.assert_not_called()
+
+    def test_set_desk_down_inactive_timer_not_scheduled(self):
         self.operation.allowed.return_value = False
         self.application.set_desk(datetime(2018, 1, 1), Down())
         self.timer.cancel.assert_not_called()
