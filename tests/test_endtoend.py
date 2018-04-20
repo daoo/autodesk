@@ -3,7 +3,22 @@ import subprocess
 import unittest
 
 
-class TestServer(unittest.TestCase):
+class TestProgram(unittest.TestCase):
+    def test_incorrect_command_line_arguments(self):
+        cmd = ['python', '-u', '-m', 'autodesk.program']
+        self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        encoding='utf-8')
+        self.addCleanup(self.process.stdout.close)
+        self.addCleanup(self.process.stderr.close)
+
+        self.process.wait()
+
+        self.assertTrue(self.process.stderr.readline())
+        self.assertEquals(self.process.returncode, 1)
+
+
+class TestEndToEnd(unittest.TestCase):
     def setUp(self):
         cmd = ['python', '-u', '-m', 'autodesk.program', 'sys/testing.yml']
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,

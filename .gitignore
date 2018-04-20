@@ -1,10 +1,8 @@
-*.db
 *.egg-info/
-.cache/
 .coverage
 .eggs/
+.pytest_cache/
 __pycache__/
 build/
 dist/
-htmlcov/
 venv/

@@ -1,7 +1,8 @@
-coverage
-pycodestyle
-pyflakes
-requests
-pyyaml
 aiohttp
 aiohttp_jinja2
+pycodestyle
+pyflakes
+pytest
+pytest-cov
+pyyaml
+requests
