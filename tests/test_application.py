@@ -140,6 +140,32 @@ class TestApplication(unittest.TestCase):
 
         self.hardware.close.assert_called_once()
 
+    def test_close_model_closed(self):
+        self.application.close()
+
+        self.model.close.assert_called_once()
+
+    def test_get_active_time_returns_from_model(self):
+        self.model.get_active_time.return_value = timedelta(1)
+
+        ret = self.application.get_active_time(1, 2)
+
+        self.assertEqual(ret, timedelta(1))
+
+    def test_get_session_state_returns_from_model(self):
+        self.model.get_session_state.return_value = Active()
+
+        ret = self.application.get_session_state()
+
+        self.assertEqual(ret, Active())
+
+    def test_get_desk_state_returns_from_model(self):
+        self.model.get_desk_state.return_value = Up()
+
+        ret = self.application.get_desk_state()
+
+        self.assertEqual(ret, Up())
+
     def test_set_session_inactive_light_off(self):
         self.application.set_session(datetime(2018, 1, 1), Inactive())
 

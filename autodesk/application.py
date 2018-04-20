@@ -42,6 +42,11 @@ class Application:
                 self.model.get_desk_state(),
                 self.model.get_session_state())
 
+    def close(self):
+        self.timer.cancel()
+        self.model.close()
+        self.hardware.close()
+
     def get_active_time(self, initial, final):
         return self.model.get_active_time(initial, final)
 
@@ -50,11 +55,6 @@ class Application:
 
     def get_desk_state(self):
         return self.model.get_desk_state()
-
-    def close(self):
-        self.timer.cancel()
-        self.model.close()
-        self.hardware.close()
 
     def set_session(self, time, session):
         self.model.set_session(Event(time, session))
