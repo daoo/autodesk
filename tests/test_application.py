@@ -1,8 +1,8 @@
-from autodesk.application import Application, Operation
+from autodesk.application import Application, ApplicationFactory, Operation
 from autodesk.model import Active, Inactive, Down, Up
 from autodesk.spans import Event
 from datetime import date, datetime, time, timedelta
-from unittest.mock import patch, ANY
+from unittest.mock import patch, ANY, MagicMock
 import logging
 import unittest
 
@@ -265,3 +265,62 @@ class TestApplication(unittest.TestCase):
         self.timer.schedule.call_args[0][1]()
 
         self.hardware.desk.assert_called_with(Up())
+
+
+class TestApplicationFactory(unittest.TestCase):
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+
+        model_patcher = patch('autodesk.application.Model', autospec=True)
+        self.model = model_patcher.start()
+        self.addCleanup(model_patcher.stop)
+
+        timer_patcher = patch('autodesk.application.Timer', autospec=True)
+        self.timer = timer_patcher.start()
+        self.addCleanup(timer_patcher.stop)
+
+        hardware_patcher = patch('autodesk.application.create_hardware',
+                                 autospec=True)
+        self.create_hardware = hardware_patcher.start()
+        self.addCleanup(hardware_patcher.stop)
+
+        operation_patcher = patch('autodesk.application.Operation',
+                                  autospec=True)
+        self.operation = operation_patcher.start()
+        self.addCleanup(operation_patcher.stop)
+
+        application_patcher = patch('autodesk.application.Application',
+                                    autospec=True)
+        self.application = application_patcher.start()
+        self.addCleanup(application_patcher.stop)
+
+        self.limits = (timedelta(seconds=20), timedelta(seconds=10))
+        self.database_path = "path"
+        self.hardware_kind = "noop"
+        self.delay = 5
+        self.motor_pins = (1, 2)
+        self.light_pin = 3
+
+        self.factory = ApplicationFactory(
+            self.database_path,
+            self.hardware_kind,
+            self.limits,
+            self.delay,
+            self.motor_pins,
+            self.light_pin)
+
+    def test_create_constructors_called(self):
+        loop = MagicMock()
+
+        self.factory.create(loop)
+
+        self.operation.assert_called_with()
+        self.timer.assert_called_with(loop)
+        self.create_hardware.assert_called_with(
+            self.hardware_kind, self.delay, self.motor_pins, self.light_pin)
+        self.application.assert_called_with(
+            self.model.return_value,
+            self.timer.return_value,
+            self.create_hardware.return_value,
+            self.operation.return_value,
+            self.limits)
