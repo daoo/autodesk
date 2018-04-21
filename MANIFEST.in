@@ -1,2 +1,0 @@
-recursive-include srv/templates *
-recursive-include srv/static *

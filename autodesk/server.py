@@ -5,6 +5,7 @@ import aiohttp_jinja2
 import autodesk.stats as stats
 import jinja2
 import json
+import pathlib
 
 
 async def route_set_session(request):
@@ -93,7 +94,10 @@ def setup_app(application_factory):
     app = web.Application()
     app['application_factory'] = application_factory
 
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('srv/templates'))
+    aiohttp_jinja2.setup(
+        app, loader=jinja2.PackageLoader('autodesk', 'templates'))
+
+    project_root = pathlib.Path(__file__).parent
 
     app.router.add_get('/', route_index)
     app.router.add_get('/api/session', route_get_session)
@@ -101,7 +105,7 @@ def setup_app(application_factory):
     app.router.add_get('/api/desk', route_get_desk)
     app.router.add_put('/api/desk', route_set_desk)
     app.router.add_get('/api/sessions.json', route_get_sessions)
-    app.router.add_static('/static/', 'srv/static')
+    app.router.add_static('/static/', project_root / 'static')
 
     app.on_startup.append(init)
     app.on_cleanup.append(cleanup)

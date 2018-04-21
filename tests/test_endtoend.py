@@ -5,7 +5,7 @@ import unittest
 
 class TestProgram(unittest.TestCase):
     def test_incorrect_command_line_arguments(self):
-        cmd = ['python', '-u', '-m', 'autodesk.program']
+        cmd = ['python3', '-u', '-m', 'autodesk.program']
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
                                         encoding='utf-8')
@@ -20,7 +20,7 @@ class TestProgram(unittest.TestCase):
 
 class TestEndToEnd(unittest.TestCase):
     def setUp(self):
-        cmd = ['python', '-u', '-m', 'autodesk.program', 'sys/testing.yml']
+        cmd = ['python3', '-u', '-m', 'autodesk.program', 'sys/testing.yml']
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
                                         encoding='utf-8')

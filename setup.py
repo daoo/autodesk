@@ -5,9 +5,13 @@ from setuptools import setup
 setup(
     name='autodesk',
     version='1.0',
-    packages=['autodesk'],
-    include_package_data=True,
+    packages=['autodesk', 'autodesk.hardware'],
     install_requires=['aiohttp', 'aiohttp_jinja2', 'pyyaml'],
-    test_suite='tests',
-    scripts=['bin/logger.py'],
+    package_data={
+        'autodesk': [
+            'static/*.*',
+            'templates/*.*'
+        ]
+    },
+    include_package_data=True,
 )

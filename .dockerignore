@@ -1,0 +1,10 @@
+*.egg-info/
+.coverage
+.eggs/
+.pytest_cache/
+__pycache__/
+build/
+dist/
+venv/
+
+Dockerfile
