@@ -20,7 +20,13 @@ class TestServer(AioHTTPTestCase):
             'autodesk.application.ApplicationFactory', autospec=True)
         application_factory = application_factory_patcher.start()
         self.addCleanup(application_factory_patcher.stop)
-        self.application = application_factory.create.return_value
+
+        application_patcher = patch(
+            'autodesk.application.Application', autospec=True)
+        self.application = application_patcher.start()
+        self.addCleanup(application_patcher.stop)
+
+        application_factory.create.return_value = self.application
 
         return server.setup_app(application_factory)
 
