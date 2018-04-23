@@ -10,18 +10,16 @@ class TestServer(utils.AioHTTPTestCase):
     async def get_application(self):
         logging.disable(logging.CRITICAL)
 
-        datetime = self.patch('autodesk.server.datetime')
         factory = self.patch('autodesk.application.ApplicationFactory')
         self.application = self.patch('autodesk.application.Application')
 
-        self.now = datetime.now()
         factory.create.return_value = self.application
 
         return server.setup_app(factory)
 
     @unittest_run_loop
     async def test_server_setup(self):
-        self.application.init.assert_called_with(self.now)
+        self.application.init.assert_called_with()
 
     @unittest_run_loop
     async def test_server_index(self):
@@ -53,13 +51,13 @@ class TestServer(utils.AioHTTPTestCase):
     async def test_server_set_desk_down(self):
         response = await self.client.put('/api/desk', data=b'0')
         self.assertEqual(200, response.status)
-        self.application.set_desk.assert_called_with(self.now, Down())
+        self.application.set_desk.assert_called_with(Down())
 
     @unittest_run_loop
     async def test_server_set_desk_up(self):
         response = await self.client.put('/api/desk', data=b'1')
         self.assertEqual(200, response.status)
-        self.application.set_desk.assert_called_with(self.now, Up())
+        self.application.set_desk.assert_called_with(Up())
 
     @unittest_run_loop
     async def test_server_set_desk_not_allowed(self):
@@ -80,11 +78,11 @@ class TestServer(utils.AioHTTPTestCase):
     @unittest_run_loop
     async def test_server_set_session_inactive(self):
         response = await self.client.put('/api/session', data=b'0')
-        self.application.set_session.assert_called_with(self.now, Inactive())
+        self.application.set_session.assert_called_with(Inactive())
         self.assertEqual(200, response.status)
 
     @unittest_run_loop
     async def test_server_set_session_active(self):
         response = await self.client.put('/api/session', data=b'1')
-        self.application.set_session.assert_called_with(self.now, Active())
+        self.application.set_session.assert_called_with(Active())
         self.assertEqual(200, response.status)

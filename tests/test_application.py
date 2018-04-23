@@ -57,10 +57,14 @@ class TestApplication(utils.TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
 
+        self.datetime = self.patch('autodesk.application.datetime')
         self.model = self.patch('autodesk.model.Model')
         self.timer = self.patch('autodesk.timer.Timer')
         self.hardware = self.patch('autodesk.hardware.noop.Noop')
-        self.operation = self.patch('autodesk.application.Operation')
+
+        self.time_allowed = datetime(2018, 4, 23, 13, 0)
+        self.time_denied = datetime(2018, 4, 23, 20, 0)
+        self.now = self.datetime.now
 
         self.limits = (timedelta(seconds=20), timedelta(seconds=10))
 
@@ -68,30 +72,27 @@ class TestApplication(utils.TestCase):
             self.model,
             self.timer,
             self.hardware,
-            self.operation,
+            Operation(),
             self.limits)
 
     def test_init_inactive_light_off(self):
         self.model.get_session_state.return_value = Inactive()
-        self.operation.allowed.return_value = False
 
-        self.application.init(datetime(2018, 1, 1))
+        self.application.init()
 
         self.hardware.light.assert_called_with(Inactive())
 
     def test_init_active_light_on(self):
         self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = False
 
-        self.application.init(datetime(2018, 1, 1))
+        self.application.init()
 
         self.hardware.light.assert_called_with(Active())
 
     def test_init_active_operation_denied_timer_not_scheduled(self):
         self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = False
 
-        self.application.init(datetime(2018, 1, 1))
+        self.application.init()
 
         self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_not_called()
@@ -99,9 +100,8 @@ class TestApplication(utils.TestCase):
     def test_init_inactive_operation_allowed_timer_not_scheduled(self):
         self.model.get_active_time.return_value = timedelta(seconds=10)
         self.model.get_session_state.return_value = Inactive()
-        self.operation.allowed.return_value = True
 
-        self.application.init(datetime(2018, 1, 1))
+        self.application.init()
 
         self.timer.schedule.assert_not_called()
         self.timer.cancel.assert_not_called()
@@ -110,22 +110,13 @@ class TestApplication(utils.TestCase):
         self.model.get_active_time.return_value = timedelta(seconds=10)
         self.model.get_desk_state.return_value = Down()
         self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = True
+        self.now.return_value = self.time_allowed
 
-        self.application.init(datetime(2018, 1, 1))
+        self.application.init()
 
         self.timer.schedule.assert_called_with(timedelta(seconds=10),
                                                unittest.mock.ANY)
         self.timer.cancel.assert_not_called()
-
-    def test_init_operation_allow_called_with_input(self):
-        self.model.get_active_time.return_value = timedelta(0)
-        self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = False
-
-        self.application.init(datetime(2018, 1, 1))
-
-        self.operation.allowed.assert_called_with(datetime(2018, 1, 1))
 
     def test_close_timer_cancelled(self):
         self.application.close()
@@ -143,7 +134,7 @@ class TestApplication(utils.TestCase):
         self.model.close.assert_called_once()
 
     def test_get_active_time_returns_from_model(self):
-        ret = self.application.get_active_time(1, 2)
+        ret = self.application.get_active_time()
 
         self.assertEqual(ret, self.model.get_active_time.return_value)
 
@@ -159,45 +150,45 @@ class TestApplication(utils.TestCase):
 
     @unittest.mock.patch('autodesk.application.stats', autospec=True)
     def test_get_daily_active_time_calls_stats_with_session_spans(self, stats):
-        ret = self.application.get_daily_active_time(
-            datetime.min, datetime(2018, 1, 1))
+        ret = self.application.get_daily_active_time()
 
         stats.compute_daily_active_time.assert_called_with(
             self.model.get_session_spans.return_value)
         self.assertEqual(ret, stats.compute_daily_active_time.return_value)
 
     def test_set_session_inactive_light_off(self):
-        self.application.set_session(datetime(2018, 1, 1), Inactive())
+        self.application.set_session(Inactive())
 
         self.hardware.light.assert_called_with(Inactive())
 
     def test_set_session_active_light_on(self):
         self.model.get_desk_state.return_value = Down()
         self.model.get_active_time.return_value = timedelta(0)
-        self.application.set_session(datetime(2018, 1, 1), Active())
+        self.application.set_session(Active())
 
         self.hardware.light.assert_called_with(Active())
 
     def test_set_session_inactive_model_set_inactive(self):
-        event = Event(datetime(2018, 1, 1), Inactive())
+        self.now.return_value = self.time_allowed
 
-        self.application.set_session(event.index, event.data)
+        self.application.set_session(Inactive())
 
-        self.model.set_session.assert_called_with(event)
+        self.model.set_session.assert_called_with(
+            Event(self.time_allowed, Inactive()))
 
     def test_set_session_active_timer_scheduled(self):
         self.model.get_desk_state.return_value = Down()
         self.model.get_active_time.return_value = timedelta(0)
-        event = Event(datetime(2018, 1, 1), Active())
+        self.now.return_value = self.time_allowed
 
-        self.application.set_session(event.index, event.data)
+        self.application.set_session(Active())
 
-        self.model.set_session.assert_called_with(event)
+        self.model.set_session.assert_called_with(
+            Event(self.time_allowed, Active()))
 
     def test_set_session_inactive_timer_cancelled(self):
-        self.operation.allowed.return_value = True
 
-        self.application.set_session(datetime(2018, 1, 1), Inactive())
+        self.application.set_session(Inactive())
 
         self.timer.schedule.assert_not_called()
         self.timer.cancel.assert_called_once()
@@ -205,34 +196,34 @@ class TestApplication(utils.TestCase):
     def test_set_desk_down_active_operation_allowed_hardware_down(self):
         self.model.get_active_time.return_value = timedelta(0)
         self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = True
+        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(datetime(2018, 4, 16, 10, 0, 0), Down())
+        self.application.set_desk(Down())
 
         self.hardware.desk.assert_called_with(Down())
 
-    def test_set_desk_down_operation_denied_hardware_unchanged(self):
+    def test_set_desk_down_active_operation_denied_hardware_unchanged(self):
         self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = False
+        self.now.return_value = self.time_denied
 
-        self.application.set_desk(datetime(2018, 4, 16, 10, 0, 0), Down())
+        self.application.set_desk(Down())
 
         self.hardware.desk.assert_not_called()
 
-    def test_set_desk_down_inactive_hardware_unchanged(self):
+    def test_set_desk_down_inactive_operation_allowed_hardware_unchanged(self):
         self.model.get_session_state.return_value = Inactive()
-        self.operation.allowed.return_value = True
+        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(datetime(2018, 4, 16, 10, 0, 0), Down())
+        self.application.set_desk(Down())
 
         self.hardware.desk.assert_not_called()
 
     def test_set_desk_down_operation_allowed_timer_scheduled_20_seconds(self):
         self.model.get_active_time.return_value = timedelta(0)
         self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = True
+        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(datetime(2018, 1, 1), Down())
+        self.application.set_desk(Down())
 
         self.timer.schedule.assert_called_with(timedelta(seconds=20),
                                                unittest.mock.ANY)
@@ -240,38 +231,34 @@ class TestApplication(utils.TestCase):
     def test_set_desk_up_operation_allowed_timer_scheduled_10_seconds(self):
         self.model.get_active_time.return_value = timedelta(0)
         self.model.get_session_state.return_value = Active()
-        self.operation.allowed.return_value = True
+        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(datetime(2018, 1, 1), Up())
+        self.application.set_desk(Up())
 
         self.timer.schedule.assert_called_with(timedelta(seconds=10),
                                                unittest.mock.ANY)
 
     def test_set_desk_down_operation_denied_timer_not_scheduled(self):
-        self.operation.allowed.return_value = False
 
-        self.application.set_desk(datetime(2018, 1, 1), Down())
+        self.application.set_desk(Down())
 
         self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_not_called()
 
     def test_set_desk_down_inactive_timer_not_scheduled(self):
-        self.operation.allowed.return_value = False
 
-        self.application.set_desk(datetime(2018, 1, 1), Down())
+        self.application.set_desk(Down())
 
         self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_not_called()
 
-    @unittest.mock.patch('autodesk.application.datetime', autospec=True)
-    def test_set_session_timer_lambda_called_desk_down(self, datetime_mock):
-        self.operation.allowed.return_value = True
+    def test_set_session_timer_lambda_called_desk_down(self):
         self.model.get_active_time.return_value = timedelta(0)
         self.model.get_session_state.return_value = Active()
         self.model.get_desk_state.return_value = Down()
-        datetime_mock.now.return_value = datetime(2018, 4, 19, 12, 0)
+        self.now.return_value = self.time_allowed
 
-        self.application.set_session(datetime(2018, 1, 1), Active())
+        self.application.set_session(Active())
         self.timer.schedule.call_args[0][1]()
 
         self.hardware.desk.assert_called_with(Up())

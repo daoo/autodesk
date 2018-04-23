@@ -33,10 +33,11 @@ class Application:
         self.operation = operation
         self.limits = limits
 
-    def init(self, time):
+    def init(self):
         session = self.model.get_session_state()
         self.hardware.light(session)
 
+        time = datetime.now()
         if session.active() and self.operation.allowed(time):
             self._update_timer(
                 time,
@@ -48,8 +49,8 @@ class Application:
         self.model.close()
         self.hardware.close()
 
-    def get_active_time(self, initial, final):
-        return self.model.get_active_time(initial, final)
+    def get_active_time(self):
+        return self.model.get_active_time(datetime.min, datetime.now())
 
     def get_session_state(self):
         return self.model.get_session_state()
@@ -57,11 +58,12 @@ class Application:
     def get_desk_state(self):
         return self.model.get_desk_state()
 
-    def get_daily_active_time(self, initial, final):
+    def get_daily_active_time(self):
         return stats.compute_daily_active_time(
-            self.model.get_session_spans(initial, final))
+            self.model.get_session_spans(datetime.min, datetime.now()))
 
-    def set_session(self, time, session):
+    def set_session(self, session):
+        time = datetime.now()
         self.model.set_session(Event(time, session))
         self.hardware.light(session)
 
@@ -70,7 +72,8 @@ class Application:
         else:
             self.timer.cancel()
 
-    def set_desk(self, time, desk):
+    def set_desk(self, desk):
+        time = datetime.now()
         if not self.operation.allowed(time):
             self.logger.warning('desk operation not allowed at this time')
             return False
@@ -93,7 +96,7 @@ class Application:
     def _update_timer(self, time, desk, session):
         self.timer.schedule(
             self._compute_delay_to_next(time, desk),
-            lambda: self.set_desk(datetime.now(), desk.next()))
+            lambda: self.set_desk(desk.next()))
 
 
 class ApplicationFactory:

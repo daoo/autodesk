@@ -1,6 +1,5 @@
 from aiohttp import web
 from autodesk.model import desk_from_int, session_from_int
-from datetime import datetime
 import aiohttp_jinja2
 import autodesk.stats as stats
 import jinja2
@@ -11,7 +10,7 @@ import pathlib
 async def route_set_session(request):
     body = await request.text()
     state = session_from_int(int(body))
-    request.app['application'].set_session(datetime.now(), state)
+    request.app['application'].set_session(state)
     return web.Response()
 
 
@@ -23,7 +22,7 @@ async def route_get_session(request):
 async def route_set_desk(request):
     body = await request.text()
     state = desk_from_int(int(body))
-    ok = request.app['application'].set_desk(datetime.now(), state)
+    ok = request.app['application'].set_desk(state)
     return web.Response(status=200 if ok else 403)
 
 
@@ -54,8 +53,7 @@ async def route_get_sessions(request):
             yield (index // 60, index % 60, measurments)
             index += 1
 
-    daily_active_time = request.app['application'].get_daily_active_time(
-        datetime.min, datetime.now())
+    daily_active_time = request.app['application'].get_daily_active_time()
     grouped = stats.group_into_days(daily_active_time)
     decorated = [list(decorate(group)) for group in grouped]
     trimmed = trim_week([trim_day(group) for group in decorated])
@@ -67,12 +65,10 @@ async def route_get_sessions(request):
 
 @aiohttp_jinja2.template('index.html')
 async def route_index(request):
-    beginning = datetime.min
-    now = datetime.now()
     application = request.app['application']
     session_state = application.get_session_state().test('inactive', 'active')
     desk_state = application.get_desk_state().test('down', 'up')
-    active_time = application.get_active_time(beginning, now)
+    active_time = application.get_active_time()
     return {
         'session': session_state,
         'desk': desk_state,
@@ -83,7 +79,7 @@ async def route_index(request):
 async def init(app):
     app['application'] = app['application_factory'].create(app.loop)
     del app['application_factory']
-    app['application'].init(datetime.now())
+    app['application'].init()
 
 
 async def cleanup(app):
