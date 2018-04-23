@@ -53,11 +53,8 @@ async def route_get_sessions(request):
             yield (index // 60, index % 60, measurments)
             index += 1
 
-    daily_active_time = stats.compute_daily_active_time(
-        request.app['application'].get_session_spans(
-            datetime.min,
-            datetime.now()
-        ))
+    daily_active_time = request.app['application'].get_daily_active_time(
+        datetime.min, datetime.now())
     grouped = stats.group_into_days(daily_active_time)
     decorated = [list(decorate(group)) for group in grouped]
     trimmed = trim_week([trim_day(group) for group in decorated])

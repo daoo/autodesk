@@ -75,11 +75,6 @@ class TestApplication(unittest.TestCase):
 
         self.limits = (timedelta(seconds=20), timedelta(seconds=10))
 
-        self.model.get_session_state.return_value = Inactive()
-        self.model.get_desk_state.return_value = Down()
-        self.model.get_active_time.return_value = timedelta(seconds=0)
-        self.operation.allowed.return_value = True
-
         self.application = Application(
             self.model,
             self.timer,
@@ -89,6 +84,7 @@ class TestApplication(unittest.TestCase):
 
     def test_init_inactive_light_off(self):
         self.model.get_session_state.return_value = Inactive()
+        self.operation.allowed.return_value = False
 
         self.application.init()
 
@@ -96,6 +92,7 @@ class TestApplication(unittest.TestCase):
 
     def test_init_active_light_on(self):
         self.model.get_session_state.return_value = Active()
+        self.operation.allowed.return_value = False
 
         self.application.init()
 
@@ -122,6 +119,7 @@ class TestApplication(unittest.TestCase):
 
     def test_init_active_operation_allowed_timer_scheduled(self):
         self.model.get_active_time.return_value = timedelta(seconds=10)
+        self.model.get_desk_state.return_value = Down()
         self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = True
 
@@ -146,25 +144,28 @@ class TestApplication(unittest.TestCase):
         self.model.close.assert_called_once()
 
     def test_get_active_time_returns_from_model(self):
-        self.model.get_active_time.return_value = timedelta(1)
-
         ret = self.application.get_active_time(1, 2)
 
-        self.assertEqual(ret, timedelta(1))
+        self.assertEqual(ret, self.model.get_active_time.return_value)
 
     def test_get_session_state_returns_from_model(self):
-        self.model.get_session_state.return_value = Active()
-
         ret = self.application.get_session_state()
 
-        self.assertEqual(ret, Active())
+        self.assertEqual(ret, self.model.get_session_state.return_value)
 
     def test_get_desk_state_returns_from_model(self):
-        self.model.get_desk_state.return_value = Up()
-
         ret = self.application.get_desk_state()
 
-        self.assertEqual(ret, Up())
+        self.assertEqual(ret, self.model.get_desk_state.return_value)
+
+    @patch('autodesk.application.stats', autospec=True)
+    def test_get_daily_active_time_calls_stats_with_session_spans(self, stats):
+        ret = self.application.get_daily_active_time(
+            datetime.min, datetime(2018, 1, 1))
+
+        stats.compute_daily_active_time.assert_called_with(
+            self.model.get_session_spans.return_value)
+        self.assertEqual(ret, stats.compute_daily_active_time.return_value)
 
     def test_set_session_inactive_light_off(self):
         self.application.set_session(datetime(2018, 1, 1), Inactive())
@@ -172,6 +173,8 @@ class TestApplication(unittest.TestCase):
         self.hardware.light.assert_called_with(Inactive())
 
     def test_set_session_active_light_on(self):
+        self.model.get_desk_state.return_value = Down()
+        self.model.get_active_time.return_value = timedelta(0)
         self.application.set_session(datetime(2018, 1, 1), Active())
 
         self.hardware.light.assert_called_with(Active())
@@ -184,6 +187,8 @@ class TestApplication(unittest.TestCase):
         self.model.set_session.assert_called_with(event)
 
     def test_set_session_active_timer_scheduled(self):
+        self.model.get_desk_state.return_value = Down()
+        self.model.get_active_time.return_value = timedelta(0)
         event = Event(datetime(2018, 1, 1), Active())
 
         self.application.set_session(event.index, event.data)
@@ -199,6 +204,7 @@ class TestApplication(unittest.TestCase):
         self.timer.cancel.assert_called_once()
 
     def test_set_desk_down_active_operation_allowed_hardware_down(self):
+        self.model.get_active_time.return_value = timedelta(0)
         self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = True
 
@@ -223,13 +229,16 @@ class TestApplication(unittest.TestCase):
         self.hardware.desk.assert_not_called()
 
     def test_set_desk_down_operation_allowed_timer_scheduled_20_seconds(self):
+        self.model.get_active_time.return_value = timedelta(0)
         self.model.get_session_state.return_value = Active()
+        self.operation.allowed.return_value = True
 
         self.application.set_desk(datetime(2018, 1, 1), Down())
 
         self.timer.schedule.assert_called_with(timedelta(seconds=20), ANY)
 
     def test_set_desk_up_operation_allowed_timer_scheduled_10_seconds(self):
+        self.model.get_active_time.return_value = timedelta(0)
         self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = True
 

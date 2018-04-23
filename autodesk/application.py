@@ -3,6 +3,7 @@ from autodesk.model import Model
 from autodesk.spans import Event
 from autodesk.timer import Timer
 from datetime import datetime, time, timedelta
+import autodesk.stats as stats
 import logging
 
 
@@ -55,6 +56,10 @@ class Application:
 
     def get_desk_state(self):
         return self.model.get_desk_state()
+
+    def get_daily_active_time(self, initial, final):
+        return stats.compute_daily_active_time(
+            self.model.get_session_spans(initial, final))
 
     def set_session(self, time, session):
         self.model.set_session(Event(time, session))
