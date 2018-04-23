@@ -31,6 +31,10 @@ class TestServer(AioHTTPTestCase):
         return server.setup_app(application_factory)
 
     @unittest_run_loop
+    async def test_server_setup(self):
+        self.application.init.assert_called_with(self.now)
+
+    @unittest_run_loop
     async def test_server_index(self):
         self.application.get_active_time.return_value = timedelta(
             hours=12, minutes=34, seconds=56)

@@ -82,7 +82,7 @@ async def route_index(request):
 async def init(app):
     app['application'] = app['application_factory'].create(app.loop)
     del app['application_factory']
-    app['application'].init()
+    app['application'].init(datetime.now())
 
 
 async def cleanup(app):

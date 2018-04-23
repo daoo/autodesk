@@ -86,7 +86,7 @@ class TestApplication(unittest.TestCase):
         self.model.get_session_state.return_value = Inactive()
         self.operation.allowed.return_value = False
 
-        self.application.init()
+        self.application.init(datetime(2018, 1, 1))
 
         self.hardware.light.assert_called_with(Inactive())
 
@@ -94,7 +94,7 @@ class TestApplication(unittest.TestCase):
         self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = False
 
-        self.application.init()
+        self.application.init(datetime(2018, 1, 1))
 
         self.hardware.light.assert_called_with(Active())
 
@@ -102,7 +102,7 @@ class TestApplication(unittest.TestCase):
         self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = False
 
-        self.application.init()
+        self.application.init(datetime(2018, 1, 1))
 
         self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_not_called()
@@ -112,7 +112,7 @@ class TestApplication(unittest.TestCase):
         self.model.get_session_state.return_value = Inactive()
         self.operation.allowed.return_value = True
 
-        self.application.init()
+        self.application.init(datetime(2018, 1, 1))
 
         self.timer.schedule.assert_not_called()
         self.timer.cancel.assert_not_called()
@@ -123,10 +123,19 @@ class TestApplication(unittest.TestCase):
         self.model.get_session_state.return_value = Active()
         self.operation.allowed.return_value = True
 
-        self.application.init()
+        self.application.init(datetime(2018, 1, 1))
 
         self.timer.schedule.assert_called_with(timedelta(seconds=10), ANY)
         self.timer.cancel.assert_not_called()
+
+    def test_init_operation_allow_called_with_input(self):
+        self.model.get_active_time.return_value = timedelta(0)
+        self.model.get_session_state.return_value = Active()
+        self.operation.allowed.return_value = False
+
+        self.application.init(datetime(2018, 1, 1))
+
+        self.operation.allowed.assert_called_with(datetime(2018, 1, 1))
 
     def test_close_timer_cancelled(self):
         self.application.close()

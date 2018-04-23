@@ -33,13 +33,13 @@ class Application:
         self.operation = operation
         self.limits = limits
 
-    def init(self):
+    def init(self, time):
         session = self.model.get_session_state()
         self.hardware.light(session)
 
         if session.active() and self.operation.allowed(time):
             self._update_timer(
-                datetime.now(),
+                time,
                 self.model.get_desk_state(),
                 self.model.get_session_state())
 
