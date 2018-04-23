@@ -23,7 +23,7 @@ class TestFt232h(utils.TestCase):
 
         self.hw = Ft232h(5, (0, 1), 2)
 
-    def test_ft232h_constructor(self):
+    def test_constructor(self):
         # constructor called by setUp
         self.device.setup.assert_has_calls([
             call(0, self.gpio.OUT),
@@ -31,11 +31,11 @@ class TestFt232h(utils.TestCase):
             call(2, self.gpio.OUT)
         ])
 
-    def test_ft232h_close(self):
+    def test_close(self):
         self.hw.close()
         self.device.close.assert_called_once()
 
-    def test_ft232h_desk_down(self):
+    def test_desk_down(self):
         self.hw.desk(Down())
         self.device.output.assert_has_calls([
             call(0, self.gpio.HIGH),
@@ -43,7 +43,7 @@ class TestFt232h(utils.TestCase):
         ])
         self.time_sleep.assert_called_once_with(5)
 
-    def test_ft232h_desk_up(self):
+    def test_desk_up(self):
         self.hw.desk(Up())
         self.device.output.assert_has_calls([
             call(1, self.gpio.HIGH),
@@ -51,10 +51,10 @@ class TestFt232h(utils.TestCase):
         ])
         self.time_sleep.assert_called_once_with(5)
 
-    def test_ft232h_light_on(self):
+    def test_light_on(self):
         self.hw.light(Active())
         self.device.output.assert_called_once_with(2, self.gpio.HIGH)
 
-    def test_ft232h_light_off(self):
+    def test_light_off(self):
         self.hw.light(Inactive())
         self.device.output.assert_called_once_with(2, self.gpio.LOW)

@@ -6,7 +6,7 @@ import unittest
 
 
 class TestStats(unittest.TestCase):
-    def test_stats_compute_daily_active_time_sum(self):
+    def test_compute_daily_active_time_sum(self):
         spans = [Span(
             datetime(2017, 4, 12, 10, 0, 0),
             datetime(2017, 4, 12, 10, 30, 0),
@@ -17,7 +17,7 @@ class TestStats(unittest.TestCase):
             30
         )
 
-    def test_stats_compute_daily_active_time_inactive_zero(self):
+    def test_compute_daily_active_time_inactive_zero(self):
         spans = [Span(
             datetime(2017, 4, 12, 10, 0, 0),
             datetime(2017, 4, 12, 10, 30, 0),
@@ -25,7 +25,7 @@ class TestStats(unittest.TestCase):
         )]
         self.assertEqual(sum(stats.compute_daily_active_time(spans)), 0)
 
-    def test_stats_group_into_days_identity(self):
+    def test_group_into_days_identity(self):
         spans = [Span(
             datetime(2017, 4, 12, 10, 0, 0),
             datetime(2017, 4, 12, 10, 30, 0),

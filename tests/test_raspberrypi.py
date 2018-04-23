@@ -22,7 +22,7 @@ class TestRaspberryPi(utils.TestCase):
 
         self.hw = RaspberryPi(5, (0, 1), 2)
 
-    def test_raspberrypi_constructor(self):
+    def test_constructor(self):
         # constructor called by setUp
         self.gpio.setmode.assert_called_once_with(self.gpio.BOARD)
         self.gpio.setup.assert_has_calls([
@@ -31,11 +31,11 @@ class TestRaspberryPi(utils.TestCase):
             call(2, self.gpio.OUT)
         ])
 
-    def test_raspberrypi_close(self):
+    def test_close(self):
         self.hw.close()
         self.gpio.cleanup.assert_called_once()
 
-    def test_raspberrypi_desk_down(self):
+    def test_desk_down(self):
         self.hw.desk(Down())
         self.gpio.output.assert_has_calls([
             call(0, self.gpio.HIGH),
@@ -43,7 +43,7 @@ class TestRaspberryPi(utils.TestCase):
         ])
         self.time_sleep.assert_called_once_with(5)
 
-    def test_raspberrypi_desk_up(self):
+    def test_desk_up(self):
         self.hw.desk(Up())
         self.gpio.output.assert_has_calls([
             call(1, self.gpio.HIGH),
@@ -51,10 +51,10 @@ class TestRaspberryPi(utils.TestCase):
         ])
         self.time_sleep.assert_called_once_with(5)
 
-    def test_raspberrypi_light_on(self):
+    def test_light_on(self):
         self.hw.light(Active())
         self.gpio.output.assert_called_once_with(2, self.gpio.HIGH)
 
-    def test_raspberrypi_light_off(self):
+    def test_light_off(self):
         self.hw.light(Inactive())
         self.gpio.output.assert_called_once_with(2, self.gpio.LOW)

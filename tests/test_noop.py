@@ -4,14 +4,14 @@ import unittest
 
 
 class TestNoop(unittest.TestCase):
-    def test_noop_constructor(self):
+    def test_constructor(self):
         Noop()
 
-    def test_noop_close(self):
+    def test_close(self):
         Noop().close()
 
-    def test_noop_desk(self):
+    def test_desk(self):
         Noop().desk(Up())
 
-    def test_noop_light(self):
+    def test_light(self):
         Noop().light(Active())

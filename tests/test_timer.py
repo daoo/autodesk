@@ -13,11 +13,11 @@ class TestTimer(utils.TestCase):
         self.callback = Mock()
         self.timer = Timer(self.loop)
 
-    def test_timer_schedule_call_later_called(self):
+    def test_schedule_call_later_called(self):
         self.timer.schedule(timedelta(seconds=10), self.callback)
         self.loop.call_later.assert_called_with(10.0, self.callback)
 
-    def test_timer_schedule_old_timer_cancelled(self):
+    def test_schedule_with_previous_its_cancelled(self):
         self.loop.call_later.return_value = timer1 = Mock()
         self.timer.schedule(timedelta(seconds=10), self.callback)
         self.loop.call_later.return_value = timer2 = Mock()
@@ -25,13 +25,13 @@ class TestTimer(utils.TestCase):
         timer1.cancel.assert_called_once()
         timer2.cancel.assert_not_called()
 
-    def test_timer_cancel_cancels(self):
+    def test_cancel_cancels(self):
         self.loop.call_later.return_value = timer = Mock()
         self.timer.schedule(timedelta(seconds=10), self.callback)
         self.timer.cancel()
         timer.cancel.assert_called_once()
 
-    def test_timer_not_running_cancel_nothing_happens(self):
+    def test_not_running_cancel_nothing_happens(self):
         self.loop.call_later.return_value = timer = Mock()
         self.timer.cancel()
         timer.cancel.assert_not_called()

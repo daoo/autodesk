@@ -9,14 +9,14 @@ class TestLoggingWrapper(unittest.TestCase):
         self.inner = MagicMock()
         self.hardware = LoggingWrapper(self.inner)
 
-    def test_logging_wrapper_close(self):
+    def test_close(self):
         self.hardware.close()
         self.inner.close.assert_called_once()
 
-    def test_logging_wrapper_desk(self):
+    def test_desk(self):
         self.hardware.desk(Up())
         self.inner.desk.assert_called_once_with(Up())
 
-    def test_logging_wrapper_light(self):
+    def test_light(self):
         self.hardware.light(Active())
         self.inner.light.assert_called_once_with(Active())

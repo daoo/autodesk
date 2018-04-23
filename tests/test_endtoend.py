@@ -40,5 +40,5 @@ class TestEndToEnd(unittest.TestCase):
 
         self.addCleanup(stop)
 
-    def test_server_index(self):
+    def test_get_index(self):
         self.assertTrue(requests.get('http://localhost:8081').ok)
