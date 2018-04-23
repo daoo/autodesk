@@ -1,19 +1,15 @@
 from autodesk.timer import Timer
 from datetime import timedelta
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 import logging
-import unittest
+import tests.utils as utils
 
 
-class TestTimer(unittest.TestCase):
+class TestTimer(utils.TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
 
-        loop_patcher = patch(
-            'asyncio.AbstractEventLoop', autospec=True)
-        self.loop = loop_patcher.start()
-        self.addCleanup(loop_patcher.stop)
-
+        self.loop = self.patch('asyncio.AbstractEventLoop')
         self.callback = Mock()
         self.timer = Timer(self.loop)
 

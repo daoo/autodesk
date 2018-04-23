@@ -2,12 +2,13 @@ from autodesk.application import Application, ApplicationFactory, Operation
 from autodesk.model import Active, Inactive, Down, Up
 from autodesk.spans import Event
 from datetime import date, datetime, time, timedelta
-from unittest.mock import patch, ANY, MagicMock
 import logging
+import tests.utils as utils
 import unittest
+import unittest.mock
 
 
-class TestOperation(unittest.TestCase):
+class TestOperation(utils.TestCase):
     def setUp(self):
         self.operation = Operation()
 
@@ -52,26 +53,14 @@ class TestOperation(unittest.TestCase):
             self.operation.allowed(datetime.combine(sunday, stroke)))
 
 
-class TestApplication(unittest.TestCase):
+class TestApplication(utils.TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
 
-        model_patcher = patch('autodesk.model.Model', autospec=True)
-        self.model = model_patcher.start()
-        self.addCleanup(model_patcher.stop)
-
-        timer_patcher = patch('autodesk.timer.Timer', autospec=True)
-        self.timer = timer_patcher.start()
-        self.addCleanup(timer_patcher.stop)
-
-        hardware_patcher = patch('autodesk.hardware.noop.Noop', autospec=True)
-        self.hardware = hardware_patcher.start()
-        self.addCleanup(hardware_patcher.stop)
-
-        operation_patcher = patch(
-            'autodesk.application.Operation', autospec=True)
-        self.operation = operation_patcher.start()
-        self.addCleanup(operation_patcher.stop)
+        self.model = self.patch('autodesk.model.Model')
+        self.timer = self.patch('autodesk.timer.Timer')
+        self.hardware = self.patch('autodesk.hardware.noop.Noop')
+        self.operation = self.patch('autodesk.application.Operation')
 
         self.limits = (timedelta(seconds=20), timedelta(seconds=10))
 
@@ -125,7 +114,8 @@ class TestApplication(unittest.TestCase):
 
         self.application.init(datetime(2018, 1, 1))
 
-        self.timer.schedule.assert_called_with(timedelta(seconds=10), ANY)
+        self.timer.schedule.assert_called_with(timedelta(seconds=10),
+                                               unittest.mock.ANY)
         self.timer.cancel.assert_not_called()
 
     def test_init_operation_allow_called_with_input(self):
@@ -167,7 +157,7 @@ class TestApplication(unittest.TestCase):
 
         self.assertEqual(ret, self.model.get_desk_state.return_value)
 
-    @patch('autodesk.application.stats', autospec=True)
+    @unittest.mock.patch('autodesk.application.stats', autospec=True)
     def test_get_daily_active_time_calls_stats_with_session_spans(self, stats):
         ret = self.application.get_daily_active_time(
             datetime.min, datetime(2018, 1, 1))
@@ -244,7 +234,8 @@ class TestApplication(unittest.TestCase):
 
         self.application.set_desk(datetime(2018, 1, 1), Down())
 
-        self.timer.schedule.assert_called_with(timedelta(seconds=20), ANY)
+        self.timer.schedule.assert_called_with(timedelta(seconds=20),
+                                               unittest.mock.ANY)
 
     def test_set_desk_up_operation_allowed_timer_scheduled_10_seconds(self):
         self.model.get_active_time.return_value = timedelta(0)
@@ -253,7 +244,8 @@ class TestApplication(unittest.TestCase):
 
         self.application.set_desk(datetime(2018, 1, 1), Up())
 
-        self.timer.schedule.assert_called_with(timedelta(seconds=10), ANY)
+        self.timer.schedule.assert_called_with(timedelta(seconds=10),
+                                               unittest.mock.ANY)
 
     def test_set_desk_down_operation_denied_timer_not_scheduled(self):
         self.operation.allowed.return_value = False
@@ -271,7 +263,7 @@ class TestApplication(unittest.TestCase):
         self.timer.cancel.assert_not_called()
         self.timer.schedule.assert_not_called()
 
-    @patch('autodesk.application.datetime', autospec=True)
+    @unittest.mock.patch('autodesk.application.datetime', autospec=True)
     def test_set_session_timer_lambda_called_desk_down(self, datetime_mock):
         self.operation.allowed.return_value = True
         self.model.get_active_time.return_value = timedelta(0)
@@ -285,32 +277,15 @@ class TestApplication(unittest.TestCase):
         self.hardware.desk.assert_called_with(Up())
 
 
-class TestApplicationFactory(unittest.TestCase):
+class TestApplicationFactory(utils.TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
 
-        model_patcher = patch('autodesk.application.Model', autospec=True)
-        self.model = model_patcher.start()
-        self.addCleanup(model_patcher.stop)
-
-        timer_patcher = patch('autodesk.application.Timer', autospec=True)
-        self.timer = timer_patcher.start()
-        self.addCleanup(timer_patcher.stop)
-
-        hardware_patcher = patch('autodesk.application.create_hardware',
-                                 autospec=True)
-        self.create_hardware = hardware_patcher.start()
-        self.addCleanup(hardware_patcher.stop)
-
-        operation_patcher = patch('autodesk.application.Operation',
-                                  autospec=True)
-        self.operation = operation_patcher.start()
-        self.addCleanup(operation_patcher.stop)
-
-        application_patcher = patch('autodesk.application.Application',
-                                    autospec=True)
-        self.application = application_patcher.start()
-        self.addCleanup(application_patcher.stop)
+        self.model = self.patch('autodesk.application.Model')
+        self.timer = self.patch('autodesk.application.Timer')
+        self.hardware = self.patch('autodesk.application.create_hardware')
+        self.operation = self.patch('autodesk.application.Operation')
+        self.application = self.patch('autodesk.application.Application')
 
         self.limits = (timedelta(seconds=20), timedelta(seconds=10))
         self.database_path = "path"
@@ -328,17 +303,17 @@ class TestApplicationFactory(unittest.TestCase):
             self.light_pin)
 
     def test_create_constructors_called(self):
-        loop = MagicMock()
+        loop = unittest.mock.MagicMock()
 
         self.factory.create(loop)
 
         self.operation.assert_called_with()
         self.timer.assert_called_with(loop)
-        self.create_hardware.assert_called_with(
+        self.hardware.assert_called_with(
             self.hardware_kind, self.delay, self.motor_pins, self.light_pin)
         self.application.assert_called_with(
             self.model.return_value,
             self.timer.return_value,
-            self.create_hardware.return_value,
+            self.hardware.return_value,
             self.operation.return_value,
             self.limits)

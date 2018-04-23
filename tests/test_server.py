@@ -1,34 +1,23 @@
-from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
+from aiohttp.test_utils import unittest_run_loop
 from autodesk.model import Down, Up, Inactive, Active
 from datetime import timedelta
-from unittest.mock import patch
 import autodesk.server as server
 import logging
+import tests.utils as utils
 
 
-class TestServer(AioHTTPTestCase):
+class TestServer(utils.AioHTTPTestCase):
     async def get_application(self):
         logging.disable(logging.CRITICAL)
 
-        datetime_patcher = patch(
-            'autodesk.server.datetime', autospec=True)
-        datetime = datetime_patcher.start()
-        self.addCleanup(datetime_patcher.stop)
+        datetime = self.patch('autodesk.server.datetime')
+        factory = self.patch('autodesk.application.ApplicationFactory')
+        self.application = self.patch('autodesk.application.Application')
+
         self.now = datetime.now()
+        factory.create.return_value = self.application
 
-        application_factory_patcher = patch(
-            'autodesk.application.ApplicationFactory', autospec=True)
-        application_factory = application_factory_patcher.start()
-        self.addCleanup(application_factory_patcher.stop)
-
-        application_patcher = patch(
-            'autodesk.application.Application', autospec=True)
-        self.application = application_patcher.start()
-        self.addCleanup(application_patcher.stop)
-
-        application_factory.create.return_value = self.application
-
-        return server.setup_app(application_factory)
+        return server.setup_app(factory)
 
     @unittest_run_loop
     async def test_server_setup(self):

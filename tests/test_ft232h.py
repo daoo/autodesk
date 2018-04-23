@@ -1,13 +1,11 @@
 from autodesk.model import Down, Up, Active, Inactive
-from unittest.mock import call, patch, MagicMock
-import unittest
+from unittest.mock import call, MagicMock
+import tests.utils as utils
 
 
-class TestFt232h(unittest.TestCase):
+class TestFt232h(utils.TestCase):
     def setUp(self):
-        time_patcher = patch('time.sleep')
-        self.time_sleep = time_patcher.start()
-        self.addCleanup(time_patcher.stop)
+        self.time_sleep = self.patch('time.sleep')
 
         self.ft232h = MagicMock()
         self.device = self.ft232h.FT232H.return_value
