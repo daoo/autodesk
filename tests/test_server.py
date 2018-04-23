@@ -33,9 +33,17 @@ class TestServer(utils.AioHTTPTestCase):
         self.assertTrue(str in await response.text())
 
     @unittest_run_loop
-    async def test_get_sessions(self):
+    async def test_get_sessions_empty_values_are_zero(self):
+        self.application.get_daily_active_time.return_value = \
+            [0.0] * 7 * 24 * 60
+
+        def all_zero(json):
+            return all(all(obj['value'] == 0 for obj in day) for day in json)
+
         response = await self.client.get('/api/sessions.json')
+
         self.assertEqual(200, response.status)
+        self.assertTrue(all_zero(await response.json()))
 
     @unittest_run_loop
     async def test_get_desk(self):

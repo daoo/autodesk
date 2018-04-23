@@ -35,7 +35,7 @@ async def route_get_sessions(request):
     def format(hour, minute, value):
         return {
             'time': '{:0>2}:{:0>2}'.format(hour, minute),
-            'value': str(value)
+            'value': value
         }
 
     start = 7*60
@@ -60,7 +60,8 @@ async def route_get_sessions(request):
 
     formatted = [[format(*data) for data in group] for group in trimmed]
 
-    return web.Response(text=json.dumps(formatted), content_type='text/json')
+    return web.Response(text=json.dumps(formatted),
+                        content_type='application/json')
 
 
 @aiohttp_jinja2.template('index.html')
