@@ -4,7 +4,7 @@ python:
 install:
   - pip install -r requirements.txt codecov
 script:
-  - pytest --cov=autodesk tests
+  - pytest --cov=autodesk --cov-branch tests
   - pycodestyle autodesk bin tests
   - pyflakes autodesk bin tests
 after_success:
