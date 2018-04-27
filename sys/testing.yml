@@ -10,5 +10,5 @@ desk:
   light_pin: 3
 server:
   database_path: ":memory:"
-  address: "localhost"
+  address: "127.0.0.1"
   port: 8081

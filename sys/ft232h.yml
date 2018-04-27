@@ -10,5 +10,5 @@ desk:
   light_pin: 8
 server:
   database_path: "C:\\temp\\autodesk.db"
-  address: "localhost"
+  address: "127.0.0.1"
   port: 8080
