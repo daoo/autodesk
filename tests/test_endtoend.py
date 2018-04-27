@@ -20,7 +20,7 @@ class TestProgram(unittest.TestCase):
 
 class TestEndToEnd(unittest.TestCase):
     def setUp(self):
-        cmd = ['python3', '-u', '-m', 'autodesk.program', 'sys/testing.yml']
+        cmd = ['python3', '-u', '-m', 'autodesk.program', 'config/testing.yml']
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
                                         encoding='utf-8')

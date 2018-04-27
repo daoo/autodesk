@@ -14,4 +14,4 @@ RUN python3 -m pip install --upgrade pip
 COPY --from=builder /autodesk/dist/*.whl /tmp/
 RUN python3 -m pip install /tmp/*.whl
 RUN rm /tmp/*.whl
-CMD ["python3", "-u", "-m", "autodesk.program", "/etc/autodesk.cfg"]
+CMD ["python3", "-u", "-m", "autodesk.program", "/etc/autodesk.yml"]

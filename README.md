@@ -67,14 +67,19 @@ There is two parts to get this running, client and server.
 
 ### Server
 
-The server runs on a Raspberry Pi or directly on the same PC as the client if you have
+The server runs on a raspberry or directly on the same PC as the client if you have
 for example a [Adafruit FT232H](https://learn.adafruit.com/adafruit-ft232h-breakout/overview).
 In general it needs to be a computer with access to GPIO pins.
 
 The server provides a HTTP API for manually controlling the desk, setting the
 session state and also showing some nice statistics. The client must be able to
 reach this API over HTTP for the entire system to function. If running the
-server on a Raspberry Pi it is recommended to use SSH for security.
+server on a raspberry Pi it is recommended to use SSH for security.
+
+The server is described with docker-compose, to set it up on the raspberry clone
+the repository and run:
+
+    sudo docker-compose up
 
 ### Client
 
@@ -86,16 +91,16 @@ been developed and used with great success.
 
 On Linux, run the `logger.py` script to listen for lock/unlock events via DBus.
 Supply it with the URL to the session API endpoint like this (`autodesk` is the
-hostname of the computer running the server):
+host name of the computer running the server):
 
     logger.py http://autodesk/api/session
 
-The hostname could be localhost if using the previously mentioned FT232H.
+The host name could be localhost if using the previously mentioned FT232H.
 
 #### Windows
 
 On Windows, use the task scheduler to setup tasks that sets the session state
-with curl (`autodesk` is again the hostname of the computer running the
+with curl (`autodesk` is again the host name of the computer running the
 server):
 
     curl -X PUT -d "0" http://autodesk/api/session

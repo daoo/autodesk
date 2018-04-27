@@ -9,6 +9,6 @@ desk:
     up: 13
   light_pin: 16
 server:
-  database_path: "/var/local/autodesk/autodesk.db"
-  address: "127.0.0.1"
-  port: 8080
+  database_path: "/var/autodesk/autodesk.db"
+  address: "0.0.0.0"
+  port: 80

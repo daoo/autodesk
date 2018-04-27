@@ -1,0 +1,9 @@
+autodesk:
+  build: .
+  ports:
+    - "127.0.0.1:80:80"
+  volumes:
+    - /var/local/autodesk:/var/autodesk
+    - ./config/rpi.yml:/etc/autodesk.yml
+  privileged: true
+  restart: unless-stopped
