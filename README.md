@@ -1,6 +1,6 @@
 # AutoDesk
 
-Automatic standing desk control using a Raspberry Pi.
+Automatic standing desk control using GPIO.
 
 [![Build Status](https://travis-ci.org/daoo/autodesk.svg?branch=master)](https://travis-ci.org/daoo/autodesk)
 [![CodeCov](https://codecov.io/gh/daoo/autodesk/branch/master/graph/badge.svg)](https://codecov.io/gh/daoo/autodesk)
@@ -9,66 +9,94 @@ Automatic standing desk control using a Raspberry Pi.
 
 ## Design
 
-The software is built around a server `autodesk.server`. It runs on the Pi and
-controls the desk motors via GPIO, maintains the current desk and session state
-in a sqlite database, and also runs a timer that changes the desk state based
-on the current active time.
+The software is built around an aiohttp server. It runs on a device with GPIO
+pins which it uses to control controls the desk and it maintains the current
+state (and history) in a SQLite database. The server also maintains a timer
+which fires when its time to change position.
 
-The session logger monitors DBus and notifies the web server over HTTP (wrap it
-with SSH for security) of session activation and inactivation (lock/unlock)
-events.
+The client observes the lock/unlock events of the used computer as an activity
+indicator and passes these events on to the server. The server then uses
+them to calculate when to raise or lower the desk.
 
-## Usage
+## Hardware Wiring
 
-### Hardware
+The GPIO pins are wired up to control two electrical switches (relays,
+transistors, opto-couplers or something with similar function). These
+electrical switches are then connected in place of the up/down switch buttons
+that are commonly used on the desk-control dongles. If your desk have some
+more complicated control protocol, you have to use a different approach.
 
-Setup your Raspberry Pi with two relays circuits (you could probably use
-transistors directly as the voltage and current are usually pretty low for the
-control switches). Then setup the cables and connector as needed depending on
-what your desk controller uses.
+Two desks have been tested, one with
+[8P8C](https://en.wikipedia.org/wiki/Modular_connector#8P8C) connector and one
+with a [7-pin DIN](https://en.wikipedia.org/wiki/DIN_connector) connector.
 
-#### 8P8C jack (AKA RJ45 or Ethernet)
+### 8P8C jack (RJ45 or Ethernet)
 
-Some desk controllers uses 8P8C connectors, i.e. you can use a regular (RJ45)
-ethernet cable, see image below. One of those desks uses blue, brown and white
-like this:
+For desk controllers that uses 8P8C connectors, you can use a regular (RJ45)
+Ethernet cable and strip one end. The tested desk used the blue, brown and
+white wires for up/down like this:
 
 ```
   blue <-> blue/white => up
   blue <-> brown      => down
 ```
 
-![RJ45 connector with coloring](docs/8p8c.png)
+### 7-pin DIN jack
 
-#### 7-pin DIN jack
-
-Other desk controllers uses 7-pin DIN connectors, see image below. One of those
-desks uses pins 1, 2 and three like this:
+For desk controllers that uses 7-pin DIN connectors you have to get your hands
+a connector with cable that can be stripped and connected to the GPIO. The
+tested desk used pins 1, 2 and 3 for up/down like this:
 
 ```
   1 <-> 2 => up
   1 <-> 3 => down
 ```
 
-![7-pin DIN jack with numbers](docs/7-pin-din.png)
+(numbering clockwise male connector):
 
-### Server Software
+```
+     4
+   3   5
+  2     6
+   1   7
+```
 
-Check out [install.sh](install.sh) for installation steps.
+## Software
 
-### Workstation Software
+There is two parts to get this running, client and server.
+
+### Server
+
+The server runs on a Raspberry Pi or directly on the same PC as the client if you have
+for example a [Adafruit FT232H](https://learn.adafruit.com/adafruit-ft232h-breakout/overview).
+In general it needs to be a computer with access to GPIO pins.
+
+The server provides a HTTP API for manually controlling the desk, setting the
+session state and also showing some nice statistics. The client must be able to
+reach this API over HTTP for the entire system to function. If running the
+server on a Raspberry Pi it is recommended to use SSH for security.
+
+### Client
+
+The client can be any computer that can make HTTP requests, the tricky part is
+hooking in to the lock/unlock events. Methods for both Linux and Windows have
+been developed and used with great success.
+
+#### Linux
 
 On Linux, run the `logger.py` script to listen for lock/unlock events via DBus.
+Supply it with the URL to the session API endpoint like this (`autodesk` is the
+hostname of the computer running the server):
 
     logger.py http://autodesk/api/session
 
+The hostname could be localhost if using the previously mentioned FT232H.
+
+#### Windows
+
 On Windows, use the task scheduler to setup tasks that sets the session state
-with curl and the HTTP API:
+with curl (`autodesk` is again the hostname of the computer running the
+server):
 
     curl -X PUT -d "0" http://autodesk/api/session
     curl -X PUT -d "1" http://autodesk/api/session
-
-## TODO
-
-* Configurable desk heights, now it justs goes up and down for 15 seconds which
-  is the time it takes to reach bottom and up with my desk.
