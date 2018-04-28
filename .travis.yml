@@ -1,11 +1,15 @@
+sudo: required
 language: python
 python:
   - "3.6"
+services:
+  - docker
 install:
   - pip install -r requirements.txt codecov
 script:
   - pytest --cov=autodesk --cov-branch tests
   - pycodestyle autodesk bin tests
   - pyflakes autodesk bin tests
+  - docker build -t autodesk .
 after_success:
   - codecov
