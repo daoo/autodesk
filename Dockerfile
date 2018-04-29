@@ -1,6 +1,6 @@
 FROM alpine:edge
 
-RUN apk update && apk --no-cache add python3
+RUN apk --no-cache add python3
 RUN python3 -m pip install --upgrade pip
 
 COPY autodesk /autodesk/autodesk/
