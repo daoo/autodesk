@@ -1,9 +1,9 @@
 autodesk:
   build: .
   ports:
-    - "127.0.0.1:80:80"
-  volumes:
-    - /var/local/autodesk:/var/autodesk
-    - ./config/rpi.yml:/etc/autodesk.yml
-  privileged: true
-  restart: unless-stopped
+    - "127.0.0.1:8080:80"
+  environment:
+    - "AUTODESK_ADDRESS=0.0.0.0"
+    - "AUTODESK_CONFIG=/autodesk/config/testing.yml"
+    - "AUTODESK_DATABASE=:memory:"
+    - "AUTODESK_PORT=80"

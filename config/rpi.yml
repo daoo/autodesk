@@ -1,14 +1,9 @@
-desk:
-  hardware: "raspberrypi"
-  delay: 15
-  limits:
-    down: 2940
-    up: 660
-  motor_pins:
-    down: 15
-    up: 13
-  light_pin: 16
-server:
-  database_path: "/var/autodesk/autodesk.db"
-  address: "0.0.0.0"
-  port: 80
+hardware: "raspberrypi"
+delay: 15
+limits:
+  down: 2940
+  up: 660
+motor_pins:
+  down: 15
+  up: 13
+light_pin: 16

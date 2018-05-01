@@ -76,11 +76,6 @@ session state and also showing some nice statistics. The client must be able to
 reach this API over HTTP for the entire system to function. If running the
 server on a raspberry Pi it is recommended to use SSH for security.
 
-The server is described with docker-compose, to set it up on the raspberry clone
-the repository and run:
-
-    sudo docker-compose up
-
 ### Client
 
 The client can be any computer that can make HTTP requests, the tricky part is

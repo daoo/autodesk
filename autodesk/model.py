@@ -85,6 +85,7 @@ def event_from_row(cursor, values):
 class Model:
     def __init__(self, path):
         self.logger = logging.getLogger('model')
+        self.logger.info('Opening database {}'.format(path))
         self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = event_from_row
         self.db.execute(

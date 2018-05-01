@@ -1,14 +1,9 @@
-desk:
-  hardware: ""
-  delay: 1
-  limits:
-    down: 5
-    up: 5
-  motor_pins:
-    down: 1
-    up: 2
-  light_pin: 3
-server:
-  database_path: ":memory:"
-  address: "127.0.0.1"
-  port: 8081
+hardware: "noop"
+delay: 1
+limits:
+  down: 5
+  up: 5
+motor_pins:
+  down: 1
+  up: 2
+light_pin: 3

@@ -1,14 +1,9 @@
-desk:
-  hardware: "ft232h"
-  delay: 20
-  limits:
-    down: 2940
-    up: 660
-  motor_pins:
-    down: 9
-    up: 10
-  light_pin: 8
-server:
-  database_path: "C:\\temp\\autodesk.db"
-  address: "127.0.0.1"
-  port: 8080
+hardware: "ft232h"
+delay: 20
+limits:
+  down: 2940
+  up: 660
+motor_pins:
+  down: 9
+  up: 10
+light_pin: 8

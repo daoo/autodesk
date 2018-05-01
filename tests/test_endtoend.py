@@ -1,29 +1,20 @@
 import requests
 import subprocess
 import unittest
-
-
-class TestProgram(unittest.TestCase):
-    def test_incorrect_command_line_arguments(self):
-        cmd = ['python3', '-u', '-m', 'autodesk.program']
-        self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        encoding='utf-8')
-        self.addCleanup(self.process.stdout.close)
-        self.addCleanup(self.process.stderr.close)
-
-        self.process.wait()
-
-        self.assertTrue(self.process.stderr.readline())
-        self.assertEquals(self.process.returncode, 1)
+import os
 
 
 class TestEndToEnd(unittest.TestCase):
     def setUp(self):
-        cmd = ['python3', '-u', '-m', 'autodesk.program', 'config/testing.yml']
+        cmd = ['python3', '-u', '-m', 'autodesk.program']
+        env = os.environ.copy()
+        env['AUTODESK_ADDRESS'] = '127.0.0.1'
+        env['AUTODESK_CONFIG'] = 'config/testing.yml'
+        env['AUTODESK_DATABASE'] = ':memory:'
+        env['AUTODESK_PORT'] = '8081'
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
-                                        encoding='utf-8')
+                                        encoding='utf-8', env=env)
         self.addCleanup(self.process.stdout.close)
         self.addCleanup(self.process.stderr.close)
 
