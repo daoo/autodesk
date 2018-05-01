@@ -1,5 +1,5 @@
 import Adafruit_GPIO as GPIO
-import FT232H
+import Adafruit_GPIO.FT232H as FT232H
 import time
 
 

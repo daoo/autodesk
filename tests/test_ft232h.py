@@ -7,14 +7,14 @@ class TestFt232h(utils.TestCase):
     def setUp(self):
         self.time_sleep = self.patch('time.sleep')
 
-        self.ft232h = MagicMock()
-        self.device = self.ft232h.FT232H.return_value
         self.gpio = MagicMock()
+        self.ft232h = self.gpio.FT232H
+        self.device = self.ft232h.FT232H.return_value
         import sys
         sys.modules['Adafruit_GPIO'] = self.gpio
         self.addCleanup(sys.modules.pop, 'Adafruit_GPIO')
-        sys.modules['FT232H'] = self.ft232h
-        self.addCleanup(sys.modules.pop, 'FT232H')
+        sys.modules['Adafruit_GPIO.FT232H'] = self.ft232h
+        self.addCleanup(sys.modules.pop, 'Adafruit_GPIO.FT232H')
 
         from autodesk.hardware.ft232h import Ft232h
         # Must also pop the ft232h module as it is cached and contains an
