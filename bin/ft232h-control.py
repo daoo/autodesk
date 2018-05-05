@@ -19,6 +19,6 @@ try:
     pin = int(sys.argv[1])
     delay = int(sys.argv[2])
     translate(pin, delay)
-except Exception:
-    sys.stderr.write("Usage: {} PIN SECONDS".format(sys.argv[0]))
+except ValueError:
+    sys.stderr.write("Usage: {} PIN SECONDS\n".format(sys.argv[0]))
     sys.exit(1)
