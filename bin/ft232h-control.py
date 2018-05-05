@@ -1,4 +1,4 @@
-import FT232H
+import Adafruit_GPIO.FT232H as FT232H
 import sys
 import time
 
