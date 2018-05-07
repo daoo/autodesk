@@ -4,6 +4,6 @@ limits:
   down: 2940
   up: 660
 motor_pins:
-  down: 9
-  up: 10
+  down: 12
+  up: 11
 light_pin: 8
