@@ -71,15 +71,12 @@ def event_from_row(cursor, values):
     time = values[0]
     assert cursor.description[0][0] == 'date'
     col_name = cursor.description[1][0]
-    state = None
     if col_name == 'active':
-        state = session_from_int(values[1])
+        return spans.Event(time, session_from_int(values[1]))
     elif col_name == 'state':
-        state = desk_from_int(values[1])
+        return spans.Event(time, desk_from_int(values[1]))
     else:
         raise ValueError('incorrect column names')
-
-    return spans.Event(time, state)
 
 
 class Model:
