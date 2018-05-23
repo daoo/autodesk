@@ -57,8 +57,68 @@ def test_desk(sleep, device, gpio, hw, state, pin):
     ])
     sleep.assert_called_once_with(5)
 
+@mock.patch('time.sleep')
+@pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
+def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
+    def fail_and_reload(a, b):
+        device.output.side_effect = None
+        raise RuntimeError
+    device.output.side_effect = fail_and_reload
+
+    hw.desk(state)
+
+    device.output.assert_has_calls([
+        mock.call(pin, gpio.HIGH), # failed attempt
+        mock.call(pin, gpio.HIGH),
+        mock.call(pin, gpio.LOW)
+    ])
+    sleep.assert_called_once_with(5)
+
+
+@mock.patch('time.sleep')
+@pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
+def test_desk_two_failures_raises(sleep, device, gpio, hw, state, pin):
+    device.output.side_effect = RuntimeError
+
+    with pytest.raises(RuntimeError):
+        hw.desk(state)
+
+    device.output.assert_has_calls([
+        mock.call(pin, gpio.HIGH), # failed attempt
+        mock.call(pin, gpio.HIGH), # failed attempt
+    ])
+    sleep.assert_not_called()
+
 
 @pytest.mark.parametrize("state", [Inactive(), Active()])
 def test_light(gpio, device, hw, state):
     hw.light(state)
     device.output.assert_called_once_with(2, state.test(gpio.LOW, gpio.HIGH))
+
+
+@pytest.mark.parametrize("state", [Inactive(), Active()])
+def test_light_failure_recovery(gpio, device, hw, state):
+    def fail_and_reload(a, b):
+        device.output.side_effect = None
+        raise RuntimeError
+    device.output.side_effect = fail_and_reload
+
+    hw.light(state)
+
+    device.output.assert_has_calls([
+        mock.call(2, state.test(gpio.LOW, gpio.HIGH)), # failed attempt
+        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),
+    ])
+
+
+@pytest.mark.parametrize("state", [Inactive(), Active()])
+def test_light_two_failures_raises(gpio, device, hw, state):
+    device.output.side_effect = RuntimeError
+
+    with pytest.raises(RuntimeError):
+        hw.light(state)
+
+    device.output.assert_has_calls([
+        mock.call(2, state.test(gpio.LOW, gpio.HIGH)), # failed attempt
+        mock.call(2, state.test(gpio.LOW, gpio.HIGH)), # failed attempt
+    ])
