@@ -1,60 +1,64 @@
 from autodesk.model import Down, Up, Active, Inactive
-from unittest.mock import call, MagicMock
-import tests.utils as utils
+import mock
+import pytest
 
 
-class TestFt232h(utils.TestCase):
-    def setUp(self):
-        self.time_sleep = self.patch('time.sleep')
+@pytest.fixture
+def gpio():
+    return mock.MagicMock()
 
-        self.gpio = MagicMock()
-        self.ft232h = self.gpio.FT232H
-        self.device = self.ft232h.FT232H.return_value
-        import sys
-        sys.modules['Adafruit_GPIO'] = self.gpio
-        self.addCleanup(sys.modules.pop, 'Adafruit_GPIO')
-        sys.modules['Adafruit_GPIO.FT232H'] = self.ft232h
-        self.addCleanup(sys.modules.pop, 'Adafruit_GPIO.FT232H')
 
-        from autodesk.hardware.ft232h import Ft232h
-        # Must also pop the ft232h module as it is cached and contains an
-        # reference to the old mocked RPi import.
-        self.addCleanup(sys.modules.pop, 'autodesk.hardware.ft232h')
+@pytest.fixture
+def ft232h(gpio):
+    return gpio.FT232H
 
-        self.hw = Ft232h(5, (0, 1), 2)
 
-    def test_constructor(self):
-        # constructor called by setUp
-        self.device.setup.assert_has_calls([
-            call(0, self.gpio.OUT),
-            call(1, self.gpio.OUT),
-            call(2, self.gpio.OUT)
-        ])
+@pytest.fixture
+def device(ft232h):
+    return ft232h.FT232H.return_value
 
-    def test_close(self):
-        self.hw.close()
-        self.device.close.assert_called_once()
 
-    def test_desk_down(self):
-        self.hw.desk(Down())
-        self.device.output.assert_has_calls([
-            call(0, self.gpio.HIGH),
-            call(0, self.gpio.LOW)
-        ])
-        self.time_sleep.assert_called_once_with(5)
+@pytest.fixture
+def hw(gpio, ft232h):
+    import sys
+    sys.modules['Adafruit_GPIO'] = gpio
+    sys.modules['Adafruit_GPIO.FT232H'] = ft232h
 
-    def test_desk_up(self):
-        self.hw.desk(Up())
-        self.device.output.assert_has_calls([
-            call(1, self.gpio.HIGH),
-            call(1, self.gpio.LOW)
-        ])
-        self.time_sleep.assert_called_once_with(5)
+    from autodesk.hardware.ft232h import Ft232h
+    yield Ft232h(5, (0, 1), 2)
+    sys.modules.pop('Adafruit_GPIO')
+    sys.modules.pop('Adafruit_GPIO.FT232H')
+    # Must also pop the ft232h module as it is cached and contains an
+    # reference to the old mocked RPi import.
+    sys.modules.pop('autodesk.hardware.ft232h')
 
-    def test_light_on(self):
-        self.hw.light(Active())
-        self.device.output.assert_called_once_with(2, self.gpio.HIGH)
 
-    def test_light_off(self):
-        self.hw.light(Inactive())
-        self.device.output.assert_called_once_with(2, self.gpio.LOW)
+def test_constructor(gpio, ft232h, device, hw):
+    # constructor called by fixture
+    device.setup.assert_has_calls([
+        mock.call(0, gpio.OUT),
+        mock.call(1, gpio.OUT),
+        mock.call(2, gpio.OUT)
+    ])
+
+
+def test_close(device, hw):
+    hw.close()
+    device.close.assert_called_once()
+
+
+@mock.patch('time.sleep')
+@pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
+def test_desk(sleep, device, gpio, hw, state, pin):
+    hw.desk(state)
+    device.output.assert_has_calls([
+        mock.call(pin, gpio.HIGH),
+        mock.call(pin, gpio.LOW)
+    ])
+    sleep.assert_called_once_with(5)
+
+
+@pytest.mark.parametrize("state", [Inactive(), Active()])
+def test_light(gpio, device, hw, state):
+    hw.light(state)
+    device.output.assert_called_once_with(2, state.test(gpio.LOW, gpio.HIGH))
