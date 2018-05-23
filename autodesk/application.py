@@ -65,7 +65,7 @@ class Application:
     def set_session(self, session):
         time = datetime.now()
         self.model.set_session(Event(time, session))
-        self.hardware.light(session) # TODO: handle failure
+        self.hardware.light(session)  # TODO: handle failure
 
         if session.active() and self.operation.allowed(time):
             self._update_timer(time, self.model.get_desk_state(), session)
@@ -84,7 +84,7 @@ class Application:
             return False
 
         self.model.set_desk(Event(time, desk))
-        self.hardware.desk(desk) # TODO: handle failure
+        self.hardware.desk(desk)  # TODO: handle failure
         self._update_timer(time, desk, session)
         return True
 

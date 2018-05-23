@@ -31,6 +31,7 @@ class Session:
         gpio = state.test(GPIO.LOW, GPIO.HIGH)
         self.device.output(self.light_pin, gpio)
 
+
 class Ft232h:
     def __init__(self, delay, motor_pins, light_pin):
         self.session = Session(delay, motor_pins, light_pin)

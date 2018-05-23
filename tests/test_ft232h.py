@@ -57,6 +57,7 @@ def test_desk(sleep, device, gpio, hw, state, pin):
     ])
     sleep.assert_called_once_with(5)
 
+
 @mock.patch('time.sleep')
 @pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
 def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
@@ -68,7 +69,7 @@ def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
     hw.desk(state)
 
     device.output.assert_has_calls([
-        mock.call(pin, gpio.HIGH), # failed attempt
+        mock.call(pin, gpio.HIGH),  # failed attempt
         mock.call(pin, gpio.HIGH),
         mock.call(pin, gpio.LOW)
     ])
@@ -84,8 +85,8 @@ def test_desk_two_failures_raises(sleep, device, gpio, hw, state, pin):
         hw.desk(state)
 
     device.output.assert_has_calls([
-        mock.call(pin, gpio.HIGH), # failed attempt
-        mock.call(pin, gpio.HIGH), # failed attempt
+        mock.call(pin, gpio.HIGH),  # failed attempt
+        mock.call(pin, gpio.HIGH),  # failed attempt
     ])
     sleep.assert_not_called()
 
@@ -106,7 +107,7 @@ def test_light_failure_recovery(gpio, device, hw, state):
     hw.light(state)
 
     device.output.assert_has_calls([
-        mock.call(2, state.test(gpio.LOW, gpio.HIGH)), # failed attempt
+        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
         mock.call(2, state.test(gpio.LOW, gpio.HIGH)),
     ])
 
@@ -119,6 +120,6 @@ def test_light_two_failures_raises(gpio, device, hw, state):
         hw.light(state)
 
     device.output.assert_has_calls([
-        mock.call(2, state.test(gpio.LOW, gpio.HIGH)), # failed attempt
-        mock.call(2, state.test(gpio.LOW, gpio.HIGH)), # failed attempt
+        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
+        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
     ])
