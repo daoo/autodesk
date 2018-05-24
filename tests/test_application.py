@@ -1,4 +1,5 @@
 from autodesk.application import Application
+from autodesk.hardware.error import HardwareError
 from autodesk.model import Active, Inactive, Down, Up
 from autodesk.operation import Operation
 from autodesk.spans import Event
@@ -178,6 +179,19 @@ def test_set_session_inactive_timer_cancelled(application, timer):
     timer.cancel.assert_called_once()
 
 
+@pytest.mark.parametrize("session", [Down(), Up()])
+def test_set_session_hardware_error(model, now, hardware, application, session,
+                                    timer):
+    now.return_value = time_allowed
+    hardware.light.side_effect = HardwareError(RuntimeError())
+
+    application.set_session(session)
+
+    timer.schedule.assert_not_called()
+    timer.cancel.assert_called_once()
+    model.set_session.assert_called_with(Event(time_allowed, Inactive()))
+
+
 def test_set_desk_down_allowed_hardware_down(model, now, application,
                                              hardware):
     model.get_active_time.return_value = timedelta(0)
@@ -217,6 +231,20 @@ def test_set_desk_allowed_timer_scheduled(model, now, application, timer, desk,
     application.set_desk(desk)
 
     timer.schedule.assert_called_with(timedelta(seconds=seconds), mock.ANY)
+
+
+@pytest.mark.parametrize("desk", [Down(), Up()])
+def test_set_desk_hardware_error(model, now, hardware, application, desk,
+                                 timer):
+    model.get_session_state.return_value = Active()
+    now.return_value = time_allowed
+    hardware.desk.side_effect = HardwareError(RuntimeError())
+
+    application.set_desk(desk)
+
+    timer.schedule.assert_not_called()
+    timer.cancel.assert_called_once()
+    model.set_desk.assert_not_called()
 
 
 def test_set_desk_down_operation_denied_timer_not_scheduled(application,

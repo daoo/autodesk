@@ -1,3 +1,4 @@
+from autodesk.hardware.error import HardwareError
 from autodesk.model import Down, Up, Active, Inactive
 import mock
 import pytest
@@ -63,7 +64,7 @@ def test_desk(sleep, device, gpio, hw, state, pin):
 def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
     def fail_and_reload(a, b):
         device.output.side_effect = None
-        raise RuntimeError
+        raise HardwareError(RuntimeError())
     device.output.side_effect = fail_and_reload
 
     hw.desk(state)
@@ -79,9 +80,9 @@ def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
 @mock.patch('time.sleep', autospec=True)
 @pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
 def test_desk_two_failures_raises(sleep, device, gpio, hw, state, pin):
-    device.output.side_effect = RuntimeError
+    device.output.side_effect = HardwareError(RuntimeError())
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(HardwareError):
         hw.desk(state)
 
     device.output.assert_has_calls([
@@ -101,7 +102,7 @@ def test_light(gpio, device, hw, state):
 def test_light_failure_recovery(gpio, device, hw, state):
     def fail_and_reload(a, b):
         device.output.side_effect = None
-        raise RuntimeError
+        raise HardwareError(RuntimeError())
     device.output.side_effect = fail_and_reload
 
     hw.light(state)
@@ -114,9 +115,9 @@ def test_light_failure_recovery(gpio, device, hw, state):
 
 @pytest.mark.parametrize("state", [Inactive(), Active()])
 def test_light_two_failures_raises(gpio, device, hw, state):
-    device.output.side_effect = RuntimeError
+    device.output.side_effect = HardwareError(RuntimeError())
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(HardwareError):
         hw.light(state)
 
     device.output.assert_has_calls([

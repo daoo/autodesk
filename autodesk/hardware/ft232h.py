@@ -1,3 +1,4 @@
+from autodesk.hardware.error import HardwareError
 import Adafruit_GPIO as GPIO
 import Adafruit_GPIO.FT232H as FT232H
 import time
@@ -43,12 +44,18 @@ class Ft232h:
         try:
             self.session.desk(state)
         except RuntimeError:
-            self.session.reconnect()
-            self.session.desk(state)
+            try:
+                self.session.reconnect()
+                self.session.desk(state)
+            except RuntimeError as e:
+                raise HardwareError(e)
 
     def light(self, state):
         try:
             self.session.light(state)
         except RuntimeError:
-            self.session.reconnect()
-            self.session.light(state)
+            try:
+                self.session.reconnect()
+                self.session.light(state)
+            except RuntimeError as e:
+                raise HardwareError(e)

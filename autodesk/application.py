@@ -1,5 +1,6 @@
 from autodesk.hardware import create_hardware
-from autodesk.model import Model
+from autodesk.hardware.error import HardwareError
+from autodesk.model import Model, Inactive
 from autodesk.operation import Operation
 from autodesk.spans import Event
 from autodesk.timer import Timer
@@ -48,12 +49,17 @@ class Application:
 
     def set_session(self, session):
         time = datetime.now()
-        self.model.set_session(Event(time, session))
-        self.hardware.light(session)  # TODO: handle failure
+        try:
+            self.hardware.light(session)
+            self.model.set_session(Event(time, session))
 
-        if session.active() and self.operation.allowed(time):
-            self._update_timer(time, self.model.get_desk_state(), session)
-        else:
+            if session.active() and self.operation.allowed(time):
+                self._update_timer(time, self.model.get_desk_state(), session)
+            else:
+                self.timer.cancel()
+        except HardwareError:
+            self.logger.warning('hardware failure, setting session inactive')
+            self.model.set_session(Event(time, Inactive()))
             self.timer.cancel()
 
     def set_desk(self, desk):
@@ -67,9 +73,13 @@ class Application:
             self.logger.warning('desk operation not allowed when inactive')
             return False
 
-        self.model.set_desk(Event(time, desk))
-        self.hardware.desk(desk)  # TODO: handle failure
-        self._update_timer(time, desk, session)
+        try:
+            self.hardware.desk(desk)
+            self.model.set_desk(Event(time, desk))
+            self._update_timer(time, desk, session)
+        except HardwareError:
+            self.logger.warning('hardware failure, not changing desk state')
+            self.timer.cancel()
         return True
 
     def _compute_delay_to_next(self, time, desk):
