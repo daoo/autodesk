@@ -5,6 +5,7 @@ pycodestyle
 pyflakes
 pytest
 pytest-cov
+pytest-mock
 pyyaml
 requests
 wheel

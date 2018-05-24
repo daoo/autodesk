@@ -1,262 +1,247 @@
-from autodesk.application import Application, ApplicationFactory
+from autodesk.application import Application
 from autodesk.model import Active, Inactive, Down, Up
 from autodesk.operation import Operation
 from autodesk.spans import Event
 from datetime import datetime, timedelta
-import logging
-import tests.utils as utils
-import unittest
-import unittest.mock
+import mock
+import pytest
 
+time_allowed = datetime(2018, 4, 23, 13, 0)
+time_denied = datetime(2018, 4, 23, 20, 0)
+limits = (timedelta(seconds=20), timedelta(seconds=10))
 
-class TestApplication(utils.TestCase):
-    def setUp(self):
-        logging.disable(logging.CRITICAL)
 
-        self.datetime = self.patch('autodesk.application.datetime')
-        self.model = self.patch('autodesk.model.Model')
-        self.timer = self.patch('autodesk.timer.Timer')
-        self.hardware = self.patch('autodesk.hardware.noop.Noop')
+@pytest.fixture
+def now(mocker):
+    return mocker.patch('autodesk.application.datetime', autospec=True).now
 
-        self.time_allowed = datetime(2018, 4, 23, 13, 0)
-        self.time_denied = datetime(2018, 4, 23, 20, 0)
-        self.now = self.datetime.now
 
-        self.limits = (timedelta(seconds=20), timedelta(seconds=10))
+@pytest.fixture
+def model(mocker):
+    return mocker.patch('autodesk.model.Model', autospec=True)
 
-        self.application = Application(
-            self.model,
-            self.timer,
-            self.hardware,
-            Operation(),
-            self.limits)
 
-    def test_init_inactive_light_off(self):
-        self.model.get_session_state.return_value = Inactive()
+@pytest.fixture
+def timer(mocker):
+    return mocker.patch('autodesk.timer.Timer', autospec=True)
 
-        self.application.init()
 
-        self.hardware.light.assert_called_with(Inactive())
+@pytest.fixture
+def hardware(mocker):
+    return mocker.patch('autodesk.hardware.noop.Noop', autospec=True)
 
-    def test_init_active_light_on(self):
-        self.model.get_session_state.return_value = Active()
 
-        self.application.init()
+@pytest.fixture
+def operation(mocker):
+    return mocker.patch('autodesk.operation.Operation', autospec=True)
 
-        self.hardware.light.assert_called_with(Active())
 
-    def test_init_active_operation_denied_timer_not_scheduled(self):
-        self.model.get_session_state.return_value = Active()
+@pytest.fixture
+def application(model, timer, hardware):
+    return Application(model, timer, hardware, Operation(), limits)
 
-        self.application.init()
 
-        self.timer.cancel.assert_not_called()
-        self.timer.schedule.assert_not_called()
+def test_init_inactive_light_off(model, application, hardware):
+    model.get_session_state.return_value = Inactive()
 
-    def test_init_inactive_operation_allowed_timer_not_scheduled(self):
-        self.model.get_active_time.return_value = timedelta(seconds=10)
-        self.model.get_session_state.return_value = Inactive()
+    application.init()
 
-        self.application.init()
+    hardware.light.assert_called_with(Inactive())
 
-        self.timer.schedule.assert_not_called()
-        self.timer.cancel.assert_not_called()
 
-    def test_init_active_operation_allowed_timer_scheduled(self):
-        self.model.get_active_time.return_value = timedelta(seconds=10)
-        self.model.get_desk_state.return_value = Down()
-        self.model.get_session_state.return_value = Active()
-        self.now.return_value = self.time_allowed
+def test_init_active_light_on(model, application, hardware):
+    model.get_session_state.return_value = Active()
 
-        self.application.init()
+    application.init()
 
-        self.timer.schedule.assert_called_with(timedelta(seconds=10),
-                                               unittest.mock.ANY)
-        self.timer.cancel.assert_not_called()
+    hardware.light.assert_called_with(Active())
 
-    def test_close_timer_cancelled(self):
-        self.application.close()
 
-        self.timer.cancel.assert_called_once()
+def test_init_active_operation_denied_timer_not_scheduled(model, application,
+                                                          timer):
+    model.get_session_state.return_value = Active()
 
-    def test_close_hardware_closed(self):
-        self.application.close()
+    application.init()
 
-        self.hardware.close.assert_called_once()
+    timer.cancel.assert_not_called()
+    timer.schedule.assert_not_called()
 
-    def test_close_model_closed(self):
-        self.application.close()
 
-        self.model.close.assert_called_once()
+def test_init_inactive_operation_allowed_timer_not_scheduled(model,
+                                                             application,
+                                                             timer):
+    model.get_active_time.return_value = timedelta(seconds=10)
+    model.get_session_state.return_value = Inactive()
 
-    def test_get_active_time_returns_from_model(self):
-        ret = self.application.get_active_time()
+    application.init()
 
-        self.assertEqual(ret, self.model.get_active_time.return_value)
+    timer.schedule.assert_not_called()
+    timer.cancel.assert_not_called()
 
-    def test_get_session_state_returns_from_model(self):
-        ret = self.application.get_session_state()
 
-        self.assertEqual(ret, self.model.get_session_state.return_value)
+def test_init_active_operation_allowed_timer_scheduled(model, now, application,
+                                                       timer):
+    model.get_active_time.return_value = timedelta(seconds=10)
+    model.get_desk_state.return_value = Down()
+    model.get_session_state.return_value = Active()
+    now.return_value = time_allowed
 
-    def test_get_desk_state_returns_from_model(self):
-        ret = self.application.get_desk_state()
+    application.init()
 
-        self.assertEqual(ret, self.model.get_desk_state.return_value)
+    timer.schedule.assert_called_with(timedelta(seconds=10), mock.ANY)
+    timer.cancel.assert_not_called()
 
-    @unittest.mock.patch('autodesk.application.stats', autospec=True)
-    def test_get_daily_active_time_calls_stats_with_session_spans(self, stats):
-        ret = self.application.get_daily_active_time()
 
-        stats.compute_daily_active_time.assert_called_with(
-            self.model.get_session_spans.return_value)
-        self.assertEqual(ret, stats.compute_daily_active_time.return_value)
+def test_close_timer_cancelled(application, timer):
+    application.close()
 
-    def test_set_session_inactive_light_off(self):
-        self.application.set_session(Inactive())
+    timer.cancel.assert_called_once()
 
-        self.hardware.light.assert_called_with(Inactive())
 
-    def test_set_session_active_light_on(self):
-        self.model.get_desk_state.return_value = Down()
-        self.model.get_active_time.return_value = timedelta(0)
-        self.application.set_session(Active())
+def test_close_hardware_closed(application, hardware):
+    application.close()
 
-        self.hardware.light.assert_called_with(Active())
+    hardware.close.assert_called_once()
 
-    def test_set_session_inactive_model_set_inactive(self):
-        self.now.return_value = self.time_allowed
 
-        self.application.set_session(Inactive())
+def test_close_model_closed(application, model):
+    application.close()
 
-        self.model.set_session.assert_called_with(
-            Event(self.time_allowed, Inactive()))
+    model.close.assert_called_once()
 
-    def test_set_session_active_timer_scheduled(self):
-        self.model.get_desk_state.return_value = Down()
-        self.model.get_active_time.return_value = timedelta(0)
-        self.now.return_value = self.time_allowed
 
-        self.application.set_session(Active())
+def test_get_active_time_returns_from_model(application, model):
+    ret = application.get_active_time()
 
-        self.model.set_session.assert_called_with(
-            Event(self.time_allowed, Active()))
+    assert ret == model.get_active_time.return_value
 
-    def test_set_session_inactive_timer_cancelled(self):
 
-        self.application.set_session(Inactive())
+def test_get_session_state_returns_from_model(application, model):
+    ret = application.get_session_state()
 
-        self.timer.schedule.assert_not_called()
-        self.timer.cancel.assert_called_once()
+    assert ret == model.get_session_state.return_value
 
-    def test_set_desk_down_active_operation_allowed_hardware_down(self):
-        self.model.get_active_time.return_value = timedelta(0)
-        self.model.get_session_state.return_value = Active()
-        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(Down())
+def test_get_desk_state_returns_from_model(application, model):
+    ret = application.get_desk_state()
 
-        self.hardware.desk.assert_called_with(Down())
+    assert ret == model.get_desk_state.return_value
 
-    def test_set_desk_down_active_operation_denied_hardware_unchanged(self):
-        self.model.get_session_state.return_value = Active()
-        self.now.return_value = self.time_denied
 
-        self.application.set_desk(Down())
+@mock.patch('autodesk.application.stats', autospec=True)
+def test_get_daily_active_time_calls_stats_with_session_spans(stats,
+                                                              application,
+                                                              model):
+    ret = application.get_daily_active_time()
 
-        self.hardware.desk.assert_not_called()
+    stats.compute_daily_active_time.assert_called_with(
+        model.get_session_spans.return_value)
+    assert ret == stats.compute_daily_active_time.return_value
 
-    def test_set_desk_down_inactive_operation_allowed_hardware_unchanged(self):
-        self.model.get_session_state.return_value = Inactive()
-        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(Down())
+def test_set_session_inactive_light_off(application, hardware):
+    application.set_session(Inactive())
 
-        self.hardware.desk.assert_not_called()
+    hardware.light.assert_called_with(Inactive())
 
-    def test_set_desk_down_operation_allowed_timer_scheduled_20_seconds(self):
-        self.model.get_active_time.return_value = timedelta(0)
-        self.model.get_session_state.return_value = Active()
-        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(Down())
+def test_set_session_active_light_on(model, application, hardware):
+    model.get_desk_state.return_value = Down()
+    model.get_active_time.return_value = timedelta(0)
+    application.set_session(Active())
 
-        self.timer.schedule.assert_called_with(timedelta(seconds=20),
-                                               unittest.mock.ANY)
+    hardware.light.assert_called_with(Active())
 
-    def test_set_desk_up_operation_allowed_timer_scheduled_10_seconds(self):
-        self.model.get_active_time.return_value = timedelta(0)
-        self.model.get_session_state.return_value = Active()
-        self.now.return_value = self.time_allowed
 
-        self.application.set_desk(Up())
+def test_set_session_inactive_model_set_inactive(now, application, model):
+    now.return_value = time_allowed
 
-        self.timer.schedule.assert_called_with(timedelta(seconds=10),
-                                               unittest.mock.ANY)
+    application.set_session(Inactive())
 
-    def test_set_desk_down_operation_denied_timer_not_scheduled(self):
+    model.set_session.assert_called_with(Event(time_allowed, Inactive()))
 
-        self.application.set_desk(Down())
 
-        self.timer.cancel.assert_not_called()
-        self.timer.schedule.assert_not_called()
+def test_set_session_active_timer_scheduled(model, now, application):
+    model.get_desk_state.return_value = Down()
+    model.get_active_time.return_value = timedelta(0)
+    now.return_value = time_allowed
 
-    def test_set_desk_down_inactive_timer_not_scheduled(self):
+    application.set_session(Active())
 
-        self.application.set_desk(Down())
+    model.set_session.assert_called_with(Event(time_allowed, Active()))
 
-        self.timer.cancel.assert_not_called()
-        self.timer.schedule.assert_not_called()
 
-    def test_set_session_timer_lambda_called_desk_down(self):
-        self.model.get_active_time.return_value = timedelta(0)
-        self.model.get_session_state.return_value = Active()
-        self.model.get_desk_state.return_value = Down()
-        self.now.return_value = self.time_allowed
+def test_set_session_inactive_timer_cancelled(application, timer):
+    application.set_session(Inactive())
 
-        self.application.set_session(Active())
-        self.timer.schedule.call_args[0][1]()
+    timer.schedule.assert_not_called()
+    timer.cancel.assert_called_once()
 
-        self.hardware.desk.assert_called_with(Up())
 
+def test_set_desk_down_allowed_hardware_down(model, now, application,
+                                             hardware):
+    model.get_active_time.return_value = timedelta(0)
+    model.get_session_state.return_value = Active()
+    now.return_value = time_allowed
 
-class TestApplicationFactory(utils.TestCase):
-    def setUp(self):
-        logging.disable(logging.CRITICAL)
+    application.set_desk(Down())
 
-        self.model = self.patch('autodesk.application.Model')
-        self.timer = self.patch('autodesk.application.Timer')
-        self.hardware = self.patch('autodesk.application.create_hardware')
-        self.operation = self.patch('autodesk.application.Operation')
-        self.application = self.patch('autodesk.application.Application')
+    hardware.desk.assert_called_with(Down())
 
-        self.limits = (timedelta(seconds=20), timedelta(seconds=10))
-        self.database_path = "path"
-        self.hardware_kind = "noop"
-        self.delay = 5
-        self.motor_pins = (1, 2)
-        self.light_pin = 3
 
-        self.factory = ApplicationFactory(
-            self.database_path,
-            self.hardware_kind,
-            self.limits,
-            self.delay,
-            self.motor_pins,
-            self.light_pin)
+desk_denied = [
+    (Active(), time_denied),
+    (Inactive(), time_allowed),
+    (Inactive(), time_denied)
+]
 
-    def test_create_constructors_called(self):
-        loop = unittest.mock.MagicMock()
 
-        self.factory.create(loop)
+@pytest.mark.parametrize("session,time", desk_denied)
+def test_set_desk_down_denied_hardware_unchanged(model, now, application,
+                                                 hardware, session, time):
+    model.get_session_state.return_value = session
+    now.return_value = time
 
-        self.operation.assert_called_with()
-        self.timer.assert_called_with(loop)
-        self.hardware.assert_called_with(
-            self.hardware_kind, self.delay, self.motor_pins, self.light_pin)
-        self.application.assert_called_with(
-            self.model.return_value,
-            self.timer.return_value,
-            self.hardware.return_value,
-            self.operation.return_value,
-            self.limits)
+    application.set_desk(Down())
+
+    hardware.desk.assert_not_called()
+
+
+@pytest.mark.parametrize("desk,seconds", [(Down(), 20), (Up(), 10)])
+def test_set_desk_allowed_timer_scheduled(model, now, application, timer, desk,
+                                          seconds):
+    model.get_active_time.return_value = timedelta(0)
+    model.get_session_state.return_value = Active()
+    now.return_value = time_allowed
+
+    application.set_desk(desk)
+
+    timer.schedule.assert_called_with(timedelta(seconds=seconds), mock.ANY)
+
+
+def test_set_desk_down_operation_denied_timer_not_scheduled(application,
+                                                            timer):
+    application.set_desk(Down())
+
+    timer.cancel.assert_not_called()
+    timer.schedule.assert_not_called()
+
+
+def test_set_desk_down_inactive_timer_not_scheduled(application, timer):
+    application.set_desk(Down())
+
+    timer.cancel.assert_not_called()
+    timer.schedule.assert_not_called()
+
+
+def test_set_session_timer_lambda_called_desk_down(model, now, application,
+                                                   timer, hardware):
+    model.get_active_time.return_value = timedelta(0)
+    model.get_session_state.return_value = Active()
+    model.get_desk_state.return_value = Down()
+    now.return_value = time_allowed
+
+    application.set_session(Active())
+    timer.schedule.call_args[0][1]()
+
+    hardware.desk.assert_called_with(Up())
