@@ -1,56 +1,12 @@
-from autodesk.application import Application, ApplicationFactory, Operation
+from autodesk.application import Application, ApplicationFactory
 from autodesk.model import Active, Inactive, Down, Up
+from autodesk.operation import Operation
 from autodesk.spans import Event
-from datetime import date, datetime, time, timedelta
+from datetime import datetime, timedelta
 import logging
 import tests.utils as utils
 import unittest
 import unittest.mock
-
-
-class TestOperation(utils.TestCase):
-    def setUp(self):
-        self.operation = Operation()
-
-    def test_operation_allow_workday(self):
-        monday = date(2017, 2, 13)
-        tuesday = date(2017, 2, 14)
-        wednesday = date(2017, 2, 15)
-        thursday = date(2017, 2, 16)
-        friday = date(2017, 2, 17)
-        stroke = time(12, 0, 0)
-        self.assertTrue(
-            self.operation.allowed(datetime.combine(monday, stroke)))
-        self.assertTrue(
-            self.operation.allowed(datetime.combine(tuesday, stroke)))
-        self.assertTrue(
-            self.operation.allowed(datetime.combine(wednesday, stroke)))
-        self.assertTrue(
-            self.operation.allowed(datetime.combine(thursday, stroke)))
-        self.assertTrue(
-            self.operation.allowed(datetime.combine(friday, stroke)))
-
-    def test_operation_disallow_night_time(self):
-        workday = datetime(2017, 2, 13)
-        self.assertFalse(
-            self.operation.allowed(datetime.combine(workday, time(7, 59, 0))))
-        self.assertFalse(
-            self.operation.allowed(datetime.combine(workday, time(18, 1, 0))))
-        self.assertFalse(
-            self.operation.allowed(datetime.combine(workday, time(23, 0, 0))))
-        self.assertFalse(
-            self.operation.allowed(datetime.combine(workday, time(3, 0, 0))))
-        self.assertFalse(
-            self.operation.allowed(datetime.combine(workday, time(6, 0, 0))))
-
-    def test_operation_disallow_weekend(self):
-        saturday = date(2017, 2, 18)
-        sunday = date(2017, 2, 19)
-        stroke = time(12, 0, 0)
-        self.assertFalse(
-            self.operation.allowed(datetime.combine(saturday, stroke)))
-        self.assertFalse(
-            self.operation.allowed(datetime.combine(sunday, stroke)))
 
 
 class TestApplication(utils.TestCase):
