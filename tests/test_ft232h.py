@@ -47,7 +47,7 @@ def test_close(device, hw):
     device.close.assert_called_once()
 
 
-@mock.patch('time.sleep')
+@mock.patch('time.sleep', autospec=True)
 @pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
 def test_desk(sleep, device, gpio, hw, state, pin):
     hw.desk(state)
@@ -58,7 +58,7 @@ def test_desk(sleep, device, gpio, hw, state, pin):
     sleep.assert_called_once_with(5)
 
 
-@mock.patch('time.sleep')
+@mock.patch('time.sleep', autospec=True)
 @pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
 def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
     def fail_and_reload(a, b):
@@ -76,7 +76,7 @@ def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
     sleep.assert_called_once_with(5)
 
 
-@mock.patch('time.sleep')
+@mock.patch('time.sleep', autospec=True)
 @pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
 def test_desk_two_failures_raises(sleep, device, gpio, hw, state, pin):
     device.output.side_effect = RuntimeError
