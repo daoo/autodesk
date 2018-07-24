@@ -1,8 +1,8 @@
 hardware: "ft232h"
 delay: 20
 limits:
-  down: 2940
-  up: 660
+  down: 2880
+  up: 720
 motor_pins:
   down: 12
   up: 11
