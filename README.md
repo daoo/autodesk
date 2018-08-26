@@ -1,6 +1,6 @@
 # AutoDesk
 
-Automatic standing desk control using GPIO.
+Automatic standing desk control over GPIO.
 
 [![Build Status](https://travis-ci.org/daoo/autodesk.svg?branch=master)](https://travis-ci.org/daoo/autodesk)
 [![CodeCov](https://codecov.io/gh/daoo/autodesk/branch/master/graph/badge.svg)](https://codecov.io/gh/daoo/autodesk)
@@ -22,11 +22,11 @@ them to calculate when to raise or lower the desk.
 
 The GPIO pins are wired up to control two electrical switches (relays,
 transistors, opto-couplers or something with similar function). These
-electrical switches are then connected in place of the up/down switch buttons
-that are commonly used on the desk-control dongles. If your desk have some
-more complicated control protocol, you have to use a different approach.
+electrical switches are connected to the ports of the up/down buttons on the
+desk's control dongle. If your desk use a more complicated control protocol,
+you have to use a different approach.
 
-Two desks have been tested, one with
+Two desks have been tested, one with a
 [8P8C](https://en.wikipedia.org/wiki/Modular_connector#8P8C) connector and one
 with a [7-pin DIN](https://en.wikipedia.org/wiki/DIN_connector) connector.
 
@@ -60,6 +60,15 @@ tested desk used pins 1, 2 and 3 for up/down like this:
   2     6
    1   7
 ```
+
+### Example Schematic
+
+Below is an example schematic connecting the digital GPIO pins of a FT232H (can
+also use a Raspberry Pi) with the desk controller using two `4N35`
+optocouplers. Additionally, a LED to indicate the session state is also
+included.
+
+<img src="schematic.svg" alt="Example autodesk controller schematic." width="449" />
 
 ## Software
 
