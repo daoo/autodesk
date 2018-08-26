@@ -1,11 +1,3 @@
 aiohttp
 aiohttp_jinja2
-mock
-pycodestyle
-pyflakes
-pytest
-pytest-cov
-pytest-mock
 pyyaml
-requests
-wheel
