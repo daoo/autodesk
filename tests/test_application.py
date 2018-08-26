@@ -262,7 +262,7 @@ def test_set_desk_hardware_error(model, timer, hardware, application, now,
 
 
 def test_set_session_timer_lambda_called_desk_down(model, timer, hardware,
-                                                   application):
+                                                   application, now):
     model.get_active_time.return_value = timedelta(0)
     model.get_session_state.return_value = Active()
     model.get_desk_state.return_value = Down()
