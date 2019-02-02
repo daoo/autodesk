@@ -1,6 +1,7 @@
 from aiohttp import web
 from autodesk.model import desk_from_int, session_from_int
 import aiohttp_jinja2
+import asyncio
 import autodesk.stats as stats
 import jinja2
 import json
@@ -78,7 +79,8 @@ async def route_index(request):
 
 
 async def init(app):
-    app['application'] = app['application_factory'].create(app.loop)
+    app['application'] = app['application_factory'].create(
+        asyncio.get_running_loop())
     del app['application_factory']
     app['application'].init()
 
