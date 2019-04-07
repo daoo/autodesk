@@ -43,8 +43,8 @@ class Application:
     def get_desk_state(self):
         return self.model.get_desk_state()
 
-    def get_daily_active_time(self):
-        return stats.compute_daily_active_time(
+    def get_weekday_relative_frequency(self):
+        return stats.compute_hourly_relative_frequency(
             self.model.get_session_spans(datetime.min, datetime.now()))
 
     def set_session(self, session):

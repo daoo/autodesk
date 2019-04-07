@@ -1,11 +1,17 @@
 from aiohttp import web
 from autodesk.model import desk_from_int, session_from_int
+from io import BytesIO
 import aiohttp_jinja2
 import asyncio
-import autodesk.stats as stats
+import autodesk.plots as plots
+import base64
 import jinja2
-import json
-import pathlib
+
+
+def figure_to_base64(figure):
+    tmpfile = BytesIO()
+    figure.savefig(tmpfile, format='png')
+    return base64.b64encode(tmpfile.getvalue()).decode('utf-8')
 
 
 async def route_set_session(request):
@@ -32,49 +38,19 @@ async def route_get_desk(request):
         text=request.app['application'].get_desk_state().test('0', '1'))
 
 
-async def route_get_sessions(request):
-    def format(hour, minute, value):
-        return {
-            'time': '{:0>2}:{:0>2}'.format(hour, minute),
-            'value': value
-        }
-
-    start = 7*60
-    end = 19*60
-
-    def trim_day(measurments):
-        return measurments[start:end]
-
-    def trim_week(measurments):
-        return measurments[0:5]
-
-    def decorate(measurments):
-        index = 0
-        for measurments in measurments:
-            yield (index // 60, index % 60, measurments)
-            index += 1
-
-    daily_active_time = request.app['application'].get_daily_active_time()
-    grouped = stats.group_into_days(daily_active_time)
-    decorated = [list(decorate(group)) for group in grouped]
-    trimmed = trim_week([trim_day(group) for group in decorated])
-
-    formatted = [[format(*data) for data in group] for group in trimmed]
-
-    return web.Response(text=json.dumps(formatted),
-                        content_type='application/json')
-
-
 @aiohttp_jinja2.template('index.html')
 async def route_index(request):
     application = request.app['application']
     session_state = application.get_session_state().test('inactive', 'active')
     desk_state = application.get_desk_state().test('down', 'up')
     active_time = application.get_active_time()
+    frequency_figure = plots.plot_weekday_relative_frequency(
+        application.get_weekday_relative_frequency())
     return {
         'session': session_state,
         'desk': desk_state,
-        'active_time': active_time
+        'active_time': active_time,
+        'statistics': figure_to_base64(frequency_figure)
     }
 
 
@@ -96,15 +72,11 @@ def setup_app(application_factory):
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('autodesk', 'templates'))
 
-    project_root = pathlib.Path(__file__).parent
-
     app.router.add_get('/', route_index)
     app.router.add_get('/api/session', route_get_session)
     app.router.add_put('/api/session', route_set_session)
     app.router.add_get('/api/desk', route_get_desk)
     app.router.add_put('/api/desk', route_set_desk)
-    app.router.add_get('/api/sessions.json', route_get_sessions)
-    app.router.add_static('/static/', project_root / 'static')
 
     app.on_startup.append(init)
     app.on_cleanup.append(cleanup)

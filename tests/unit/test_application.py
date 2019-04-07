@@ -132,14 +132,13 @@ def test_get_desk_state_returns_from_model(model, application):
     assert ret == model.get_desk_state.return_value
 
 
-def test_get_daily_active_time_calls_stats_with_session_spans(model,
-                                                              application,
-                                                              stats):
-    ret = application.get_daily_active_time()
+def test_get_weekday_relative_frequency_calls_stats_with_session_spans(
+        model, application, stats):
+    ret = application.get_weekday_relative_frequency()
 
-    stats.compute_daily_active_time.assert_called_with(
+    stats.compute_hourly_relative_frequency.assert_called_with(
         model.get_session_spans.return_value)
-    assert ret == stats.compute_daily_active_time.return_value
+    assert ret == stats.compute_hourly_relative_frequency.return_value
 
 
 def test_set_session_inactive_light_off(hardware, application):

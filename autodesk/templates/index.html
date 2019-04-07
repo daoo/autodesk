@@ -10,7 +10,6 @@
         margin: 0 auto;
       }
     </style>
-    <script src="static/Chart.bundle.min.js"></script>
     <script>
       function desk(state) {
         var oReq = new XMLHttpRequest();
@@ -28,74 +27,6 @@
       function up() { desk('1'); }
       function inactive() { session('0'); }
       function active() { session('1'); }
-
-      function dataset(label, color, data) {
-        return {
-          label: label,
-          borderColor: color,
-          data: data,
-          fill: false,
-          pointRadius: 0,
-          borderWidth: 5
-        };
-      }
-
-      function reqListener() {
-        var json = JSON.parse(this.responseText);
-        var labels = [];
-        for (var i = 0; i < json[0].length; ++i) {
-          labels.push(json[0][i]['time']);
-        }
-        var values = [];
-        for (var i = 0; i < json.length; ++i) {
-          var day = json[i];
-          var result = [];
-          for (var j = 0; j < day.length; ++j) {
-            result.push(day[j]['value']);
-          }
-          values.push(result);
-        }
-
-        var ctx = document.getElementById("myChart");
-        var myChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [
-              dataset('monday', '#4D4D4D', values[0]),
-              dataset('tuesday', '#5DA5DA', values[1]),
-              dataset('wednesday', '#FAA43A', values[2]),
-              dataset('thursday', '#60BD68', values[3]),
-              dataset('friday', '#F17CB0', values[4]),
-            ]
-          },
-          options: {
-            responsive: false,
-            scales: {
-              xAxes: [{
-                type: 'time',
-                time: {
-                  parser: 'HH:mm',
-                  displayFormat: 'HH:mm',
-                },
-                gridLines: {
-                  display: true
-                }
-              }],
-              yAxes: [{
-                gridLines: {
-                  display: false
-                }
-              }],
-            }
-          }
-        });
-      }
-
-      var oReq = new XMLHttpRequest();
-      oReq.addEventListener("load", reqListener);
-      oReq.open("GET", "/api/sessions.json");
-      oReq.send();
     </script>
   </head>
   <body>
@@ -104,6 +35,6 @@
     <p>Change desk state: <a href="#" onclick="down();">Down</a> / <a href="#" onclick="up();">Up</a></p>
     <p>Change active state: <a href="#" onclick="inactive();">Inactive</a> / <a href="#" onclick="active();">Active</a></p>
     <h2>Statistics</h2>
-    <canvas id="myChart" style="width: 100%"></canvas>
+    <img src='data:image/png;charset=utf-8;base64, {{statistics}}' />
   </body>
 </html>
