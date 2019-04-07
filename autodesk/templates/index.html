@@ -3,6 +3,13 @@
   <head>
     <title>AutoDesk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+    </style>
     <script src="static/Chart.bundle.min.js"></script>
     <script>
       function go(dir) {
@@ -84,11 +91,10 @@
     </script>
   </head>
   <body>
-    <div style="text-align: center">
-      <h1>AutoDesk</h1>
-      <p>Currently {{session}} with desk {{desk}} for {{active_time}}.</p>
-      <p><a href="#" onclick="down();">Down</a> / <a href="#" onclick="up();">Up</a></p>
-    </div>
-    <canvas id="myChart" width="1500" height="800" style="margin: auto"></canvas>
+    <h1>AutoDesk</h1>
+    <p>Currently <b>{{session}}</b> with desk <b>{{desk}}</b> for <b>{{active_time}}</b>.</p>
+    <p>Change desk state: <a href="#" onclick="down();">Down</a> / <a href="#" onclick="up();">Up</a></p>
+    <h2>Statistics</h2>
+    <canvas id="myChart" style="width: 100%"></canvas>
   </body>
 </html>
