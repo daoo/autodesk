@@ -4,7 +4,6 @@ Automatic standing desk control over GPIO.
 
 [![Build Status](https://travis-ci.org/daoo/autodesk.svg?branch=master)](https://travis-ci.org/daoo/autodesk)
 [![CodeCov](https://codecov.io/gh/daoo/autodesk/branch/master/graph/badge.svg)](https://codecov.io/gh/daoo/autodesk)
-[![Coverity](https://scan.coverity.com/projects/15538/badge.svg)](https://scan.coverity.com/projects/15538)
 ![License](https://img.shields.io/github/license/daoo/autodesk.svg)
 
 ## Design
