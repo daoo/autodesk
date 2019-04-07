@@ -12,14 +12,22 @@
     </style>
     <script src="static/Chart.bundle.min.js"></script>
     <script>
-      function go(dir) {
+      function desk(state) {
         var oReq = new XMLHttpRequest();
         oReq.open("PUT", "/api/desk");
-        oReq.send(dir);
+        oReq.send(state);
       }
 
-      function down() { go('0'); }
-      function up() { go('1'); }
+      function session(state) {
+        var oReq = new XMLHttpRequest();
+        oReq.open("PUT", "/api/session");
+        oReq.send(state);
+      }
+
+      function down() { desk('0'); }
+      function up() { desk('1'); }
+      function inactive() { session('0'); }
+      function active() { session('1'); }
 
       function dataset(label, color, data) {
         return {
@@ -94,6 +102,7 @@
     <h1>AutoDesk</h1>
     <p>Currently <b>{{session}}</b> with desk <b>{{desk}}</b> for <b>{{active_time}}</b>.</p>
     <p>Change desk state: <a href="#" onclick="down();">Down</a> / <a href="#" onclick="up();">Up</a></p>
+    <p>Change active state: <a href="#" onclick="inactive();">Inactive</a> / <a href="#" onclick="active();">Active</a></p>
     <h2>Statistics</h2>
     <canvas id="myChart" style="width: 100%"></canvas>
   </body>
