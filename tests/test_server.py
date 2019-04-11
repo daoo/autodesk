@@ -29,8 +29,10 @@ class TestServer(utils.AioHTTPTestCase):
         self.application.get_desk_state.return_value = Down()
         response = await self.client.get('/')
         self.assertEqual(200, response.status)
-        str = 'Currently inactive with desk down for 12:34:56'
-        self.assertTrue(str in await response.text())
+        expected = \
+            'Currently <b>inactive</b> with ' + \
+            'desk <b>down</b> for <b>12:34:56</b>.'
+        self.assertTrue(expected in await response.text())
 
     @unittest_run_loop
     async def test_get_sessions_empty_values_are_zero(self):
