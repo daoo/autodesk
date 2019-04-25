@@ -2,7 +2,7 @@ language: python
 python: 3.7
 dist: xenial
 install:
-  - pip install -r requirements-dev.txt codecov
+  - pip install -r requirements.txt -r requirements-dev.txt codecov
 script:
   - bash ci.sh
 after_success:
