@@ -1,13 +1,9 @@
-sudo: required
 language: python
 python: 3.7
 dist: xenial
-services:
-  - docker
 install:
   - pip install -r requirements-dev.txt codecov
 script:
   - bash ci.sh
-  - docker build -t autodesk .
 after_success:
   - codecov
