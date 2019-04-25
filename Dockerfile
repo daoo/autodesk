@@ -5,7 +5,8 @@ RUN apk --no-cache add python3-dev gcc musl-dev
 RUN mkdir /install
 WORKDIR /install
 
-COPY requirements.txt /install/requirements.txt
+COPY autodesk /install/autodesk/
+COPY setup.cfg setup.py requirements.txt /install/
 
 RUN pip3 install --install-option="--prefix=/install" -r requirements.txt
 
