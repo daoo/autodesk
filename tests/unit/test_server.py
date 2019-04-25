@@ -24,52 +24,52 @@ async def test_setup(client, application):
 async def test_get_desk_down(client, application):
     application.get_desk_state.return_value = DOWN
     response = await client.get('/api/desk')
-    assert '0' == await response.text()
+    assert 'down' == await response.text()
 
 
 async def test_get_desk_up(client, application):
     application.get_desk_state.return_value = UP
     response = await client.get('/api/desk')
-    assert '1' == await response.text()
+    assert 'up' == await response.text()
 
 
 async def test_set_desk_down(client, application):
-    response = await client.put('/api/desk', data=b'0')
+    response = await client.put('/api/desk', data=b'down')
     assert 200 == response.status
     application.set_desk.assert_called_with(DOWN)
 
 
 async def test_set_desk_up(client, application):
-    response = await client.put('/api/desk', data=b'1')
+    response = await client.put('/api/desk', data=b'up')
     assert 200 == response.status
     application.set_desk.assert_called_with(UP)
 
 
 async def test_set_desk_not_allowed(client, application):
     application.set_desk.return_value = False
-    response = await client.put('/api/desk', data=b'1')
+    response = await client.put('/api/desk', data=b'up')
     assert 403 == response.status
 
 
 async def test_get_session_inactive(client, application):
     application.get_session_state.return_value = INACTIVE
     response = await client.get('/api/session')
-    assert '0' == await response.text()
+    assert 'inactive' == await response.text()
 
 
 async def test_get_session_active(client, application):
     application.get_session_state.return_value = ACTIVE
     response = await client.get('/api/session')
-    assert '1' == await response.text()
+    assert 'active' == await response.text()
 
 
 async def test_set_session_inactive(client, application):
-    response = await client.put('/api/session', data=b'0')
+    response = await client.put('/api/session', data=b'inactive')
     application.set_session.assert_called_with(INACTIVE)
     assert 200 == response.status
 
 
 async def test_set_session_active(client, application):
-    response = await client.put('/api/session', data=b'1')
+    response = await client.put('/api/session', data=b'active')
     application.set_session.assert_called_with(ACTIVE)
     assert 200 == response.status

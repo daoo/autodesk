@@ -8,7 +8,7 @@ import sys
 
 
 def notify(url, active):
-    state = b'1' if active else b'0'
+    state = b'active' if active else b'inactive'
     requests.put(url, data=state)
 
 

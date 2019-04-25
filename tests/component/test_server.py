@@ -2,7 +2,6 @@ from autodesk.application import Application
 from autodesk.hardware.noop import Noop
 from autodesk.model import Model
 from autodesk.operation import Operation
-from autodesk.spans import Event
 from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
 from datetime import datetime, timedelta
 from tests.utils import StubDataStore
@@ -14,40 +13,41 @@ import pytest
 
 SESSION_EVENTS = [
     # Tuesdays
-    Event(datetime(2019, 4, 16, 14, 0), ACTIVE),
-    Event(datetime(2019, 4, 16, 18, 0), INACTIVE),
-    Event(datetime(2019, 4, 23, 14, 0), ACTIVE),
-    Event(datetime(2019, 4, 23, 18, 0), INACTIVE),
+    (datetime(2019, 4, 16, 14, 0), ACTIVE),
+    (datetime(2019, 4, 16, 18, 0), INACTIVE),
+    (datetime(2019, 4, 23, 14, 0), ACTIVE),
+    (datetime(2019, 4, 23, 18, 0), INACTIVE),
 
     # Wednesdays
-    Event(datetime(2019, 4, 24, 13, 0), ACTIVE),
-    Event(datetime(2019, 4, 24, 14, 0), INACTIVE),
+    (datetime(2019, 4, 24, 13, 0), ACTIVE),
+    (datetime(2019, 4, 24, 14, 0), INACTIVE),
 
     # Thursdays
-    Event(datetime(2019, 4, 25, 8, 0), ACTIVE),
-    Event(datetime(2019, 4, 25, 9, 0), INACTIVE),
-    Event(datetime(2019, 4, 25, 10, 0), ACTIVE),
+    (datetime(2019, 4, 25, 8, 0), ACTIVE),
+    (datetime(2019, 4, 25, 9, 0), INACTIVE),
+    (datetime(2019, 4, 25, 10, 0), ACTIVE),
 ]
 
 DESK_EVENTS = [
-    Event(datetime(2019, 4, 25, 8, 30), UP),
-    Event(datetime(2019, 4, 25, 10, 30), DOWN),
-    Event(datetime(2019, 4, 25, 11, 30), UP),
+    (datetime(2019, 4, 25, 8, 30), UP),
+    (datetime(2019, 4, 25, 10, 30), DOWN),
+    (datetime(2019, 4, 25, 11, 30), UP),
 ]
 
 
 @pytest.fixture
 async def client(mocker, aiohttp_client):
-    datetimestub = mocker.patch(
+    timestamp = mocker.patch(
         'autodesk.application.datetime', autospec=True)
-    datetimestub.min = datetime.min
-    datetimestub.now.return_value = datetime(2019, 4, 25, 12, 0)
+    timestamp.min = datetime.min
+    timestamp.now.return_value = datetime(2019, 4, 25, 12, 0)
 
     model = Model(StubDataStore(
         session_events=SESSION_EVENTS,
         desk_events=DESK_EVENTS))
 
-    timer = mocker.patch('autodesk.timer.Timer', autospec=True)
+    timer = mocker.patch(
+        'autodesk.timer.Timer', autospec=True)
     hardware = Noop()
     operation = Operation()
     limits = (timedelta(minutes=30), timedelta(minutes=30))
@@ -77,10 +77,20 @@ async def test_index(client, expected_figure):
 
     expected_state_string = \
         'Currently <b>active</b> with ' + \
-        'desk <b>up</b> for <b>0:30:00</b>.'
+        'desk <b>up</b> for <b>0 days 00:30:00</b>.'
     expected_figure_string = \
         base64.b64encode(expected_figure).decode('utf-8')
 
     assert 200 == response.status
     assert expected_state_string in text
     assert expected_figure_string in text
+
+
+async def test_set_desk_invalid(client):
+    response = await client.put('/api/desk', data=b'invalid state string')
+    assert 400 == response.status
+
+
+async def test_set_session_invalid(client):
+    response = await client.put('/api/session', data=b'invalid state string')
+    assert 400 == response.status

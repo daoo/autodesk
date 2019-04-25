@@ -1,6 +1,5 @@
 from autodesk.states import INACTIVE, ACTIVE, DOWN
 from datetime import timedelta
-import autodesk.spans as spans
 import numpy as np
 import pandas as pd
 
@@ -10,6 +9,33 @@ def enumerate_hours(t1, t2):
     while t < t2:
         yield (t.weekday(), t.hour)
         t = t + timedelta(hours=1)
+
+
+def collect(default_state, initial, final, events):
+    assert initial < final
+    start = initial
+    state = default_state
+    for event in events.itertuples():
+        assert start <= event.date
+        if state == event.state:
+            # aggregate consecutive events with same state
+            continue
+        if start != event.date:
+            # do not emit zero-length spans
+            yield (start, event.date, state)
+        start = event.date
+        state = event.state
+    if start != final:
+        # do not emit zero-length spans
+        yield (start, final, state)
+
+
+def cut(start, end, spans):
+    for span in spans.itertuples():
+        if span.end >= start and span.start <= end:
+            a = start if span.start < start else span.start
+            b = end if span.end > end else span.end
+            yield (a, b, span.state)
 
 
 class Model:
@@ -26,51 +52,50 @@ class Model:
         self.datastore.set_session(date, state)
 
     def get_desk_spans(self, initial, final):
-        return list(spans.collect(
-            default_data=DOWN,
+        spans = collect(
+            default_state=DOWN,
             initial=initial,
             final=final,
-            events=self.datastore.get_desk_events()))
+            events=self.datastore.get_desk_events())
+        return pd.DataFrame.from_records(
+            spans, columns=['start', 'end', 'state'])
 
     def get_session_spans(self, initial, final):
-        return list(spans.collect(
-            default_data=INACTIVE,
+        spans = collect(
+            default_state=INACTIVE,
             initial=initial,
             final=final,
-            events=self.datastore.get_session_events()))
+            events=self.datastore.get_session_events())
+        return pd.DataFrame.from_records(
+            spans, columns=['start', 'end', 'state'])
 
     def get_session_state(self):
         events = self.datastore.get_session_events()
-        return events[-1].data if events else INACTIVE
+        return events.iloc[-1].state if not events.empty else INACTIVE
 
     def get_desk_state(self):
         events = self.datastore.get_desk_events()
-        return events[-1].data if events else DOWN
+        return events.iloc[-1].state if not events.empty else DOWN
 
     def get_active_time(self, initial, final):
         session_spans = self.get_session_spans(initial, final)
-        if session_spans[-1].data == INACTIVE:
+        if session_spans.iloc[-1].state == INACTIVE:
             return timedelta(0)
 
         desk_spans = self.get_desk_spans(initial, final)
-        active_spans = spans.cut(
-            desk_spans[-1].start,
-            desk_spans[-1].end,
-            session_spans)
+        current_spans = pd.DataFrame.from_records(cut(
+            desk_spans.iloc[-1].start,
+            desk_spans.iloc[-1].end,
+            session_spans), columns=['start', 'end', 'state'])
 
-        return spans.count(active_spans, ACTIVE, timedelta(0))
+        active_spans = current_spans[current_spans.state == ACTIVE]
+        return (active_spans.end - active_spans.start).sum()
 
     def compute_hourly_relative_frequency(self, initial, final):
         spans = self.get_session_spans(initial, final)
 
-        def to_tuple(span):
-            return (span.start, span.end, span.data)
-        df = pd.DataFrame(
-            [to_tuple(span) for span in spans],
-            columns=['start', 'end', 'state'])
-
         buckets = np.zeros((7, 24))
-        for span in df[df.state == ACTIVE].itertuples():
+        for span in spans[spans.state == ACTIVE].itertuples():
             for (day, hour) in enumerate_hours(span.start, span.end):
                 buckets[day, hour] += 1
 

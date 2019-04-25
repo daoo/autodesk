@@ -1,5 +1,5 @@
 from aiohttp import web
-from autodesk.sqlitedatastore import desk_from_int, session_from_int
+from autodesk.states import deserialize_session, deserialize_desk
 import aiohttp_jinja2
 import asyncio
 import autodesk.plots as plots
@@ -8,26 +8,32 @@ import jinja2
 
 async def route_set_session(request):
     body = await request.text()
-    state = session_from_int(int(body))
-    request.app['application'].set_session(state)
-    return web.Response()
+    try:
+        state = deserialize_session(body)
+        request.app['application'].set_session(state)
+        return web.Response()
+    except ValueError as e:
+        return web.Response(text=str(e), status=400)
 
 
 async def route_get_session(request):
-    return web.Response(
-        text=request.app['application'].get_session_state().test('0', '1'))
+    state = request.app['application'].get_session_state()
+    return web.Response(text=state.test('inactive', 'active'))
 
 
 async def route_set_desk(request):
     body = await request.text()
-    state = desk_from_int(int(body))
-    ok = request.app['application'].set_desk(state)
-    return web.Response(status=200 if ok else 403)
+    try:
+        state = deserialize_desk(body)
+        ok = request.app['application'].set_desk(state)
+        return web.Response(status=200 if ok else 403)
+    except ValueError as e:
+        return web.Response(text=str(e), status=400)
 
 
 async def route_get_desk(request):
-    return web.Response(
-        text=request.app['application'].get_desk_state().test('0', '1'))
+    state = request.app['application'].get_desk_state()
+    return web.Response(text=state.test('down', 'up'))
 
 
 @aiohttp_jinja2.template('index.html')

@@ -1,5 +1,4 @@
 class Up:
-
     def next(self):
         return Down()
 
@@ -42,3 +41,21 @@ UP = Up()
 
 INACTIVE = Inactive()
 ACTIVE = Active()
+
+
+def deserialize_session(value):
+    if value == b'inactive' or value == 'inactive':
+        return INACTIVE
+    elif value == b'active' or value == 'active':
+        return ACTIVE
+    else:
+        raise ValueError('Incorrect session state "{0}".'.format(value))
+
+
+def deserialize_desk(value):
+    if value == b'down' or value == 'down':
+        return DOWN
+    elif value == b'up' or value == 'up':
+        return UP
+    else:
+        raise ValueError('Incorrect desk state "{0}".'.format(value))

@@ -1,38 +1,15 @@
-from autodesk.spans import Event
-from autodesk.states import INACTIVE, ACTIVE, DOWN, UP
-from contextlib import closing
+import autodesk.states as states
 import logging
+import pandas as pd
 import sqlite3
 
 
-def session_from_int(value):
-    if value == 0:
-        return INACTIVE
-    elif value == 1:
-        return ACTIVE
-    else:
-        raise ValueError('incorrect session state')
-
-
-def desk_from_int(value):
-    if value == 0:
-        return DOWN
-    elif value == 1:
-        return UP
-    else:
-        raise ValueError('incorrect desk state')
-
-
-def event_from_row(cursor, values):
-    time = values[0]
-    assert cursor.description[0][0] == 'date'
-    col_name = cursor.description[1][0]
-    if col_name == 'active':
-        return Event(time, session_from_int(values[1]))
-    elif col_name == 'state':
-        return Event(time, desk_from_int(values[1]))
-    else:
-        raise ValueError('incorrect column names')
+sqlite3.register_adapter(states.Down, lambda _: 'down')
+sqlite3.register_adapter(states.Up, lambda _: 'up')
+sqlite3.register_adapter(states.Inactive, lambda _: 'inactive')
+sqlite3.register_adapter(states.Active, lambda _: 'active')
+sqlite3.register_converter('desk', states.deserialize_desk)
+sqlite3.register_converter('session', states.deserialize_session)
 
 
 class SqliteDataStore:
@@ -40,22 +17,20 @@ class SqliteDataStore:
         self.logger = logging.getLogger('sqlite3')
         self.logger.info('Opening database %s', path)
         self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
-        self.db.row_factory = event_from_row
         self.db.execute(
             'CREATE TABLE IF NOT EXISTS session('
             'date TIMESTAMP NOT NULL,'
-            'active INTEGER NOT NULL)')
+            'state SESSION NOT NULL)')
         self.db.execute(
             'CREATE TABLE IF NOT EXISTS desk('
             'date TIMESTAMP NOT NULL,'
-            'state INTEGER NOT NULL)')
+            'state DESK NOT NULL)')
 
     def close(self):
         self.db.close()
 
     def _get(self, query):
-        with closing(self.db.execute(query)) as cursor:
-            return cursor.fetchall()
+        return pd.read_sql_query(query, self.db)
 
     def get_desk_events(self):
         return self._get('SELECT * FROM desk ORDER BY date ASC')
@@ -68,8 +43,7 @@ class SqliteDataStore:
             'set desk %s %s',
             date,
             state.test('down', 'up'))
-        self.db.execute('INSERT INTO desk values(?, ?)',
-                        (date, state.test(0, 1)))
+        self.db.execute('INSERT INTO desk values(?, ?)', (date, state))
         self.db.commit()
 
     def set_session(self, date, state):
@@ -77,6 +51,5 @@ class SqliteDataStore:
             'set session %s %s',
             date,
             state.test('inactive', 'active'))
-        self.db.execute('INSERT INTO session values(?, ?)',
-                        (date, state.test(0, 1)))
+        self.db.execute('INSERT INTO session values(?, ?)', (date, state))
         self.db.commit()

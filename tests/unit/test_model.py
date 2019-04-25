@@ -1,10 +1,15 @@
 from autodesk.model import Model
-from autodesk.spans import Event, Span
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
 from datetime import datetime, timedelta
+from pandas.util.testing import assert_frame_equal
 from tests.utils import StubDataStore
+import pandas as pd
 import pytest
+
+
+def make_spans(records):
+    return pd.DataFrame(records, columns=['start', 'end', 'state'])
 
 
 @pytest.fixture()
@@ -21,8 +26,8 @@ def test_get_desk_spans_empty():
 
     result = model.get_desk_spans(t1, t2)
 
-    expected = [Span(t1, t2, DOWN)]
-    assert result == expected
+    expected = make_spans([(t1, t2, DOWN)])
+    assert_frame_equal(result, expected)
 
 
 def test_get_session_spans_empty():
@@ -32,8 +37,8 @@ def test_get_session_spans_empty():
 
     result = model.get_session_spans(t1, t2)
 
-    expected = [Span(t1, t2, INACTIVE)]
-    assert result == expected
+    expected = make_spans([(t1, t2, INACTIVE)])
+    assert_frame_equal(result, expected)
 
 
 def test_get_desk_spans_one_up_span():
@@ -42,13 +47,13 @@ def test_get_desk_spans_one_up_span():
     t3 = datetime(2018, 1, 3)
     model = Model(StubDataStore(
         session_events=[],
-        desk_events=[Event(t2, UP)]
+        desk_events=[(t2, UP)]
     ))
 
     result = model.get_desk_spans(t1, t3)
 
-    expected = [Span(t1, t2, DOWN), Span(t2, t3, UP)]
-    assert result == expected
+    expected = make_spans([(t1, t2, DOWN), (t2, t3, UP)])
+    assert_frame_equal(result, expected)
 
 
 def test_get_session_spans_one_active_span():
@@ -56,14 +61,14 @@ def test_get_session_spans_one_active_span():
     t2 = datetime(2018, 1, 2)
     t3 = datetime(2018, 1, 3)
     model = Model(StubDataStore(
-        session_events=[Event(t2, ACTIVE)],
+        session_events=[(t2, ACTIVE)],
         desk_events=[]
     ))
 
     result = model.get_session_spans(t1, t3)
 
-    expected = [Span(t1, t2, INACTIVE), Span(t2, t3, ACTIVE)]
-    assert result == expected
+    expected = make_spans([(t1, t2, INACTIVE), (t2, t3, ACTIVE)])
+    assert_frame_equal(result, expected)
 
 
 def test_get_session_state_empty():
@@ -84,7 +89,7 @@ def test_get_active_time_empty():
 def test_get_active_time_active_zero():
     t = datetime(2018, 1, 1)
     model = Model(StubDataStore(
-        session_events=[Event(t, ACTIVE)],
+        session_events=[(t, ACTIVE)],
         desk_events=[]
     ))
     assert model.get_active_time(datetime.min, t) == timedelta(0)
@@ -94,7 +99,7 @@ def test_get_active_time_active_10_minutes():
     t1 = datetime(2018, 1, 1, 0, 0, 0)
     t2 = datetime(2018, 1, 1, 0, 10, 0)
     model = Model(StubDataStore(
-        session_events=[Event(t1, ACTIVE)],
+        session_events=[(t1, ACTIVE)],
         desk_events=[]
     ))
     assert model.get_active_time(datetime.min, t2) == timedelta(minutes=10)
@@ -105,8 +110,8 @@ def test_get_active_time_active_20_minutes_with_changed_desk_state():
     t2 = datetime(2018, 1, 1, 0, 10, 0)
     t3 = datetime(2018, 1, 1, 0, 20, 0)
     model = Model(StubDataStore(
-        session_events=[Event(t1, ACTIVE)],
-        desk_events=[Event(t2, UP)]
+        session_events=[(t1, ACTIVE)],
+        desk_events=[(t2, UP)]
     ))
     assert model.get_active_time(datetime.min, t3) == timedelta(minutes=10)
 
@@ -115,7 +120,7 @@ def test_compute_hourly_relative_frequency_active_30_minutes():
     t1 = datetime(2017, 4, 12, 10, 0, 0)
     t2 = datetime(2017, 4, 12, 10, 30, 0)
     model = Model(StubDataStore(
-        session_events=[Event(t1, ACTIVE), Event(t2, INACTIVE)],
+        session_events=[(t1, ACTIVE), (t2, INACTIVE)],
         desk_events=[]
     ))
     result = model.compute_hourly_relative_frequency(t1, t2)
@@ -126,7 +131,7 @@ def test_compute_hourly_relative_frequency_active_0_minutes():
     t1 = datetime(2017, 4, 12, 10, 0, 0)
     t2 = datetime(2017, 4, 12, 10, 30, 0)
     model = Model(StubDataStore(
-        session_events=[Event(t1, INACTIVE)],
+        session_events=[(t1, INACTIVE)],
         desk_events=[]
     ))
     result = model.compute_hourly_relative_frequency(t1, t2)
@@ -139,9 +144,9 @@ def test_set_session_state_active(inmemory_model):
 
     inmemory_model.set_session(t1, ACTIVE)
 
-    expected = [Span(t1, t2, ACTIVE)]
+    expected = make_spans([(t1, t2, ACTIVE)])
     assert inmemory_model.get_session_state() == ACTIVE
-    assert inmemory_model.get_session_spans(t1, t2) == expected
+    assert_frame_equal(inmemory_model.get_session_spans(t1, t2), expected)
 
 
 def test_set_session_state_inactive(inmemory_model):
@@ -150,9 +155,9 @@ def test_set_session_state_inactive(inmemory_model):
 
     inmemory_model.set_session(t1, INACTIVE)
 
-    expected = [Span(t1, t2, INACTIVE)]
+    expected = make_spans([(t1, t2, INACTIVE)])
     assert inmemory_model.get_session_state() == INACTIVE
-    assert inmemory_model.get_session_spans(t1, t2) == expected
+    assert_frame_equal(inmemory_model.get_session_spans(t1, t2), expected)
 
 
 def test_set_desk_state_up(inmemory_model):
@@ -161,9 +166,9 @@ def test_set_desk_state_up(inmemory_model):
 
     inmemory_model.set_desk(t1, UP)
 
-    expected = [Span(t1, t2, UP)]
+    expected = make_spans([(t1, t2, UP)])
     assert inmemory_model.get_desk_state() == UP
-    assert inmemory_model.get_desk_spans(t1, t2) == expected
+    assert_frame_equal(inmemory_model.get_desk_spans(t1, t2), expected)
 
 
 def test_set_desk_state_down(inmemory_model):
@@ -172,6 +177,6 @@ def test_set_desk_state_down(inmemory_model):
 
     inmemory_model.set_desk(t1, DOWN)
 
-    expected = [Span(t1, t2, DOWN)]
+    expected = make_spans([(t1, t2, DOWN)])
     assert inmemory_model.get_desk_state() == DOWN
-    assert inmemory_model.get_desk_spans(t1, t2) == expected
+    assert_frame_equal(inmemory_model.get_desk_spans(t1, t2), expected)
