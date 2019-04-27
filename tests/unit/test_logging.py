@@ -1,22 +1,28 @@
 from autodesk.hardware.logging import LoggingWrapper
 from autodesk.model import Up, Active
-from unittest.mock import MagicMock
-import unittest
+import pytest
 
 
-class TestLoggingWrapper(unittest.TestCase):
-    def setUp(self):
-        self.inner = MagicMock()
-        self.hardware = LoggingWrapper(self.inner)
+@pytest.fixture
+def inner(mocker):
+    return mocker.Mock()
 
-    def test_close(self):
-        self.hardware.close()
-        self.inner.close.assert_called_once()
 
-    def test_desk(self):
-        self.hardware.desk(Up())
-        self.inner.desk.assert_called_once_with(Up())
+@pytest.fixture
+def hardware(inner):
+    return LoggingWrapper(inner)
 
-    def test_light(self):
-        self.hardware.light(Active())
-        self.inner.light.assert_called_once_with(Active())
+
+def test_close(inner, hardware):
+    hardware.close()
+    inner.close.assert_called_once()
+
+
+def test_desk(inner, hardware):
+    hardware.desk(Up())
+    inner.desk.assert_called_once_with(Up())
+
+
+def test_light(inner, hardware):
+    hardware.light(Active())
+    inner.light.assert_called_once_with(Active())
