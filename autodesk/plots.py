@@ -1,4 +1,12 @@
+from io import BytesIO
+import base64
 import matplotlib.pyplot as plt
+
+
+def figure_to_base64(figure):
+    tmpfile = BytesIO()
+    figure.savefig(tmpfile, format='png')
+    return base64.b64encode(tmpfile.getvalue()).decode('utf-8')
 
 
 def plot_weekday_relative_frequency(frequency, dpi=80):

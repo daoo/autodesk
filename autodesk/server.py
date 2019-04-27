@@ -1,17 +1,9 @@
 from aiohttp import web
 from autodesk.model import desk_from_int, session_from_int
-from io import BytesIO
 import aiohttp_jinja2
 import asyncio
 import autodesk.plots as plots
-import base64
 import jinja2
-
-
-def figure_to_base64(figure):
-    tmpfile = BytesIO()
-    figure.savefig(tmpfile, format='png')
-    return base64.b64encode(tmpfile.getvalue()).decode('utf-8')
 
 
 async def route_set_session(request):
@@ -50,7 +42,7 @@ async def route_index(request):
         'session': session_state,
         'desk': desk_state,
         'active_time': active_time,
-        'statistics': figure_to_base64(frequency_figure)
+        'statistics': plots.figure_to_base64(frequency_figure)
     }
 
 
