@@ -114,24 +114,6 @@ def test_close_model_closed(model, application):
     model.close.assert_called_once()
 
 
-def test_get_active_time_returns_from_model(model, application):
-    ret = application.get_active_time()
-
-    assert ret == model.get_active_time.return_value
-
-
-def test_get_session_state_returns_from_model(model, application):
-    ret = application.get_session_state()
-
-    assert ret == model.get_session_state.return_value
-
-
-def test_get_desk_state_returns_from_model(model, application):
-    ret = application.get_desk_state()
-
-    assert ret == model.get_desk_state.return_value
-
-
 def test_get_weekday_relative_frequency_calls_stats_with_session_spans(
         model, application, stats):
     ret = application.get_weekday_relative_frequency()
