@@ -5,7 +5,6 @@ from autodesk.operation import Operation
 from autodesk.spans import Event
 from autodesk.timer import Timer
 from datetime import datetime, timedelta
-import autodesk.stats as stats
 import logging
 
 
@@ -44,8 +43,8 @@ class Application:
         return self.model.get_desk_state()
 
     def get_weekday_relative_frequency(self):
-        return stats.compute_hourly_relative_frequency(
-            self.model.get_session_spans(datetime.min, datetime.now()))
+        return self.model.compute_hourly_relative_frequency(
+            datetime.min, datetime.now())
 
     def set_session(self, session):
         time = datetime.now()

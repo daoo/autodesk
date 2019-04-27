@@ -5,6 +5,8 @@ from autodesk.operation import Operation
 from autodesk.spans import Span
 from datetime import datetime, timedelta
 import autodesk.server as server
+import numpy as np
+import pandas as pd
 import pytest
 
 
@@ -32,6 +34,10 @@ async def client(mocker, aiohttp_client):
     model.get_desk_state.return_value = Down()
     model.get_session_spans.return_value = SESSION_SPANS
     model.get_session_state.return_value = Active()
+    columns = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+               'Saturday', 'Sunday']
+    model.compute_hourly_relative_frequency.return_value = \
+        pd.DataFrame(np.zeros((7, 24)).T, columns=columns)
 
     timer = mocker.patch(
         'autodesk.timer.Timer', autospec=True)

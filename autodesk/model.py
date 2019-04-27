@@ -2,6 +2,8 @@ from contextlib import closing
 from datetime import timedelta
 import autodesk.spans as spans
 import logging
+import numpy as np
+import pandas as pd
 import sqlite3
 
 
@@ -126,6 +128,13 @@ class Sqlite3DataStore:
         self.db.commit()
 
 
+def enumerate_hours(t1, t2):
+    t = t1
+    while t < t2:
+        yield (t.weekday(), t.hour)
+        t = t + timedelta(hours=1)
+
+
 class Model:
     def __init__(self, path):
         self.datastore = Sqlite3DataStore(path)
@@ -173,3 +182,28 @@ class Model:
             session_spans)
 
         return spans.count(active_spans, Active(), timedelta(0))
+
+    def compute_hourly_relative_frequency(self, initial, final):
+        spans = self.get_session_spans(initial, final)
+
+        def to_tuple(span):
+            return (span.start, span.end, span.data.active())
+        df = pd.DataFrame(
+            [to_tuple(span) for span in spans],
+            columns=['start', 'end', 'active'])
+
+        buckets = np.zeros((7, 24))
+        for span in df[df.active].itertuples():
+            for (day, hour) in enumerate_hours(span.start, span.end):
+                buckets[day, hour] += 1
+
+        columns = [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday'
+        ]
+        return pd.DataFrame(buckets.T, columns=columns)

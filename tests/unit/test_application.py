@@ -37,11 +37,6 @@ def application(model, timer, hardware):
     return Application(model, timer, hardware, Operation(), limits)
 
 
-@pytest.fixture
-def stats(mocker):
-    return mocker.patch('autodesk.application.stats', autospec=True)
-
-
 def test_init_inactive_light_off(model, application, hardware):
     model.get_session_state.return_value = Inactive()
 
@@ -112,15 +107,6 @@ def test_close_model_closed(model, application):
     application.close()
 
     model.close.assert_called_once()
-
-
-def test_get_weekday_relative_frequency_calls_stats_with_session_spans(
-        model, application, stats):
-    ret = application.get_weekday_relative_frequency()
-
-    stats.compute_hourly_relative_frequency.assert_called_with(
-        model.get_session_spans.return_value)
-    assert ret == stats.compute_hourly_relative_frequency.return_value
 
 
 def test_set_session_inactive_light_off(hardware, application):

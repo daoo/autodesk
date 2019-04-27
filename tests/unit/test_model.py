@@ -140,3 +140,18 @@ def test_get_active_time_active_10_minutes(inmemory_model):
     inmemory_model.set_session(Event(a, Active()))
     result = inmemory_model.get_active_time(datetime.min, b)
     assert result == timedelta(minutes=10)
+
+
+def test_compute_hourly_relative_frequency_sum(inmemory_model):
+    t1 = datetime(2017, 4, 12, 10, 0, 0)
+    t2 = datetime(2017, 4, 12, 10, 30, 0)
+    inmemory_model.set_session(Event(t1, Active()))
+    result = inmemory_model.compute_hourly_relative_frequency(t1, t2)
+    assert result.values.sum() == 1
+
+
+def test_compute_hourly_relative_frequency_inactive_zero(inmemory_model):
+    t1 = datetime(2017, 4, 12, 10, 0, 0)
+    t2 = datetime(2017, 4, 12, 10, 30, 0)
+    result = inmemory_model.compute_hourly_relative_frequency(t1, t2)
+    assert result.values.sum() == 0
