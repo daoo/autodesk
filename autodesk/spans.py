@@ -37,11 +37,16 @@ def collect(default_data, initial, final, events):
     for event in events:
         assert start <= event.index
         if data == event.data:
+            # join consecutive spans with the same data
             continue
-        yield Span(start, event.index, data)
+        if start != event.index:
+            # do not emit spans with zero length
+            yield Span(start, event.index, data)
         start = event.index
         data = event.data
-    yield Span(start, final, data)
+    if start != final:
+        # do not emit spans with zero length
+        yield Span(start, final, data)
 
 
 def cut(start, end, spans):

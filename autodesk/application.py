@@ -1,6 +1,6 @@
 from autodesk.hardware import create_hardware
 from autodesk.hardware.error import HardwareError
-from autodesk.model import Model, Inactive
+from autodesk.model import Model, Sqlite3DataStore, Inactive
 from autodesk.operation import Operation
 from autodesk.spans import Event
 from autodesk.timer import Timer
@@ -105,7 +105,7 @@ class ApplicationFactory:
     def create(self, loop):
         operation = Operation()
         timer = Timer(loop)
-        model = Model(self.database_path)
+        model = Model(Sqlite3DataStore(self.database_path))
         hardware = create_hardware(
             self.hardware_kind,
             self.delay,

@@ -1,46 +1,31 @@
 from autodesk.application import Application
 from autodesk.hardware.noop import Noop
-from autodesk.model import Down, Inactive, Active
+from autodesk.model import Model, Inactive, Active
 from autodesk.operation import Operation
-from autodesk.spans import Span
+from autodesk.spans import Event
 from datetime import datetime, timedelta
+from tests.utils import StubDataStore
 import autodesk.server as server
-import numpy as np
-import pandas as pd
 import pytest
 
 
-SESSION_SPANS = [
-    Span(
-        datetime(2019, 4, 25, 8, 0),
-        datetime(2019, 4, 25, 9, 0),
-        Active()),
-    Span(
-        datetime(2019, 4, 25, 9, 0),
-        datetime(2019, 4, 25, 10, 0),
-        Inactive()),
-    Span(
-        datetime(2019, 4, 25, 10, 0),
-        datetime(2019, 4, 25, 12, 0),
-        Active()),
+SESSION_EVENTS = [
+    Event(datetime(2019, 4, 25, 8, 0), Active()),
+    Event(datetime(2019, 4, 25, 9, 0), Inactive()),
+    Event(datetime(2019, 4, 25, 10, 0), Active()),
 ]
 
 
 @pytest.fixture
 async def client(mocker, aiohttp_client):
-    model = mocker.patch(
-        'autodesk.model.Model', autospec=True)
-    model.get_active_time.return_value = timedelta(hours=3)
-    model.get_desk_state.return_value = Down()
-    model.get_session_spans.return_value = SESSION_SPANS
-    model.get_session_state.return_value = Active()
-    columns = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
-               'Saturday', 'Sunday']
-    model.compute_hourly_relative_frequency.return_value = \
-        pd.DataFrame(np.zeros((7, 24)).T, columns=columns)
+    datetimestub = mocker.patch(
+        'autodesk.application.datetime', autospec=True)
+    datetimestub.min = datetime.min
+    datetimestub.now.return_value = datetime(2019, 4, 25, 12, 0)
 
-    timer = mocker.patch(
-        'autodesk.timer.Timer', autospec=True)
+    model = Model(StubDataStore(session_events=SESSION_EVENTS, desk_events=[]))
+
+    timer = mocker.patch('autodesk.timer.Timer', autospec=True)
     hardware = Noop()
     operation = Operation()
     limits = (timedelta(minutes=30), timedelta(minutes=30))

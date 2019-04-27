@@ -83,7 +83,7 @@ def event_from_row(cursor, values):
 
 class Sqlite3DataStore:
     def __init__(self, path):
-        self.logger = logging.getLogger('sqlite')
+        self.logger = logging.getLogger('sqlite3')
         self.logger.info('Opening database %s', path)
         self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = event_from_row
@@ -136,8 +136,8 @@ def enumerate_hours(t1, t2):
 
 
 class Model:
-    def __init__(self, path):
-        self.datastore = Sqlite3DataStore(path)
+    def __init__(self, datastore):
+        self.datastore = datastore
 
     def close(self):
         self.datastore.close()
@@ -173,7 +173,7 @@ class Model:
     def get_active_time(self, initial, final):
         session_spans = self.get_session_spans(initial, final)
         if not session_spans[-1].data.active():
-            return None
+            return timedelta(0)
 
         desk_spans = self.get_desk_spans(initial, final)
         active_spans = spans.cut(
