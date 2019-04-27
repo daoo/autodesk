@@ -44,97 +44,99 @@ def test_event_from_row_incorrect(mocker):
 
 
 @pytest.fixture()
-def model():
+def inmemory_model():
     model = Model(':memory:')
     yield model
     model.close()
 
 
-def test_empty_events(model):
-    assert model.get_desk_events() == []
-    assert model.get_session_events() == []
-
-
-def test_empty_spans(model):
+def test_empty_spans(inmemory_model):
     a = datetime.min
     b = datetime.max
-    assert model.get_desk_spans(a, b) == [Span(a, b, Down())]
-    assert model.get_session_spans(a, b) == [Span(a, b, Inactive())]
+    assert inmemory_model.get_desk_spans(a, b) == [Span(a, b, Down())]
+    assert inmemory_model.get_session_spans(a, b) == [Span(a, b, Inactive())]
 
 
-def test_set_desk(model):
-    event = Event(datetime(2017, 1, 1), Up())
-    model.set_desk(event)
-    assert model.get_desk_events() == [event]
+def test_set_desk(inmemory_model):
+    t1 = datetime(2017, 1, 1)
+    t2 = datetime(2017, 1, 2)
+    inmemory_model.set_desk(Event(t2, Up()))
+    expected = [Span(t1, t2, Down()), Span(t2, t2, Up())]
+    assert inmemory_model.get_desk_spans(t1, t2) == expected
 
 
-def test_set_session(model):
-    event = Event(datetime(2017, 1, 1), Active())
-    model.set_session(event)
-    assert model.get_session_events() == [event]
+def test_set_session(inmemory_model):
+    t1 = datetime(2017, 1, 1)
+    t2 = datetime(2017, 1, 2)
+    inmemory_model.set_session(Event(t2, Active()))
+    expected = [Span(t1, t2, Inactive()), Span(t2, t2, Active())]
+    assert inmemory_model.get_session_spans(t1, t2) == expected
 
 
-def test_get_desk_spans(model):
+def test_get_desk_spans(inmemory_model):
     a = datetime(2018, 1, 1)
     b = datetime(2018, 1, 2)
     c = datetime(2018, 1, 3)
-    model.set_desk(Event(b, Up()))
-    assert model.get_desk_spans(a, c) == [Span(a, b, Down()), Span(b, c, Up())]
+    inmemory_model.set_desk(Event(b, Up()))
+    expected = [Span(a, b, Down()), Span(b, c, Up())]
+    assert inmemory_model.get_desk_spans(a, c) == expected
 
 
-def test_get_session_spans(model):
+def test_get_session_spans(inmemory_model):
     a = datetime(2018, 1, 1)
     b = datetime(2018, 1, 2)
     c = datetime(2018, 1, 3)
-    model.set_session(Event(b, Active()))
+    inmemory_model.set_session(Event(b, Active()))
     expected = [Span(a, b, Inactive()), Span(b, c, Active())]
-    assert model.get_session_spans(a, c) == expected
+    assert inmemory_model.get_session_spans(a, c) == expected
 
 
-def test_get_session_state_empty(model):
-    assert model.get_session_state() == Inactive()
+def test_get_session_state_empty(inmemory_model):
+    assert inmemory_model.get_session_state() == Inactive()
 
 
-def test_get_session_state_active(model):
+def test_get_session_state_active(inmemory_model):
     event = Event(datetime(2018, 1, 1), Active())
-    model.set_session(event)
-    assert model.get_session_state() == Active()
+    inmemory_model.set_session(event)
+    assert inmemory_model.get_session_state() == Active()
 
 
-def test_get_session_state_inactive(model):
+def test_get_session_state_inactive(inmemory_model):
     event = Event(datetime(2018, 1, 1), Inactive())
-    model.set_session(event)
-    assert model.get_session_state() == Inactive()
+    inmemory_model.set_session(event)
+    assert inmemory_model.get_session_state() == Inactive()
 
 
-def test_get_desk_state_empty(model):
-    assert model.get_desk_state() == Down()
+def test_get_desk_state_empty(inmemory_model):
+    assert inmemory_model.get_desk_state() == Down()
 
 
-def test_get_desk_state_up(model):
+def test_get_desk_state_up(inmemory_model):
     event = Event(datetime(2018, 1, 1), Active())
-    model.set_desk(event)
-    assert model.get_desk_state() == Up()
+    inmemory_model.set_desk(event)
+    assert inmemory_model.get_desk_state() == Up()
 
 
-def test_get_desk_state_down(model):
+def test_get_desk_state_down(inmemory_model):
     event = Event(datetime(2018, 1, 1), Inactive())
-    model.set_desk(event)
-    assert model.get_desk_state() == Down()
+    inmemory_model.set_desk(event)
+    assert inmemory_model.get_desk_state() == Down()
 
 
-def test_get_active_time_empty(model):
-    assert model.get_active_time(datetime.min, datetime.max) is None
+def test_get_active_time_empty(inmemory_model):
+    assert inmemory_model.get_active_time(datetime.min, datetime.max) is None
 
 
-def test_get_active_time_active_zero(model):
+def test_get_active_time_active_zero(inmemory_model):
     event = Event(datetime(2018, 1, 1), Active())
-    model.set_session(event)
-    assert model.get_active_time(datetime.min, event.index) == timedelta(0)
+    inmemory_model.set_session(event)
+    result = inmemory_model.get_active_time(datetime.min, event.index)
+    assert result == timedelta(0)
 
 
-def test_get_active_time_active_10_minutes(model):
+def test_get_active_time_active_10_minutes(inmemory_model):
     a = datetime(2018, 1, 1, 0, 0, 0)
     b = datetime(2018, 1, 1, 0, 10, 0)
-    model.set_session(Event(a, Active()))
-    assert model.get_active_time(datetime.min, b) == timedelta(minutes=10)
+    inmemory_model.set_session(Event(a, Active()))
+    result = inmemory_model.get_active_time(datetime.min, b)
+    assert result == timedelta(minutes=10)

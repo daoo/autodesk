@@ -79,10 +79,10 @@ def event_from_row(cursor, values):
         raise ValueError('incorrect column names')
 
 
-class Model:
+class Sqlite3DataStore:
     def __init__(self, path):
-        self.logger = logging.getLogger('model')
-        self.logger.info('Opening database {}'.format(path))
+        self.logger = logging.getLogger('sqlite')
+        self.logger.info('Opening database %s', path)
         self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = event_from_row
         self.db.execute(
@@ -96,6 +96,16 @@ class Model:
 
     def close(self):
         self.db.close()
+
+    def _get(self, query):
+        with closing(self.db.execute(query)) as cursor:
+            return cursor.fetchall()
+
+    def get_desk_events(self):
+        return self._get('SELECT * FROM desk ORDER BY date ASC')
+
+    def get_session_events(self):
+        return self._get('SELECT * FROM session ORDER BY date ASC')
 
     def set_desk(self, event):
         self.logger.debug(
@@ -115,36 +125,40 @@ class Model:
                         (event.index, event.data.test(0, 1)))
         self.db.commit()
 
-    def _get(self, query):
-        with closing(self.db.execute(query)) as cursor:
-            return cursor.fetchall()
 
-    def get_desk_events(self):
-        return self._get('SELECT * FROM desk ORDER BY date ASC')
+class Model:
+    def __init__(self, path):
+        self.datastore = Sqlite3DataStore(path)
 
-    def get_session_events(self):
-        return self._get('SELECT * FROM session ORDER BY date ASC')
+    def close(self):
+        self.datastore.close()
+
+    def set_desk(self, event):
+        self.datastore.set_desk(event)
+
+    def set_session(self, event):
+        self.datastore.set_session(event)
 
     def get_desk_spans(self, initial, final):
         return list(spans.collect(
             default_data=Down(),
             initial=initial,
             final=final,
-            events=self.get_desk_events()))
+            events=self.datastore.get_desk_events()))
 
     def get_session_spans(self, initial, final):
         return list(spans.collect(
             default_data=Inactive(),
             initial=initial,
             final=final,
-            events=self.get_session_events()))
+            events=self.datastore.get_session_events()))
 
     def get_session_state(self):
-        events = self.get_session_events()
+        events = self.datastore.get_session_events()
         return events[-1].data if events else Inactive()
 
     def get_desk_state(self):
-        events = self.get_desk_events()
+        events = self.datastore.get_desk_events()
         return events[-1].data if events else Down()
 
     def get_active_time(self, initial, final):
