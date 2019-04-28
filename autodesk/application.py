@@ -1,5 +1,5 @@
 from autodesk.hardware.error import HardwareError
-from autodesk.states import INACTIVE
+from autodesk.states import INACTIVE, ACTIVE
 from datetime import datetime, timedelta
 import logging
 
@@ -18,7 +18,7 @@ class Application:
         self.hardware.light(session)
 
         time = datetime.now()
-        if session.active() and self.operation.allowed(time):
+        if session == ACTIVE and self.operation.allowed(time):
             self._update_timer(
                 time,
                 self.model.get_desk_state(),
@@ -48,7 +48,7 @@ class Application:
             self.hardware.light(session)
             self.model.set_session(time, session)
 
-            if session.active() and self.operation.allowed(time):
+            if session == ACTIVE and self.operation.allowed(time):
                 self._update_timer(time, self.model.get_desk_state(), session)
             else:
                 self.timer.cancel()
@@ -64,7 +64,7 @@ class Application:
             return False
 
         session = self.model.get_session_state()
-        if not session.active():
+        if session == INACTIVE:
             self.logger.warning('desk operation not allowed when inactive')
             return False
 

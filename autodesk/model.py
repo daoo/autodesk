@@ -49,7 +49,7 @@ class Model:
 
     def get_active_time(self, initial, final):
         session_spans = self.get_session_spans(initial, final)
-        if not session_spans[-1].data.active():
+        if session_spans[-1].data == INACTIVE:
             return timedelta(0)
 
         desk_spans = self.get_desk_spans(initial, final)
@@ -64,13 +64,13 @@ class Model:
         spans = self.get_session_spans(initial, final)
 
         def to_tuple(span):
-            return (span.start, span.end, span.data.active())
+            return (span.start, span.end, span.data)
         df = pd.DataFrame(
             [to_tuple(span) for span in spans],
-            columns=['start', 'end', 'active'])
+            columns=['start', 'end', 'state'])
 
         buckets = np.zeros((7, 24))
-        for span in df[df.active].itertuples():
+        for span in df[df.state == ACTIVE].itertuples():
             for (day, hour) in enumerate_hours(span.start, span.end):
                 buckets[day, hour] += 1
 

@@ -1,4 +1,5 @@
 class Up:
+
     def next(self):
         return Down()
 
@@ -21,9 +22,6 @@ class Down:
 
 
 class Active:
-    def active(self):
-        return True
-
     def test(self, a, b):
         return b
 
@@ -32,9 +30,6 @@ class Active:
 
 
 class Inactive:
-    def active(self):
-        return False
-
     def test(self, a, b):
         return a
 
