@@ -137,7 +137,7 @@ def test_set_session_state_active(inmemory_model):
     t1 = datetime(2018, 1, 1)
     t2 = datetime(2018, 1, 2)
 
-    inmemory_model.set_session(Event(t1, ACTIVE))
+    inmemory_model.set_session(t1, ACTIVE)
 
     expected = [Span(t1, t2, ACTIVE)]
     assert inmemory_model.get_session_state() == ACTIVE
@@ -148,7 +148,7 @@ def test_set_session_state_inactive(inmemory_model):
     t1 = datetime(2018, 1, 1)
     t2 = datetime(2018, 1, 2)
 
-    inmemory_model.set_session(Event(t1, INACTIVE))
+    inmemory_model.set_session(t1, INACTIVE)
 
     expected = [Span(t1, t2, INACTIVE)]
     assert inmemory_model.get_session_state() == INACTIVE
@@ -159,7 +159,7 @@ def test_set_desk_state_up(inmemory_model):
     t1 = datetime(2018, 1, 1)
     t2 = datetime(2018, 1, 2)
 
-    inmemory_model.set_desk(Event(t1, UP))
+    inmemory_model.set_desk(t1, UP)
 
     expected = [Span(t1, t2, UP)]
     assert inmemory_model.get_desk_state() == UP
@@ -170,7 +170,7 @@ def test_set_desk_state_down(inmemory_model):
     t1 = datetime(2018, 1, 1)
     t2 = datetime(2018, 1, 2)
 
-    inmemory_model.set_desk(Event(t1, DOWN))
+    inmemory_model.set_desk(t1, DOWN)
 
     expected = [Span(t1, t2, DOWN)]
     assert inmemory_model.get_desk_state() == DOWN

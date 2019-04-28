@@ -63,20 +63,20 @@ class SqliteDataStore:
     def get_session_events(self):
         return self._get('SELECT * FROM session ORDER BY date ASC')
 
-    def set_desk(self, event):
+    def set_desk(self, date, state):
         self.logger.debug(
             'set desk %s %s',
-            event.index,
-            event.data.test('down', 'up'))
+            date,
+            state.test('down', 'up'))
         self.db.execute('INSERT INTO desk values(?, ?)',
-                        (event.index, event.data.test(0, 1)))
+                        (date, state.test(0, 1)))
         self.db.commit()
 
-    def set_session(self, event):
+    def set_session(self, date, state):
         self.logger.debug(
             'set session %s %s',
-            event.index,
-            event.data.test('inactive', 'active'))
+            date,
+            state.test('inactive', 'active'))
         self.db.execute('INSERT INTO session values(?, ?)',
-                        (event.index, event.data.test(0, 1)))
+                        (date, state.test(0, 1)))
         self.db.commit()

@@ -1,7 +1,6 @@
 from autodesk.application import Application
 from autodesk.hardware.error import HardwareError
 from autodesk.operation import Operation
-from autodesk.spans import Event
 from autodesk.states import ACTIVE, INACTIVE, DOWN, UP
 from datetime import datetime, timedelta
 import mock
@@ -128,7 +127,7 @@ def test_set_session_inactive_model_set_inactive(model, application, now):
 
     application.set_session(INACTIVE)
 
-    model.set_session.assert_called_with(Event(time_allowed, INACTIVE))
+    model.set_session.assert_called_with(time_allowed, INACTIVE)
 
 
 def test_set_session_active_timer_scheduled(model, application, now):
@@ -138,7 +137,7 @@ def test_set_session_active_timer_scheduled(model, application, now):
 
     application.set_session(ACTIVE)
 
-    model.set_session.assert_called_with(Event(time_allowed, ACTIVE))
+    model.set_session.assert_called_with(time_allowed, ACTIVE)
 
 
 def test_set_session_inactive_timer_cancelled(timer, application):
@@ -158,7 +157,7 @@ def test_set_session_hardware_error(model, timer, hardware, application, now,
 
     timer.schedule.assert_not_called()
     timer.cancel.assert_called_once()
-    model.set_session.assert_called_with(Event(time_allowed, INACTIVE))
+    model.set_session.assert_called_with(time_allowed, INACTIVE)
 
 
 def test_set_desk_down_allowed_hardware_down(model, now, application,

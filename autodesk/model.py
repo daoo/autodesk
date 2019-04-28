@@ -19,11 +19,11 @@ class Model:
     def close(self):
         self.datastore.close()
 
-    def set_desk(self, event):
-        self.datastore.set_desk(event)
+    def set_desk(self, date, state):
+        self.datastore.set_desk(date, state)
 
-    def set_session(self, event):
-        self.datastore.set_session(event)
+    def set_session(self, date, state):
+        self.datastore.set_session(date, state)
 
     def get_desk_spans(self, initial, final):
         return list(spans.collect(

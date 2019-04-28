@@ -1,5 +1,4 @@
 from autodesk.hardware.error import HardwareError
-from autodesk.spans import Event
 from autodesk.states import INACTIVE
 from datetime import datetime, timedelta
 import logging
@@ -47,7 +46,7 @@ class Application:
         time = datetime.now()
         try:
             self.hardware.light(session)
-            self.model.set_session(Event(time, session))
+            self.model.set_session(time, session)
 
             if session.active() and self.operation.allowed(time):
                 self._update_timer(time, self.model.get_desk_state(), session)
@@ -55,7 +54,7 @@ class Application:
                 self.timer.cancel()
         except HardwareError:
             self.logger.warning('hardware failure, setting session inactive')
-            self.model.set_session(Event(time, INACTIVE))
+            self.model.set_session(time, INACTIVE)
             self.timer.cancel()
 
     def set_desk(self, desk):
@@ -71,7 +70,7 @@ class Application:
 
         try:
             self.hardware.desk(desk)
-            self.model.set_desk(Event(time, desk))
+            self.model.set_desk(time, desk)
             self._update_timer(time, desk, session)
         except HardwareError:
             self.logger.warning('hardware failure, not changing desk state')
