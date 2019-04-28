@@ -2,7 +2,7 @@ from autodesk.application import Application
 from autodesk.hardware import create_hardware
 from autodesk.model import Model
 from autodesk.operation import Operation
-from autodesk.sqlitedatastore import Sqlite3DataStore
+from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.timer import Timer
 
 
@@ -19,7 +19,7 @@ class ApplicationFactory:
     def create(self, loop):
         operation = Operation()
         timer = Timer(loop)
-        model = Model(Sqlite3DataStore(self.database_path))
+        model = Model(SqliteDataStore(self.database_path))
         hardware = create_hardware(
             self.hardware_kind,
             self.delay,

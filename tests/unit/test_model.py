@@ -1,6 +1,6 @@
 from autodesk.model import Model
 from autodesk.spans import Event, Span
-from autodesk.sqlitedatastore import Sqlite3DataStore
+from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
 from datetime import datetime, timedelta
 from tests.utils import StubDataStore
@@ -9,7 +9,7 @@ import pytest
 
 @pytest.fixture()
 def inmemory_model():
-    model = Model(Sqlite3DataStore(':memory:'))
+    model = Model(SqliteDataStore(':memory:'))
     yield model
     model.close()
 

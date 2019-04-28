@@ -35,7 +35,7 @@ def event_from_row(cursor, values):
         raise ValueError('incorrect column names')
 
 
-class Sqlite3DataStore:
+class SqliteDataStore:
     def __init__(self, path):
         self.logger = logging.getLogger('sqlite3')
         self.logger.info('Opening database %s', path)
