@@ -1,5 +1,5 @@
 from autodesk.hardware.noop import Noop
-from autodesk.model import Up, Active
+from autodesk.states import UP, ACTIVE
 
 
 def test_constructor():
@@ -11,8 +11,8 @@ def test_close():
 
 
 def test_desk():
-    Noop().desk(Up())
+    Noop().desk(UP)
 
 
 def test_light():
-    Noop().light(Active())
+    Noop().light(ACTIVE)

@@ -1,4 +1,4 @@
-from autodesk.model import Down, Up, Active, Inactive
+from autodesk.states import DOWN, UP, ACTIVE, INACTIVE
 import mock
 import pytest
 
@@ -45,7 +45,7 @@ def test_close(gpio, hw):
 
 @mock.patch('time.sleep', autospec=True)
 def test_desk_down(sleep, mocker, gpio, hw):
-    hw.desk(Down())
+    hw.desk(DOWN)
     gpio.output.assert_has_calls([
         mocker.call(0, gpio.HIGH),
         mocker.call(0, gpio.LOW)
@@ -55,7 +55,7 @@ def test_desk_down(sleep, mocker, gpio, hw):
 
 @mock.patch('time.sleep', autospec=True)
 def test_desk_up(sleep, mocker, gpio, hw):
-    hw.desk(Up())
+    hw.desk(UP)
     gpio.output.assert_has_calls([
         mocker.call(1, gpio.HIGH),
         mocker.call(1, gpio.LOW)
@@ -64,10 +64,10 @@ def test_desk_up(sleep, mocker, gpio, hw):
 
 
 def test_light_on(gpio, hw):
-    hw.light(Active())
+    hw.light(ACTIVE)
     gpio.output.assert_called_once_with(2, gpio.HIGH)
 
 
 def test_light_off(gpio, hw):
-    hw.light(Inactive())
+    hw.light(INACTIVE)
     gpio.output.assert_called_once_with(2, gpio.LOW)

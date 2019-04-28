@@ -1,8 +1,9 @@
 from autodesk.application import Application
 from autodesk.hardware.noop import Noop
-from autodesk.model import Model, Down, Up, Inactive, Active
+from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.spans import Event
+from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
 from datetime import datetime, timedelta
 from tests.utils import StubDataStore
 import autodesk.server as server
@@ -13,25 +14,25 @@ import pytest
 
 SESSION_EVENTS = [
     # Tuesdays
-    Event(datetime(2019, 4, 16, 14, 0), Active()),
-    Event(datetime(2019, 4, 16, 18, 0), Inactive()),
-    Event(datetime(2019, 4, 23, 14, 0), Active()),
-    Event(datetime(2019, 4, 23, 18, 0), Inactive()),
+    Event(datetime(2019, 4, 16, 14, 0), ACTIVE),
+    Event(datetime(2019, 4, 16, 18, 0), INACTIVE),
+    Event(datetime(2019, 4, 23, 14, 0), ACTIVE),
+    Event(datetime(2019, 4, 23, 18, 0), INACTIVE),
 
     # Wednesdays
-    Event(datetime(2019, 4, 24, 13, 0), Active()),
-    Event(datetime(2019, 4, 24, 14, 0), Inactive()),
+    Event(datetime(2019, 4, 24, 13, 0), ACTIVE),
+    Event(datetime(2019, 4, 24, 14, 0), INACTIVE),
 
     # Thursdays
-    Event(datetime(2019, 4, 25, 8, 0), Active()),
-    Event(datetime(2019, 4, 25, 9, 0), Inactive()),
-    Event(datetime(2019, 4, 25, 10, 0), Active()),
+    Event(datetime(2019, 4, 25, 8, 0), ACTIVE),
+    Event(datetime(2019, 4, 25, 9, 0), INACTIVE),
+    Event(datetime(2019, 4, 25, 10, 0), ACTIVE),
 ]
 
 DESK_EVENTS = [
-    Event(datetime(2019, 4, 25, 8, 30), Up()),
-    Event(datetime(2019, 4, 25, 10, 30), Down()),
-    Event(datetime(2019, 4, 25, 11, 30), Up()),
+    Event(datetime(2019, 4, 25, 8, 30), UP),
+    Event(datetime(2019, 4, 25, 10, 30), DOWN),
+    Event(datetime(2019, 4, 25, 11, 30), UP),
 ]
 
 
@@ -53,7 +54,7 @@ async def client(mocker, aiohttp_client):
     application = Application(model, timer, hardware, operation, limits)
 
     factory = mocker.patch(
-        'autodesk.application.ApplicationFactory', autospec=True)
+        'autodesk.applicationfactory.ApplicationFactory', autospec=True)
     factory.create.return_value = application
 
     return await aiohttp_client(server.setup_app(factory))

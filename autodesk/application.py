@@ -1,9 +1,6 @@
-from autodesk.hardware import create_hardware
 from autodesk.hardware.error import HardwareError
-from autodesk.model import Model, Sqlite3DataStore, Inactive
-from autodesk.operation import Operation
 from autodesk.spans import Event
-from autodesk.timer import Timer
+from autodesk.states import INACTIVE
 from datetime import datetime, timedelta
 import logging
 
@@ -58,7 +55,7 @@ class Application:
                 self.timer.cancel()
         except HardwareError:
             self.logger.warning('hardware failure, setting session inactive')
-            self.model.set_session(Event(time, Inactive()))
+            self.model.set_session(Event(time, INACTIVE))
             self.timer.cancel()
 
     def set_desk(self, desk):
@@ -90,25 +87,3 @@ class Application:
         self.timer.schedule(
             self._compute_delay_to_next(time, desk),
             lambda: self.set_desk(desk.next()))
-
-
-class ApplicationFactory:
-    def __init__(self, database_path, hardware_kind, limits, delay, motor_pins,
-                 light_pin):
-        self.database_path = database_path
-        self.hardware_kind = hardware_kind
-        self.limits = limits
-        self.delay = delay
-        self.motor_pins = motor_pins
-        self.light_pin = light_pin
-
-    def create(self, loop):
-        operation = Operation()
-        timer = Timer(loop)
-        model = Model(Sqlite3DataStore(self.database_path))
-        hardware = create_hardware(
-            self.hardware_kind,
-            self.delay,
-            self.motor_pins,
-            self.light_pin)
-        return Application(model, timer, hardware, operation, self.limits)

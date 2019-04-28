@@ -1,5 +1,5 @@
 from autodesk.hardware.error import HardwareError
-from autodesk.model import Down, Up, Active, Inactive
+from autodesk.states import DOWN, UP, ACTIVE, INACTIVE
 import mock
 import pytest
 
@@ -49,7 +49,7 @@ def test_close(device, hw):
 
 
 @mock.patch('time.sleep', autospec=True)
-@pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
+@pytest.mark.parametrize("state,pin", [(DOWN, 0), (UP, 1)])
 def test_desk(sleep, device, gpio, hw, state, pin):
     hw.desk(state)
     device.output.assert_has_calls([
@@ -60,7 +60,7 @@ def test_desk(sleep, device, gpio, hw, state, pin):
 
 
 @mock.patch('time.sleep', autospec=True)
-@pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
+@pytest.mark.parametrize("state,pin", [(DOWN, 0), (UP, 1)])
 def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
     def fail_and_reload(a, b):
         device.output.side_effect = None
@@ -78,7 +78,7 @@ def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
 
 
 @mock.patch('time.sleep', autospec=True)
-@pytest.mark.parametrize("state,pin", [(Down(), 0), (Up(), 1)])
+@pytest.mark.parametrize("state,pin", [(DOWN, 0), (UP, 1)])
 def test_desk_two_failures_raises(sleep, device, gpio, hw, state, pin):
     device.output.side_effect = HardwareError(RuntimeError())
 
@@ -92,13 +92,13 @@ def test_desk_two_failures_raises(sleep, device, gpio, hw, state, pin):
     sleep.assert_not_called()
 
 
-@pytest.mark.parametrize("state", [Inactive(), Active()])
+@pytest.mark.parametrize("state", [INACTIVE, ACTIVE])
 def test_light(gpio, device, hw, state):
     hw.light(state)
     device.output.assert_called_once_with(2, state.test(gpio.LOW, gpio.HIGH))
 
 
-@pytest.mark.parametrize("state", [Inactive(), Active()])
+@pytest.mark.parametrize("state", [INACTIVE, ACTIVE])
 def test_light_failure_recovery(gpio, device, hw, state):
     def fail_and_reload(a, b):
         device.output.side_effect = None
@@ -113,7 +113,7 @@ def test_light_failure_recovery(gpio, device, hw, state):
     ])
 
 
-@pytest.mark.parametrize("state", [Inactive(), Active()])
+@pytest.mark.parametrize("state", [INACTIVE, ACTIVE])
 def test_light_two_failures_raises(gpio, device, hw, state):
     device.output.side_effect = HardwareError(RuntimeError())
 

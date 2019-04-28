@@ -1,5 +1,5 @@
 from autodesk.hardware.logging import LoggingWrapper
-from autodesk.model import Up, Active
+from autodesk.states import UP, ACTIVE
 import pytest
 
 
@@ -19,10 +19,10 @@ def test_close(inner, hardware):
 
 
 def test_desk(inner, hardware):
-    hardware.desk(Up())
-    inner.desk.assert_called_once_with(Up())
+    hardware.desk(UP)
+    inner.desk.assert_called_once_with(UP)
 
 
 def test_light(inner, hardware):
-    hardware.light(Active())
-    inner.light.assert_called_once_with(Active())
+    hardware.light(ACTIVE)
+    inner.light.assert_called_once_with(ACTIVE)
