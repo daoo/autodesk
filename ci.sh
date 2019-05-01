@@ -2,6 +2,6 @@
 
 set -eux
 
-pytest --cov=autodesk --cov-branch tests
+pytest
 pycodestyle autodesk bin tests
 pyflakes autodesk bin tests
