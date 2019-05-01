@@ -1,10 +1,12 @@
 from autodesk.operation import Operation
-from datetime import date, datetime, time
+from datetime import date, time
+from pandas import Timestamp
 import pytest
 
 
 def combine(dates, times):
-    return [datetime.combine(day, stroke) for day in dates for stroke in times]
+    return [Timestamp.combine(day, stroke)
+            for day in dates for stroke in times]
 
 
 ondates = [

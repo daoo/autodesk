@@ -1,6 +1,6 @@
 from autodesk.hardware.error import HardwareError
 from autodesk.states import INACTIVE, ACTIVE
-from datetime import datetime, timedelta
+from pandas import Timestamp, Timedelta
 import logging
 
 
@@ -17,7 +17,7 @@ class Application:
         session = self.model.get_session_state()
         self.hardware.light(session)
 
-        time = datetime.now()
+        time = Timestamp.now()
         if session == ACTIVE and self.operation.allowed(time):
             self._update_timer(
                 time,
@@ -30,7 +30,7 @@ class Application:
         self.hardware.close()
 
     def get_active_time(self):
-        return self.model.get_active_time(datetime.min, datetime.now())
+        return self.model.get_active_time(Timestamp.min, Timestamp.now())
 
     def get_session_state(self):
         return self.model.get_session_state()
@@ -40,10 +40,10 @@ class Application:
 
     def get_weekday_relative_frequency(self):
         return self.model.compute_hourly_relative_frequency(
-            datetime.min, datetime.now())
+            Timestamp.min, Timestamp.now())
 
     def set_session(self, session):
-        time = datetime.now()
+        time = Timestamp.now()
         try:
             self.hardware.light(session)
             self.model.set_session(time, session)
@@ -58,7 +58,7 @@ class Application:
             self.timer.cancel()
 
     def set_desk(self, desk):
-        time = datetime.now()
+        time = Timestamp.now()
         if not self.operation.allowed(time):
             self.logger.warning('desk operation not allowed at this time')
             return False
@@ -78,9 +78,9 @@ class Application:
         return True
 
     def _compute_delay_to_next(self, time, desk):
-        active_time = self.model.get_active_time(datetime.min, time)
+        active_time = self.model.get_active_time(Timestamp.min, time)
         active_limit = desk.test(*self.limits)
-        return max(timedelta(0), active_limit - active_time)
+        return max(Timedelta(0), active_limit - active_time)
 
     def _update_timer(self, time, desk, session):
         self.timer.schedule(

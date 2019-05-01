@@ -3,7 +3,7 @@ from autodesk.hardware.noop import Noop
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
-from datetime import datetime, timedelta
+from pandas import Timestamp, Timedelta
 from tests.utils import StubDataStore
 import autodesk.server as server
 import base64
@@ -13,34 +13,34 @@ import pytest
 
 SESSION_EVENTS = [
     # Tuesdays
-    (datetime(2019, 4, 16, 14, 0), ACTIVE),
-    (datetime(2019, 4, 16, 18, 0), INACTIVE),
-    (datetime(2019, 4, 23, 14, 0), ACTIVE),
-    (datetime(2019, 4, 23, 18, 0), INACTIVE),
+    (Timestamp(2019, 4, 16, 14, 0), ACTIVE),
+    (Timestamp(2019, 4, 16, 18, 0), INACTIVE),
+    (Timestamp(2019, 4, 23, 14, 0), ACTIVE),
+    (Timestamp(2019, 4, 23, 18, 0), INACTIVE),
 
     # Wednesdays
-    (datetime(2019, 4, 24, 13, 0), ACTIVE),
-    (datetime(2019, 4, 24, 14, 0), INACTIVE),
+    (Timestamp(2019, 4, 24, 13, 0), ACTIVE),
+    (Timestamp(2019, 4, 24, 14, 0), INACTIVE),
 
     # Thursdays
-    (datetime(2019, 4, 25, 8, 0), ACTIVE),
-    (datetime(2019, 4, 25, 9, 0), INACTIVE),
-    (datetime(2019, 4, 25, 10, 0), ACTIVE),
+    (Timestamp(2019, 4, 25, 8, 0), ACTIVE),
+    (Timestamp(2019, 4, 25, 9, 0), INACTIVE),
+    (Timestamp(2019, 4, 25, 10, 0), ACTIVE),
 ]
 
 DESK_EVENTS = [
-    (datetime(2019, 4, 25, 8, 30), UP),
-    (datetime(2019, 4, 25, 10, 30), DOWN),
-    (datetime(2019, 4, 25, 11, 30), UP),
+    (Timestamp(2019, 4, 25, 8, 30), UP),
+    (Timestamp(2019, 4, 25, 10, 30), DOWN),
+    (Timestamp(2019, 4, 25, 11, 30), UP),
 ]
 
 
 @pytest.fixture
 async def client(mocker, aiohttp_client):
     timestamp = mocker.patch(
-        'autodesk.application.datetime', autospec=True)
-    timestamp.min = datetime.min
-    timestamp.now.return_value = datetime(2019, 4, 25, 12, 0)
+        'autodesk.application.Timestamp', autospec=True)
+    timestamp.min = Timestamp.min
+    timestamp.now.return_value = Timestamp(2019, 4, 25, 12, 0)
 
     model = Model(StubDataStore(
         session_events=SESSION_EVENTS,
@@ -50,7 +50,7 @@ async def client(mocker, aiohttp_client):
         'autodesk.timer.Timer', autospec=True)
     hardware = Noop()
     operation = Operation()
-    limits = (timedelta(minutes=30), timedelta(minutes=30))
+    limits = (Timedelta(minutes=30), Timedelta(minutes=30))
     application = Application(model, timer, hardware, operation, limits)
 
     factory = mocker.patch(

@@ -1,5 +1,5 @@
 from autodesk.timer import Timer
-from datetime import timedelta
+from pandas import Timedelta
 import pytest
 
 
@@ -19,15 +19,15 @@ def timer(loop):
 
 
 def test_schedule_call_later_called(loop, callback, timer):
-    timer.schedule(timedelta(seconds=10), callback)
+    timer.schedule(Timedelta(seconds=10), callback)
     loop.call_later.assert_called_with(10.0, callback)
 
 
 def test_schedule_with_previous_its_cancelled(mocker, loop, callback, timer):
     loop.call_later.return_value = timer1 = mocker.Mock()
-    timer.schedule(timedelta(seconds=10), callback)
+    timer.schedule(Timedelta(seconds=10), callback)
     loop.call_later.return_value = timer2 = mocker.Mock()
-    timer.schedule(timedelta(seconds=10), callback)
+    timer.schedule(Timedelta(seconds=10), callback)
     timer1.cancel.assert_called_once()
     timer2.cancel.assert_not_called()
 
@@ -35,7 +35,7 @@ def test_schedule_with_previous_its_cancelled(mocker, loop, callback, timer):
 def test_cancel_cancels(mocker, loop, callback, timer):
     call_later = mocker.Mock()
     loop.call_later.return_value = call_later
-    timer.schedule(timedelta(seconds=10), callback)
+    timer.schedule(Timedelta(seconds=10), callback)
     timer.cancel()
     call_later.cancel.assert_called_once()
 

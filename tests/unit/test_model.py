@@ -1,7 +1,7 @@
 from autodesk.model import Model
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
-from datetime import datetime, timedelta
+from pandas import Timestamp, Timedelta
 from pandas.util.testing import assert_frame_equal
 from tests.utils import StubDataStore
 import pandas as pd
@@ -20,8 +20,8 @@ def inmemory_model():
 
 
 def test_get_desk_spans_empty():
-    t1 = datetime.min
-    t2 = datetime.max
+    t1 = Timestamp.min
+    t2 = Timestamp.max
     model = Model(StubDataStore.empty())
 
     result = model.get_desk_spans(t1, t2)
@@ -31,8 +31,8 @@ def test_get_desk_spans_empty():
 
 
 def test_get_session_spans_empty():
-    t1 = datetime.min
-    t2 = datetime.max
+    t1 = Timestamp.min
+    t2 = Timestamp.max
     model = Model(StubDataStore.empty())
 
     result = model.get_session_spans(t1, t2)
@@ -42,9 +42,9 @@ def test_get_session_spans_empty():
 
 
 def test_get_desk_spans_one_up_span():
-    t1 = datetime(2018, 1, 1)
-    t2 = datetime(2018, 1, 2)
-    t3 = datetime(2018, 1, 3)
+    t1 = Timestamp(2018, 1, 1)
+    t2 = Timestamp(2018, 1, 2)
+    t3 = Timestamp(2018, 1, 3)
     model = Model(StubDataStore(
         session_events=[],
         desk_events=[(t2, UP)]
@@ -57,9 +57,9 @@ def test_get_desk_spans_one_up_span():
 
 
 def test_get_session_spans_one_active_span():
-    t1 = datetime(2018, 1, 1)
-    t2 = datetime(2018, 1, 2)
-    t3 = datetime(2018, 1, 3)
+    t1 = Timestamp(2018, 1, 1)
+    t2 = Timestamp(2018, 1, 2)
+    t3 = Timestamp(2018, 1, 3)
     model = Model(StubDataStore(
         session_events=[(t2, ACTIVE)],
         desk_events=[]
@@ -83,42 +83,52 @@ def test_get_desk_state_empty():
 
 def test_get_active_time_empty():
     model = Model(StubDataStore.empty())
-    assert model.get_active_time(datetime.min, datetime.max) == timedelta(0)
+    assert model.get_active_time(Timestamp.min, Timestamp.max) == Timedelta(0)
 
 
 def test_get_active_time_active_zero():
-    t = datetime(2018, 1, 1)
+    t = Timestamp(2018, 1, 1)
     model = Model(StubDataStore(
         session_events=[(t, ACTIVE)],
         desk_events=[]
     ))
-    assert model.get_active_time(datetime.min, t) == timedelta(0)
+    assert model.get_active_time(Timestamp.min, t) == Timedelta(0)
 
 
-def test_get_active_time_active_10_minutes():
-    t1 = datetime(2018, 1, 1, 0, 0, 0)
-    t2 = datetime(2018, 1, 1, 0, 10, 0)
+def test_get_active_time_active_for_10_minutes():
+    t1 = Timestamp(2018, 1, 1, 0, 0, 0)
+    t2 = Timestamp(2018, 1, 1, 0, 10, 0)
     model = Model(StubDataStore(
         session_events=[(t1, ACTIVE)],
         desk_events=[]
     ))
-    assert model.get_active_time(datetime.min, t2) == timedelta(minutes=10)
+    assert model.get_active_time(Timestamp.min, t2) == Timedelta(minutes=10)
 
 
-def test_get_active_time_active_20_minutes_with_changed_desk_state():
-    t1 = datetime(2018, 1, 1, 0, 0, 0)
-    t2 = datetime(2018, 1, 1, 0, 10, 0)
-    t3 = datetime(2018, 1, 1, 0, 20, 0)
+def test_get_active_time_just_after_desk_change():
+    t1 = Timestamp(2018, 1, 1, 0, 0, 0)
+    t2 = Timestamp(2018, 1, 1, 0, 10, 0)
     model = Model(StubDataStore(
         session_events=[(t1, ACTIVE)],
         desk_events=[(t2, UP)]
     ))
-    assert model.get_active_time(datetime.min, t3) == timedelta(minutes=10)
+    assert model.get_active_time(Timestamp.min, t2) == Timedelta(0)
+
+
+def test_get_active_time_active_20_minutes_with_changed_desk_state():
+    t1 = Timestamp(2018, 1, 1, 0, 0, 0)
+    t2 = Timestamp(2018, 1, 1, 0, 10, 0)
+    t3 = Timestamp(2018, 1, 1, 0, 20, 0)
+    model = Model(StubDataStore(
+        session_events=[(t1, ACTIVE)],
+        desk_events=[(t2, UP)]
+    ))
+    assert model.get_active_time(Timestamp.min, t3) == Timedelta(minutes=10)
 
 
 def test_compute_hourly_relative_frequency_active_30_minutes():
-    t1 = datetime(2017, 4, 12, 10, 0, 0)
-    t2 = datetime(2017, 4, 12, 10, 30, 0)
+    t1 = Timestamp(2017, 4, 12, 10, 0, 0)
+    t2 = Timestamp(2017, 4, 12, 10, 30, 0)
     model = Model(StubDataStore(
         session_events=[(t1, ACTIVE), (t2, INACTIVE)],
         desk_events=[]
@@ -128,8 +138,8 @@ def test_compute_hourly_relative_frequency_active_30_minutes():
 
 
 def test_compute_hourly_relative_frequency_active_0_minutes():
-    t1 = datetime(2017, 4, 12, 10, 0, 0)
-    t2 = datetime(2017, 4, 12, 10, 30, 0)
+    t1 = Timestamp(2017, 4, 12, 10, 0, 0)
+    t2 = Timestamp(2017, 4, 12, 10, 30, 0)
     model = Model(StubDataStore(
         session_events=[(t1, INACTIVE)],
         desk_events=[]
@@ -139,8 +149,8 @@ def test_compute_hourly_relative_frequency_active_0_minutes():
 
 
 def test_set_session_state_active(inmemory_model):
-    t1 = datetime(2018, 1, 1)
-    t2 = datetime(2018, 1, 2)
+    t1 = Timestamp(2018, 1, 1)
+    t2 = Timestamp(2018, 1, 2)
 
     inmemory_model.set_session(t1, ACTIVE)
 
@@ -150,8 +160,8 @@ def test_set_session_state_active(inmemory_model):
 
 
 def test_set_session_state_inactive(inmemory_model):
-    t1 = datetime(2018, 1, 1)
-    t2 = datetime(2018, 1, 2)
+    t1 = Timestamp(2018, 1, 1)
+    t2 = Timestamp(2018, 1, 2)
 
     inmemory_model.set_session(t1, INACTIVE)
 
@@ -161,8 +171,8 @@ def test_set_session_state_inactive(inmemory_model):
 
 
 def test_set_desk_state_up(inmemory_model):
-    t1 = datetime(2018, 1, 1)
-    t2 = datetime(2018, 1, 2)
+    t1 = Timestamp(2018, 1, 1)
+    t2 = Timestamp(2018, 1, 2)
 
     inmemory_model.set_desk(t1, UP)
 
@@ -172,8 +182,8 @@ def test_set_desk_state_up(inmemory_model):
 
 
 def test_set_desk_state_down(inmemory_model):
-    t1 = datetime(2018, 1, 1)
-    t2 = datetime(2018, 1, 2)
+    t1 = Timestamp(2018, 1, 1)
+    t2 = Timestamp(2018, 1, 2)
 
     inmemory_model.set_desk(t1, DOWN)
 

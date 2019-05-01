@@ -2,18 +2,18 @@ from autodesk.application import Application
 from autodesk.hardware.error import HardwareError
 from autodesk.operation import Operation
 from autodesk.states import ACTIVE, INACTIVE, DOWN, UP
-from datetime import datetime, timedelta
+from pandas import Timestamp, Timedelta
 import mock
 import pytest
 
-time_allowed = datetime(2018, 4, 23, 13, 0)
-time_denied = datetime(2018, 4, 23, 20, 0)
-limits = (timedelta(seconds=20), timedelta(seconds=10))
+time_allowed = Timestamp(2018, 4, 23, 13, 0)
+time_denied = Timestamp(2018, 4, 23, 20, 0)
+limits = (Timedelta(seconds=20), Timedelta(seconds=10))
 
 
 @pytest.fixture
 def now(mocker):
-    return mocker.patch('autodesk.application.datetime', autospec=True).now
+    return mocker.patch('autodesk.application.Timestamp', autospec=True).now
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def test_init_inactive_light_off(model, application, hardware):
 
 def test_init_active_light_on(model, application, hardware):
     model.get_session_state.return_value = ACTIVE
-    model.get_active_time.return_value = timedelta(0)
+    model.get_active_time.return_value = Timedelta(0)
     model.get_desk_state.return_value = DOWN
 
     application.init()
@@ -68,7 +68,7 @@ def test_init_active_denied_timer_not_scheduled(model, timer, application,
 def test_init_inactive_operation_allowed_timer_not_scheduled(model,
                                                              timer,
                                                              application):
-    model.get_active_time.return_value = timedelta(seconds=10)
+    model.get_active_time.return_value = Timedelta(seconds=10)
     model.get_session_state.return_value = INACTIVE
 
     application.init()
@@ -79,14 +79,14 @@ def test_init_inactive_operation_allowed_timer_not_scheduled(model,
 
 def test_init_active_operation_allowed_timer_scheduled(model, timer,
                                                        application, now):
-    model.get_active_time.return_value = timedelta(seconds=10)
+    model.get_active_time.return_value = Timedelta(seconds=10)
     model.get_desk_state.return_value = DOWN
     model.get_session_state.return_value = ACTIVE
     now.return_value = time_allowed
 
     application.init()
 
-    timer.schedule.assert_called_with(timedelta(seconds=10), mock.ANY)
+    timer.schedule.assert_called_with(Timedelta(seconds=10), mock.ANY)
     timer.cancel.assert_not_called()
 
 
@@ -116,7 +116,7 @@ def test_set_session_inactive_light_off(hardware, application):
 
 def test_set_session_active_light_on(model, hardware, application):
     model.get_desk_state.return_value = DOWN
-    model.get_active_time.return_value = timedelta(0)
+    model.get_active_time.return_value = Timedelta(0)
     application.set_session(ACTIVE)
 
     hardware.light.assert_called_with(ACTIVE)
@@ -132,7 +132,7 @@ def test_set_session_inactive_model_set_inactive(model, application, now):
 
 def test_set_session_active_timer_scheduled(model, application, now):
     model.get_desk_state.return_value = DOWN
-    model.get_active_time.return_value = timedelta(0)
+    model.get_active_time.return_value = Timedelta(0)
     now.return_value = time_allowed
 
     application.set_session(ACTIVE)
@@ -162,7 +162,7 @@ def test_set_session_hardware_error(model, timer, hardware, application, now,
 
 def test_set_desk_down_allowed_hardware_down(model, now, application,
                                              hardware):
-    model.get_active_time.return_value = timedelta(0)
+    model.get_active_time.return_value = Timedelta(0)
     model.get_session_state.return_value = ACTIVE
     now.return_value = time_allowed
 
@@ -201,16 +201,26 @@ def test_set_desk_down_denied_timer_not_scheduled(model, timer, application,
     timer.schedule.assert_not_called()
 
 
-@pytest.mark.parametrize("desk,seconds", [(DOWN, 20), (UP, 10)])
-def test_set_desk_allowed_timer_scheduled(model, timer, application, now, desk,
-                                          seconds):
-    model.get_active_time.return_value = timedelta(0)
+def test_set_desk_down_allowed_timer_scheduled_20_seconds(
+        model, timer, application, now):
+    model.get_active_time.return_value = Timedelta(0)
     model.get_session_state.return_value = ACTIVE
     now.return_value = time_allowed
 
-    application.set_desk(desk)
+    application.set_desk(DOWN)
 
-    timer.schedule.assert_called_with(timedelta(seconds=seconds), mock.ANY)
+    timer.schedule.assert_called_with(Timedelta(seconds=20), mock.ANY)
+
+
+def test_set_desk_up_allowed_timer_scheduled_10_seconds(
+        model, timer, application, now):
+    model.get_active_time.return_value = Timedelta(0)
+    model.get_session_state.return_value = ACTIVE
+    now.return_value = time_allowed
+
+    application.set_desk(UP)
+
+    timer.schedule.assert_called_with(Timedelta(seconds=10), mock.ANY)
 
 
 @pytest.mark.parametrize("desk", [DOWN, UP])
@@ -229,7 +239,7 @@ def test_set_desk_hardware_error(model, timer, hardware, application, now,
 
 def test_set_session_timer_lambda_called_desk_down(model, timer, hardware,
                                                    application, now):
-    model.get_active_time.return_value = timedelta(0)
+    model.get_active_time.return_value = Timedelta(0)
     model.get_session_state.return_value = ACTIVE
     model.get_desk_state.return_value = DOWN
     now.return_value = time_allowed

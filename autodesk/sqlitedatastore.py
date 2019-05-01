@@ -43,7 +43,8 @@ class SqliteDataStore:
             'set desk %s %s',
             date,
             state.test('down', 'up'))
-        self.db.execute('INSERT INTO desk values(?, ?)', (date, state))
+        values = (date.to_pydatetime(), state)
+        self.db.execute('INSERT INTO desk values(?, ?)', values)
         self.db.commit()
 
     def set_session(self, date, state):
@@ -51,5 +52,6 @@ class SqliteDataStore:
             'set session %s %s',
             date,
             state.test('inactive', 'active'))
-        self.db.execute('INSERT INTO session values(?, ?)', (date, state))
+        values = (date.to_pydatetime(), state)
+        self.db.execute('INSERT INTO session values(?, ?)', values)
         self.db.commit()

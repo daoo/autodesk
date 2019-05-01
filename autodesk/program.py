@@ -1,7 +1,7 @@
 from aiohttp import web
 from autodesk.applicationfactory import ApplicationFactory
 from autodesk.server import setup_app
-from datetime import timedelta
+from pandas import Timedelta
 import logging
 import os
 import yaml
@@ -28,8 +28,8 @@ application_factory = ApplicationFactory(
     database,
     config['hardware'],
     (
-        timedelta(seconds=config['limits']['down']),
-        timedelta(seconds=config['limits']['up']),
+        Timedelta(seconds=config['limits']['down']),
+        Timedelta(seconds=config['limits']['up']),
     ),
     config['delay'],
     (

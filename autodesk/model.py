@@ -1,5 +1,5 @@
 from autodesk.states import INACTIVE, ACTIVE, DOWN
-from datetime import timedelta
+from pandas import Timedelta
 import numpy as np
 import pandas as pd
 
@@ -8,7 +8,7 @@ def enumerate_hours(t1, t2):
     t = t1
     while t < t2:
         yield (t.weekday(), t.hour)
-        t = t + timedelta(hours=1)
+        t = t + Timedelta(hours=1)
 
 
 def collect(default_state, initial, final, events):
@@ -25,9 +25,7 @@ def collect(default_state, initial, final, events):
             yield (start, event.date, state)
         start = event.date
         state = event.state
-    if start != final:
-        # do not emit zero-length spans
-        yield (start, final, state)
+    yield (start, final, state)
 
 
 def cut(start, end, spans):
@@ -80,7 +78,7 @@ class Model:
     def get_active_time(self, initial, final):
         session_spans = self.get_session_spans(initial, final)
         if session_spans.iloc[-1].state == INACTIVE:
-            return timedelta(0)
+            return Timedelta(0)
 
         desk_spans = self.get_desk_spans(initial, final)
         current_spans = pd.DataFrame.from_records(cut(
