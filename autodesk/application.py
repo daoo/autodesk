@@ -38,8 +38,8 @@ class Application:
     def get_desk_state(self):
         return self.model.get_desk_state()
 
-    def get_weekday_relative_frequency(self):
-        return self.model.compute_hourly_relative_frequency(
+    def compute_hourly_count(self):
+        return self.model.compute_hourly_count(
             Timestamp.min, Timestamp.now())
 
     def set_session(self, session):

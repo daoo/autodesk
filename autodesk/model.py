@@ -89,7 +89,7 @@ class Model:
         active_spans = current_spans[current_spans.state == ACTIVE]
         return (active_spans.end - active_spans.start).sum()
 
-    def compute_hourly_relative_frequency(self, initial, final):
+    def compute_hourly_count(self, initial, final):
         spans = self.get_session_spans(initial, final)
 
         rows = np.zeros((7 * 24))
@@ -109,5 +109,5 @@ class Model:
         return pd.DataFrame({
             'weekday': np.repeat(weekdays, 24),
             'hour': np.tile(np.arange(24), 7),
-            'frequency': rows / np.max(rows)
+            'counts': rows
         })

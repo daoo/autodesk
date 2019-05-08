@@ -42,13 +42,13 @@ async def route_index(request):
     session_state = application.get_session_state().test('inactive', 'active')
     desk_state = application.get_desk_state().test('down', 'up')
     active_time = application.get_active_time()
-    frequency_figure = plots.plot_weekday_relative_frequency(
-        application.get_weekday_relative_frequency())
+    counts_figure = plots.plot_weekday_hourly_count(
+        application.compute_hourly_count())
     return {
         'session': session_state,
         'desk': desk_state,
         'active_time': active_time,
-        'statistics': plots.figure_to_base64(frequency_figure)
+        'statistics': plots.figure_to_base64(counts_figure)
     }
 
 

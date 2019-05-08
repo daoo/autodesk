@@ -126,30 +126,30 @@ def test_get_active_time_active_20_minutes_with_changed_desk_state():
     assert model.get_active_time(Timestamp.min, t3) == Timedelta(minutes=10)
 
 
-def test_compute_hourly_relative_frequency_active_30_minutes():
+def test_compute_hourly_count_active_30_minutes():
     t1 = Timestamp(2017, 4, 12, 10, 0, 0)
     t2 = Timestamp(2017, 4, 12, 10, 30, 0)
     model = Model(StubDataStore(
         session_events=[(t1, ACTIVE), (t2, INACTIVE)],
         desk_events=[]
     ))
-    result = model.compute_hourly_relative_frequency(t1, t2)
+    result = model.compute_hourly_count(t1, t2)
     specific_hour = result[
         (result.weekday == 'Wednesday') &
         (result.hour == 10)
     ]
-    assert specific_hour.frequency.item() == 1
+    assert specific_hour.counts.item() == 1
 
 
-def test_compute_hourly_relative_frequency_active_0_minutes():
+def test_compute_hourly_count_active_0_minutes():
     t1 = Timestamp(2017, 4, 12, 10, 0, 0)
     t2 = Timestamp(2017, 4, 12, 10, 30, 0)
     model = Model(StubDataStore(
         session_events=[(t1, INACTIVE)],
         desk_events=[]
     ))
-    result = model.compute_hourly_relative_frequency(t1, t2)
-    assert result.frequency.sum() == 0
+    result = model.compute_hourly_count(t1, t2)
+    assert result.counts.sum() == 0
 
 
 def test_set_session_state_active(inmemory_model):

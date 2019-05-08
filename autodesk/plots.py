@@ -9,20 +9,22 @@ def figure_to_base64(figure):
     return base64.b64encode(tmpfile.getvalue()).decode('utf-8')
 
 
-def plot_weekday_relative_frequency(frequency, dpi=80):
+def plot_weekday_hourly_count(full_week, dpi=80):
     working_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    filtered = frequency[
-        (frequency.weekday.isin(working_days)) &
-        (frequency.hour >= 8) & (frequency.hour <= 18)
+    filtered = full_week[
+        (full_week.weekday.isin(working_days)) &
+        (full_week.hour >= 6) & (full_week.hour <= 20)
     ]
+    counts = filtered['counts']
+    relative = (counts - counts.min()) / (counts.max() - counts.min())
 
     figure = plt.figure(figsize=(800 / dpi, 400 / dpi), dpi=dpi)
-    figure.suptitle('Weekday Frequency')
+    figure.suptitle('Weekday Hourly Relative Presence')
     ax = figure.add_subplot(111)
     ax.set(xlabel='Hour')
     ax.scatter(
         x=filtered.hour,
         y=filtered.weekday,
-        s=filtered.frequency * 100,
+        s=relative * 500,
         color='grey')
     return figure
