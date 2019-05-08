@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-set -eux
+set -eu
 
 pytest --cov=autodesk --cov-branch
-pycodestyle autodesk bin tests
-pyflakes autodesk bin tests
+./lint.sh
