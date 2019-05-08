@@ -134,7 +134,11 @@ def test_compute_hourly_relative_frequency_active_30_minutes():
         desk_events=[]
     ))
     result = model.compute_hourly_relative_frequency(t1, t2)
-    assert result['Wednesday'][10] == 1
+    specific_hour = result[
+        (result.weekday == 'Wednesday') &
+        (result.hour == 10)
+    ]
+    assert specific_hour.frequency.item() == 1
 
 
 def test_compute_hourly_relative_frequency_active_0_minutes():
@@ -145,7 +149,7 @@ def test_compute_hourly_relative_frequency_active_0_minutes():
         desk_events=[]
     ))
     result = model.compute_hourly_relative_frequency(t1, t2)
-    assert result.values.sum() == 0
+    assert result.frequency.sum() == 0
 
 
 def test_set_session_state_active(inmemory_model):

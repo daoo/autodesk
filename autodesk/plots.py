@@ -10,13 +10,19 @@ def figure_to_base64(figure):
 
 
 def plot_weekday_relative_frequency(frequency, dpi=80):
-    weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    filtered = frequency[weekdays]
-    filtered = filtered[(frequency.index >= 8) & (frequency.index <= 18)]
+    working_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    filtered = frequency[
+        (frequency.weekday.isin(working_days)) &
+        (frequency.hour >= 8) & (frequency.hour <= 18)
+    ]
 
-    fig = plt.figure(figsize=(800 / dpi, 400 / dpi), dpi=dpi)
-    fig.suptitle('Weekday Frequency')
-    ax = fig.add_subplot(111)
-    ax.set(xlabel='Hour', ylabel='Frequency')
-    filtered.plot(ax=ax, kind='bar')
-    return fig
+    figure = plt.figure(figsize=(800 / dpi, 400 / dpi), dpi=dpi)
+    figure.suptitle('Weekday Frequency')
+    ax = figure.add_subplot(111)
+    ax.set(xlabel='Hour')
+    ax.scatter(
+        x=filtered.hour,
+        y=filtered.weekday,
+        s=filtered.frequency * 100,
+        color='grey')
+    return figure

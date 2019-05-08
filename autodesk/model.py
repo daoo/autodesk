@@ -92,12 +92,12 @@ class Model:
     def compute_hourly_relative_frequency(self, initial, final):
         spans = self.get_session_spans(initial, final)
 
-        buckets = np.zeros((7, 24))
+        rows = np.zeros((7 * 24))
         for span in spans[spans.state == ACTIVE].itertuples():
             for (day, hour) in enumerate_hours(span.start, span.end):
-                buckets[day, hour] += 1
+                rows[day * 24 + hour] += 1
 
-        columns = [
+        weekdays = [
             'Monday',
             'Tuesday',
             'Wednesday',
@@ -106,4 +106,8 @@ class Model:
             'Saturday',
             'Sunday'
         ]
-        return pd.DataFrame(buckets.T, columns=columns)
+        return pd.DataFrame({
+            'weekday': np.repeat(weekdays, 24),
+            'hour': np.tile(np.arange(24), 7),
+            'frequency': rows / np.max(rows)
+        })
