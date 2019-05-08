@@ -1,11 +1,24 @@
-#!/usr/bin/env python
+import setuptools
 
-from setuptools import setup
+with open('README.md', 'r') as fh:
+    long_description = fh.read()
 
-setup(
+setuptools.setup(
     name='autodesk',
+    description='Automatic standing desk controller.',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     version='1.0',
-    packages=['autodesk', 'autodesk.hardware'],
+    author='Daniel Oom',
+    author_email='oom.daniel@gmail.com',
+    url='https://github.com/daoo/autodesk',
+    packages=setuptools.find_packages(),
+    package_data={
+        'autodesk': [
+            'templates/*.*'
+        ]
+    },
+    include_package_data=True,
     install_requires=[
         'aiohttp',
         'aiohttp_jinja2',
@@ -14,10 +27,4 @@ setup(
         'pandas',
         'pyyaml'
     ],
-    package_data={
-        'autodesk': [
-            'templates/*.*'
-        ]
-    },
-    include_package_data=True,
 )
