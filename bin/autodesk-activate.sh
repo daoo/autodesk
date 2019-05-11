@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-curl.exe \
+curl \
   --data active \
   --header 'Content-Type: text/plain' \
   --request PUT \
