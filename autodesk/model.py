@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 
 
-def enumerate_hours(t1, t2):
-    t = t1
-    while t < t2:
-        yield (t.weekday(), t.hour)
-        t = t + Timedelta(hours=1)
+def enumerate_hours(start, end):
+    time = start
+    while time < end:
+        yield (time.weekday(), time.hour)
+        time = time + Timedelta(hours=1)
 
 
 def collect(default_state, initial, final, events):
@@ -31,9 +31,11 @@ def collect(default_state, initial, final, events):
 def cut(start, end, spans):
     for span in spans.itertuples():
         if span.end >= start and span.start <= end:
-            a = start if span.start < start else span.start
-            b = end if span.end > end else span.end
-            yield (a, b, span.state)
+            yield (
+                start if span.start < start else span.start,
+                end if span.end > end else span.end,
+                span.state
+            )
 
 
 class Model:

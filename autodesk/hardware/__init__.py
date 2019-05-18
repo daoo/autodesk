@@ -9,13 +9,13 @@ def create_hardware(kind, delay, motor_pins, light_pin):
         logger.info('using rpi hardware')
         return LoggingWrapper(
             create_raspberry_pi(delay, motor_pins, light_pin))
-    elif kind == 'ft232h':
+    if kind == 'ft232h':
         logger.info('using ft232h hardware')
         return LoggingWrapper(
             create_ft232h(delay, motor_pins, light_pin))
-    else:
-        logger.info('using noop hardware')
-        return LoggingWrapper(create_noop())
+
+    logger.info('using noop hardware')
+    return LoggingWrapper(create_noop())
 
 
 def create_raspberry_pi(delay, motor_pins, light_pin):

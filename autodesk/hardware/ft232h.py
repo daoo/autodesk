@@ -47,8 +47,8 @@ class Ft232h:
             try:
                 self.session.reconnect()
                 self.session.desk(state)
-            except RuntimeError as e:
-                raise HardwareError(e)
+            except RuntimeError as error:
+                raise HardwareError(error)
 
     def light(self, state):
         try:
@@ -57,5 +57,5 @@ class Ft232h:
             try:
                 self.session.reconnect()
                 self.session.light(state)
-            except RuntimeError as e:
-                raise HardwareError(e)
+            except RuntimeError as error:
+                raise HardwareError(error)

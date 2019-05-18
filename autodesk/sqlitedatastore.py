@@ -16,21 +16,22 @@ class SqliteDataStore:
     def __init__(self, path):
         self.logger = logging.getLogger('sqlite3')
         self.logger.info('Opening database %s', path)
-        self.db = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
-        self.db.execute(
+        self.connection = sqlite3.connect(
+            path, detect_types=sqlite3.PARSE_DECLTYPES)
+        self.connection.execute(
             'CREATE TABLE IF NOT EXISTS session('
             'date TIMESTAMP NOT NULL,'
             'state SESSION NOT NULL)')
-        self.db.execute(
+        self.connection.execute(
             'CREATE TABLE IF NOT EXISTS desk('
             'date TIMESTAMP NOT NULL,'
             'state DESK NOT NULL)')
 
     def close(self):
-        self.db.close()
+        self.connection.close()
 
     def _get(self, query):
-        return pd.read_sql_query(query, self.db)
+        return pd.read_sql_query(query, self.connection)
 
     def get_desk_events(self):
         return self._get('SELECT * FROM desk ORDER BY date ASC')
@@ -44,8 +45,8 @@ class SqliteDataStore:
             date,
             state.test('down', 'up'))
         values = (date.to_pydatetime(), state)
-        self.db.execute('INSERT INTO desk values(?, ?)', values)
-        self.db.commit()
+        self.connection.execute('INSERT INTO desk values(?, ?)', values)
+        self.connection.commit()
 
     def set_session(self, date, state):
         self.logger.debug(
@@ -53,5 +54,5 @@ class SqliteDataStore:
             date,
             state.test('inactive', 'active'))
         values = (date.to_pydatetime(), state)
-        self.db.execute('INSERT INTO session values(?, ?)', values)
-        self.db.commit()
+        self.connection.execute('INSERT INTO session values(?, ?)', values)
+        self.connection.commit()

@@ -18,7 +18,7 @@ database = os.getenv('AUTODESK_DATABASE', ':memory:')
 address = os.getenv('AUTODESK_ADDRESS', '127.0.0.1')
 port = int(os.getenv('AUTODESK_PORT', '8080'))
 
-logger.info('Reading config "{}"'.format(config_path))
+logger.info('Reading config "%s"', config_path)
 
 config = None
 with open(config_path, 'r') as file:

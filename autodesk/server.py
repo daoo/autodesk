@@ -12,8 +12,8 @@ async def route_set_session(request):
         state = deserialize_session(body)
         request.app['application'].set_session(state)
         return web.Response()
-    except ValueError as e:
-        return web.Response(text=str(e), status=400)
+    except ValueError as error:
+        return web.Response(text=str(error), status=400)
 
 
 async def route_get_session(request):
@@ -25,10 +25,10 @@ async def route_set_desk(request):
     body = await request.text()
     try:
         state = deserialize_desk(body)
-        ok = request.app['application'].set_desk(state)
-        return web.Response(status=200 if ok else 403)
-    except ValueError as e:
-        return web.Response(text=str(e), status=400)
+        okay = request.app['application'].set_desk(state)
+        return web.Response(status=200 if okay else 403)
+    except ValueError as error:
+        return web.Response(text=str(error), status=400)
 
 
 async def route_get_desk(request):

@@ -1,3 +1,3 @@
 class HardwareError(RuntimeError):
     def __init__(self, inner):
-        super(RuntimeError, self).__init__(inner)
+        super().__init__(inner)

@@ -2,7 +2,7 @@ class Up:
     def next(self):
         return Down()
 
-    def test(self, a, b):
+    def test(self, _, b):
         return b
 
     def __eq__(self, other):
@@ -13,7 +13,7 @@ class Down:
     def next(self):
         return Up()
 
-    def test(self, a, b):
+    def test(self, a, _):
         return a
 
     def __eq__(self, other):
@@ -21,7 +21,7 @@ class Down:
 
 
 class Active:
-    def test(self, a, b):
+    def test(self, _, b):
         return b
 
     def __eq__(self, other):
@@ -29,7 +29,7 @@ class Active:
 
 
 class Inactive:
-    def test(self, a, b):
+    def test(self, a, _):
         return a
 
     def __eq__(self, other):
@@ -44,18 +44,18 @@ ACTIVE = Active()
 
 
 def deserialize_session(value):
-    if value == b'inactive' or value == 'inactive':
+    if value in (b'inactive', 'inactive'):
         return INACTIVE
-    elif value == b'active' or value == 'active':
+    if value in (b'active', 'active'):
         return ACTIVE
-    else:
-        raise ValueError('Incorrect session state "{0}".'.format(value))
+
+    raise ValueError('Incorrect session state "{0}".'.format(value))
 
 
 def deserialize_desk(value):
-    if value == b'down' or value == 'down':
+    if value in (b'down', 'down'):
         return DOWN
-    elif value == b'up' or value == 'up':
+    if value in (b'up', 'up'):
         return UP
-    else:
-        raise ValueError('Incorrect desk state "{0}".'.format(value))
+
+    raise ValueError('Incorrect desk state "{0}".'.format(value))
