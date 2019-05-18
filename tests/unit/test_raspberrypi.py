@@ -1,6 +1,10 @@
 from autodesk.states import DOWN, UP, ACTIVE, INACTIVE
-import mock
 import pytest
+
+
+@pytest.fixture
+def sleep_mock(mocker):
+    return mocker.patch('time.sleep', autospec=True)
 
 
 @pytest.fixture
@@ -9,15 +13,15 @@ def rpi(mocker):
 
 
 @pytest.fixture
-def gpio(rpi):
+def gpio_mock(rpi):
     return rpi.GPIO
 
 
 @pytest.fixture
-def hw(rpi, gpio):
+def hw(rpi, gpio_mock):
     import sys
     sys.modules['RPi'] = rpi
-    sys.modules['RPi.GPIO'] = gpio
+    sys.modules['RPi.GPIO'] = gpio_mock
 
     from autodesk.hardware.raspberrypi import RaspberryPi
     yield RaspberryPi(5, (0, 1), 2)
@@ -28,46 +32,49 @@ def hw(rpi, gpio):
     sys.modules.pop('autodesk.hardware.raspberrypi')
 
 
-def test_constructor(mocker, gpio, hw):
-    # constructor called by setUp
-    gpio.setmode.assert_called_once_with(gpio.BOARD)
-    gpio.setup.assert_has_calls([
-        mocker.call(0, gpio.OUT),
-        mocker.call(1, gpio.OUT),
-        mocker.call(2, gpio.OUT)
+def test_constructor(mocker, gpio_mock, hw):
+    # constructor called by hw fixture
+    gpio_mock.setmode.assert_called_once_with(gpio_mock.BOARD)
+    gpio_mock.setup.assert_has_calls([
+        mocker.call(0, gpio_mock.OUT),
+        mocker.call(1, gpio_mock.OUT),
+        mocker.call(2, gpio_mock.OUT)
     ])
 
 
-def test_close(gpio, hw):
+def test_close(gpio_mock, hw):
     hw.close()
-    gpio.cleanup.assert_called_once()
+
+    gpio_mock.cleanup.assert_called_once()
 
 
-@mock.patch('time.sleep', autospec=True)
-def test_desk_down(sleep, mocker, gpio, hw):
+def test_desk_down(sleep_mock, mocker, gpio_mock, hw):
     hw.desk(DOWN)
-    gpio.output.assert_has_calls([
-        mocker.call(0, gpio.HIGH),
-        mocker.call(0, gpio.LOW)
+
+    gpio_mock.output.assert_has_calls([
+        mocker.call(0, gpio_mock.HIGH),
+        mocker.call(0, gpio_mock.LOW)
     ])
-    sleep.assert_called_once_with(5)
+    sleep_mock.assert_called_once_with(5)
 
 
-@mock.patch('time.sleep', autospec=True)
-def test_desk_up(sleep, mocker, gpio, hw):
+def test_desk_up(sleep_mock, mocker, gpio_mock, hw):
     hw.desk(UP)
-    gpio.output.assert_has_calls([
-        mocker.call(1, gpio.HIGH),
-        mocker.call(1, gpio.LOW)
+
+    gpio_mock.output.assert_has_calls([
+        mocker.call(1, gpio_mock.HIGH),
+        mocker.call(1, gpio_mock.LOW)
     ])
-    sleep.assert_called_once_with(5)
+    sleep_mock.assert_called_once_with(5)
 
 
-def test_light_on(gpio, hw):
+def test_light_on(gpio_mock, hw):
     hw.light(ACTIVE)
-    gpio.output.assert_called_once_with(2, gpio.HIGH)
+
+    gpio_mock.output.assert_called_once_with(2, gpio_mock.HIGH)
 
 
-def test_light_off(gpio, hw):
+def test_light_off(gpio_mock, hw):
     hw.light(INACTIVE)
-    gpio.output.assert_called_once_with(2, gpio.LOW)
+
+    gpio_mock.output.assert_called_once_with(2, gpio_mock.LOW)

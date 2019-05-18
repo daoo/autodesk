@@ -3,7 +3,6 @@ from autodesk.states import ACTIVE, INACTIVE, DOWN, UP
 from pandas import Timedelta
 from tests.unit.application_utils import \
     make_application, TIME_ALLOWED, TIME_DENIED
-import mock
 import pytest
 
 
@@ -82,7 +81,7 @@ def test_set_desk_down_allowed_timer_scheduled_right_time(mocker, now_stub):
 
     application.set_desk(DOWN)
 
-    timer_mock.schedule.assert_called_with(Timedelta(10), mock.ANY)
+    timer_mock.schedule.assert_called_with(Timedelta(10), mocker.ANY)
 
 
 def test_set_desk_up_allowed_timer_scheduled_right_time(mocker, now_stub):
@@ -93,7 +92,7 @@ def test_set_desk_up_allowed_timer_scheduled_right_time(mocker, now_stub):
 
     application.set_desk(UP)
 
-    timer_mock.schedule.assert_called_with(Timedelta(20), mock.ANY)
+    timer_mock.schedule.assert_called_with(Timedelta(20), mocker.ANY)
 
 
 @pytest.mark.parametrize("desk", [DOWN, UP])

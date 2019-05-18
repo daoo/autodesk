@@ -2,7 +2,6 @@ from autodesk.hardware.error import HardwareError
 from autodesk.states import ACTIVE, INACTIVE, DOWN, UP
 from pandas import Timedelta
 from tests.unit.application_utils import make_application, TIME_ALLOWED
-import mock
 import pytest
 
 
@@ -58,7 +57,7 @@ def test_set_session_active_desk_down_timer_scheduled_right_time(
 
     application.set_session(ACTIVE)
 
-    timer_mock.schedule.assert_called_with(Timedelta(10), mock.ANY)
+    timer_mock.schedule.assert_called_with(Timedelta(10), mocker.ANY)
 
 
 def test_set_session_active_desk_up_timer_scheduled_right_time(
@@ -70,7 +69,7 @@ def test_set_session_active_desk_up_timer_scheduled_right_time(
 
     application.set_session(ACTIVE)
 
-    timer_mock.schedule.assert_called_with(Timedelta(20), mock.ANY)
+    timer_mock.schedule.assert_called_with(Timedelta(20), mocker.ANY)
 
 
 def test_set_session_inactive_timer_cancelled(mocker, now_stub):

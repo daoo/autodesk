@@ -2,7 +2,6 @@ from autodesk.states import ACTIVE, INACTIVE, DOWN
 from pandas import Timedelta
 from tests.unit.application_utils import \
     make_application, TIME_ALLOWED, TIME_DENIED
-import mock
 import pytest
 
 
@@ -57,4 +56,4 @@ def test_init_active_operation_allowed_timer_scheduled(mocker, now_stub):
 
     application.init()
 
-    timer_mock.schedule.assert_called_with(Timedelta(10), mock.ANY)
+    timer_mock.schedule.assert_called_with(Timedelta(10), mocker.ANY)

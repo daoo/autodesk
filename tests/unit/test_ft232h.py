@@ -1,12 +1,16 @@
 from autodesk.hardware.error import HardwareError
 from autodesk.states import DOWN, UP, ACTIVE, INACTIVE
-import mock
 import pytest
 
 
 @pytest.fixture
-def gpio():
-    return mock.MagicMock()
+def sleep_mock(mocker):
+    return mocker.patch('time.sleep', autospec=True)
+
+
+@pytest.fixture
+def gpio(mocker):
+    return mocker.MagicMock()
 
 
 @pytest.fixture
@@ -34,34 +38,35 @@ def hw(gpio, ft232h):
     sys.modules.pop('autodesk.hardware.ft232h')
 
 
-def test_constructor(gpio, ft232h, device, hw):
+def test_constructor(mocker, gpio, device, hw):
     # constructor called by fixture
     device.setup.assert_has_calls([
-        mock.call(0, gpio.OUT),
-        mock.call(1, gpio.OUT),
-        mock.call(2, gpio.OUT)
+        mocker.call(0, gpio.OUT),
+        mocker.call(1, gpio.OUT),
+        mocker.call(2, gpio.OUT)
     ])
 
 
 def test_close(device, hw):
     hw.close()
+
     device.close.assert_called_once()
 
 
-@mock.patch('time.sleep', autospec=True)
 @pytest.mark.parametrize("state,pin", [(DOWN, 0), (UP, 1)])
-def test_desk(sleep, device, gpio, hw, state, pin):
+def test_desk(mocker, sleep_mock, device, gpio, hw, state, pin):
     hw.desk(state)
+
     device.output.assert_has_calls([
-        mock.call(pin, gpio.HIGH),
-        mock.call(pin, gpio.LOW)
+        mocker.call(pin, gpio.HIGH),
+        mocker.call(pin, gpio.LOW)
     ])
-    sleep.assert_called_once_with(5)
+    sleep_mock.assert_called_once_with(5)
 
 
-@mock.patch('time.sleep', autospec=True)
 @pytest.mark.parametrize("state,pin", [(DOWN, 0), (UP, 1)])
-def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
+def test_desk_failure_recovery(
+        mocker, sleep_mock, device, gpio, hw, state, pin):
     def fail_and_reload(a, b):
         device.output.side_effect = None
         raise HardwareError(RuntimeError())
@@ -70,26 +75,26 @@ def test_desk_failure_recovery(sleep, device, gpio, hw, state, pin):
     hw.desk(state)
 
     device.output.assert_has_calls([
-        mock.call(pin, gpio.HIGH),  # failed attempt
-        mock.call(pin, gpio.HIGH),
-        mock.call(pin, gpio.LOW)
+        mocker.call(pin, gpio.HIGH),  # failed attempt
+        mocker.call(pin, gpio.HIGH),
+        mocker.call(pin, gpio.LOW)
     ])
-    sleep.assert_called_once_with(5)
+    sleep_mock.assert_called_once_with(5)
 
 
-@mock.patch('time.sleep', autospec=True)
 @pytest.mark.parametrize("state,pin", [(DOWN, 0), (UP, 1)])
-def test_desk_two_failures_raises(sleep, device, gpio, hw, state, pin):
+def test_desk_two_failures_raises(
+        mocker, sleep_mock, device, gpio, hw, state, pin):
     device.output.side_effect = HardwareError(RuntimeError())
 
     with pytest.raises(HardwareError):
         hw.desk(state)
 
     device.output.assert_has_calls([
-        mock.call(pin, gpio.HIGH),  # failed attempt
-        mock.call(pin, gpio.HIGH),  # failed attempt
+        mocker.call(pin, gpio.HIGH),  # failed attempt
+        mocker.call(pin, gpio.HIGH),  # failed attempt
     ])
-    sleep.assert_not_called()
+    sleep_mock.assert_not_called()
 
 
 @pytest.mark.parametrize("state", [INACTIVE, ACTIVE])
@@ -99,7 +104,7 @@ def test_light(gpio, device, hw, state):
 
 
 @pytest.mark.parametrize("state", [INACTIVE, ACTIVE])
-def test_light_failure_recovery(gpio, device, hw, state):
+def test_light_failure_recovery(mocker, gpio, device, hw, state):
     def fail_and_reload(a, b):
         device.output.side_effect = None
         raise HardwareError(RuntimeError())
@@ -108,19 +113,19 @@ def test_light_failure_recovery(gpio, device, hw, state):
     hw.light(state)
 
     device.output.assert_has_calls([
-        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
-        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),
+        mocker.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
+        mocker.call(2, state.test(gpio.LOW, gpio.HIGH)),
     ])
 
 
 @pytest.mark.parametrize("state", [INACTIVE, ACTIVE])
-def test_light_two_failures_raises(gpio, device, hw, state):
+def test_light_two_failures_raises(mocker, gpio, device, hw, state):
     device.output.side_effect = HardwareError(RuntimeError())
 
     with pytest.raises(HardwareError):
         hw.light(state)
 
     device.output.assert_has_calls([
-        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
-        mock.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
+        mocker.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
+        mocker.call(2, state.test(gpio.LOW, gpio.HIGH)),  # failed attempt
     ])

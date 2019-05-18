@@ -1,33 +1,31 @@
 from autodesk.hardware import create_hardware
-import mock
 
 
-def patch_module(module, module_mock):
-    return mock.patch.dict('sys.modules', {module: module_mock})
+def patch_module(mocker, module):
+    fake = mocker.MagicMock()
+    mocker.patch.dict('sys.modules', {module: fake})
+    return fake
 
 
-def test_create_hardware_raspberry_pi():
-    raspberrypi = mock.MagicMock()
+def test_create_hardware_raspberry_pi(mocker):
+    raspberrypi_mock = patch_module(mocker, 'autodesk.hardware.raspberrypi')
 
-    with patch_module('autodesk.hardware.raspberrypi', raspberrypi):
-        create_hardware('raspberrypi', 5, (1, 2), 3)
+    create_hardware('raspberrypi', 5, (1, 2), 3)
 
-    raspberrypi.RaspberryPi.assert_called_once_with(5, (1, 2), 3)
-
-
-def test_create_hardware_ft232h():
-    ft232h = mock.MagicMock()
-
-    with patch_module('autodesk.hardware.ft232h', ft232h):
-        create_hardware('ft232h', 5, (1, 2), 3)
-
-    ft232h.Ft232h.assert_called_once_with(5, (1, 2), 3)
+    raspberrypi_mock.RaspberryPi.assert_called_once_with(5, (1, 2), 3)
 
 
-def test_create_hardware_noop():
-    noop = mock.MagicMock()
+def test_create_hardware_ft232h(mocker):
+    ft232h_mock = patch_module(mocker, 'autodesk.hardware.ft232h')
 
-    with patch_module('autodesk.hardware.noop', noop):
-        create_hardware('noop', None, None, None)
+    create_hardware('ft232h', 5, (1, 2), 3)
 
-    noop.Noop.assert_called_once_with()
+    ft232h_mock.Ft232h.assert_called_once_with(5, (1, 2), 3)
+
+
+def test_create_hardware_noop(mocker):
+    noop_mock = patch_module(mocker, 'autodesk.hardware.noop')
+
+    create_hardware('noop', None, None, None)
+
+    noop_mock.Noop.assert_called_once_with()
