@@ -78,6 +78,7 @@ class Model:
     def get_active_time(self, initial, final):
         session_spans = self.get_session_spans(initial, final)
         if session_spans.iloc[-1].state == INACTIVE:
+            # TODO: Should return active time for current desk span
             return Timedelta(0)
 
         desk_spans = self.get_desk_spans(initial, final)

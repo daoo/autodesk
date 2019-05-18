@@ -2,6 +2,7 @@ from autodesk.application import Application
 from autodesk.hardware.noop import Noop
 from autodesk.model import Model
 from autodesk.operation import Operation
+from autodesk.scheduler import Scheduler
 from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
 from pandas import Timestamp, Timedelta
 from tests.utils import StubDataStore
@@ -51,7 +52,8 @@ async def client(mocker, aiohttp_client):
     hardware = Noop()
     operation = Operation()
     limits = (Timedelta(minutes=30), Timedelta(minutes=30))
-    application = Application(model, timer, hardware, operation, limits)
+    scheduler = Scheduler(limits)
+    application = Application(model, timer, hardware, operation, scheduler)
 
     factory = mocker.patch(
         'autodesk.applicationfactory.ApplicationFactory', autospec=True)

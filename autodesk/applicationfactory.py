@@ -2,6 +2,7 @@ from autodesk.application import Application
 from autodesk.hardware import create_hardware
 from autodesk.model import Model
 from autodesk.operation import Operation
+from autodesk.scheduler import Scheduler
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.timer import Timer
 
@@ -20,9 +21,10 @@ class ApplicationFactory:
         operation = Operation()
         timer = Timer(loop)
         model = Model(SqliteDataStore(self.database_path))
+        scheduler = Scheduler(self.limits)
         hardware = create_hardware(
             self.hardware_kind,
             self.delay,
             self.motor_pins,
             self.light_pin)
-        return Application(model, timer, hardware, operation, self.limits)
+        return Application(model, timer, hardware, operation, scheduler)

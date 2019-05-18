@@ -1,17 +1,17 @@
 from autodesk.hardware.error import HardwareError
 from autodesk.states import INACTIVE, ACTIVE
-from pandas import Timestamp, Timedelta
+from pandas import Timestamp
 import logging
 
 
 class Application:
-    def __init__(self, model, timer, hardware, operation, limits):
+    def __init__(self, model, timer, hardware, operation, scheduler):
         self.logger = logging.getLogger('application')
         self.model = model
         self.timer = timer
         self.hardware = hardware
         self.operation = operation
-        self.limits = limits
+        self.scheduler = scheduler
 
     def init(self):
         session = self.model.get_session_state()
@@ -20,9 +20,8 @@ class Application:
         time = Timestamp.now()
         if session == ACTIVE and self.operation.allowed(time):
             self._update_timer(
-                time,
-                self.model.get_desk_state(),
-                self.model.get_session_state())
+                self.model.get_active_time(Timestamp.min, time),
+                self.model.get_desk_state())
 
     def close(self):
         self.timer.cancel()
@@ -49,7 +48,9 @@ class Application:
             self.model.set_session(time, session)
 
             if session == ACTIVE and self.operation.allowed(time):
-                self._update_timer(time, self.model.get_desk_state(), session)
+                self._update_timer(
+                    self.model.get_active_time(Timestamp.min, time),
+                    self.model.get_desk_state())
             else:
                 self.timer.cancel()
         except HardwareError:
@@ -71,18 +72,15 @@ class Application:
         try:
             self.hardware.desk(desk)
             self.model.set_desk(time, desk)
-            self._update_timer(time, desk, session)
+            self._update_timer(
+                self.model.get_active_time(Timestamp.min, time),
+                desk)
         except HardwareError:
             self.logger.warning('hardware failure, not changing desk state')
             self.timer.cancel()
         return True
 
-    def _compute_delay_to_next(self, time, desk):
-        active_time = self.model.get_active_time(Timestamp.min, time)
-        active_limit = desk.test(*self.limits)
-        return max(Timedelta(0), active_limit - active_time)
-
-    def _update_timer(self, time, desk, session):
+    def _update_timer(self, active_time, desk_state):
         self.timer.schedule(
-            self._compute_delay_to_next(time, desk),
-            lambda: self.set_desk(desk.next()))
+            self.scheduler.compute_delay(active_time, desk_state),
+            lambda: self.set_desk(desk_state.next()))
