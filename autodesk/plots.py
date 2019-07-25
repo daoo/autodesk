@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 
 def figure_to_base64(figure):
     tmpfile = BytesIO()
-    figure.savefig(tmpfile, format='png')
+    metadata = { 'Software': 'AutoDesk https://github.com/daoo/autodesk' }
+    figure.savefig(tmpfile, format='png', metadata=metadata)
     return base64.b64encode(tmpfile.getvalue()).decode('utf-8')
 
 
