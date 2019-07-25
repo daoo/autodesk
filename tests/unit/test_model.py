@@ -138,7 +138,7 @@ def test_compute_hourly_count_active_30_minutes():
         (result.weekday == 'Wednesday') &
         (result.hour == 10)
     ]
-    assert specific_hour.counts.item() == 1
+    assert specific_hour.counts.iloc[0] == 1
 
 
 def test_compute_hourly_count_active_0_minutes():
