@@ -1,26 +1,26 @@
 import RPi.GPIO as GPIO
-import time
 
 
-class RaspberryPi:
-    def __init__(self, delay, motor_pins, light_pin):
-        self.delay = delay
-        self.motor_pins = motor_pins
-        self.light_pin = light_pin
+class RaspberryPiOutputPin:
+    def __init__(self, pin):
+        self.pin = pin
+        GPIO.setup(self.pin, GPIO.OUT)
 
+    def write(self, value):
+        if value != 0 and value != 1:
+            raise ValueError(
+                'Pin value must be 0 or 1 but got {0}'.format(value))
+        gpio_value = GPIO.LOW if value == 0 else GPIO.HIGH
+        GPIO.output(self.pin, gpio_value)
+
+
+class RaspberryPiPinFactory:
+    def __enter__(self):
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.motor_pins[0], GPIO.OUT)
-        GPIO.setup(self.motor_pins[1], GPIO.OUT)
-        GPIO.setup(self.light_pin, GPIO.OUT)
+        return self
 
-    def close(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         GPIO.cleanup()
 
-    def desk(self, state):
-        pin = state.test(*self.motor_pins)
-        GPIO.output(pin, GPIO.HIGH)
-        time.sleep(self.delay)
-        GPIO.output(pin, GPIO.LOW)
-
-    def light(self, state):
-        GPIO.output(self.light_pin, state.test(GPIO.LOW, GPIO.HIGH))
+    def create(self, pin):
+        return RaspberryPiOutputPin(pin)

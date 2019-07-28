@@ -1,5 +1,6 @@
 from aiohttp import web
 from autodesk.applicationfactory import ApplicationFactory
+from autodesk.hardware import create_pin_factory
 from autodesk.server import setup_app
 from pandas import Timedelta
 import logging
@@ -24,19 +25,20 @@ config = None
 with open(config_path, 'r') as file:
     config = yaml.load(file, Loader=yaml.SafeLoader)
 
-application_factory = ApplicationFactory(
-    database,
-    config['hardware'],
-    (
-        Timedelta(seconds=config['limits']['down']),
-        Timedelta(seconds=config['limits']['up']),
-    ),
-    config['delay'],
-    (
-        config['motor_pins']['down'],
-        config['motor_pins']['up'],
-    ),
-    config['light_pin'],
-)
+with create_pin_factory(config['hardware']) as pin_factory:
+    application_factory = ApplicationFactory(
+        database,
+        pin_factory,
+        (
+            Timedelta(seconds=config['limits']['down']),
+            Timedelta(seconds=config['limits']['up']),
+        ),
+        config['delay'],
+        (
+            config['motor_pins']['down'],
+            config['motor_pins']['up'],
+        ),
+        config['light_pin'],
+    )
 
-web.run_app(setup_app(application_factory), host=address, port=port)
+    web.run_app(setup_app(application_factory), host=address, port=port)

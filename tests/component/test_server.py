@@ -1,5 +1,7 @@
 from autodesk.application import Application
-from autodesk.hardware.noop import Noop
+from autodesk.application.deskservice import DeskService
+from autodesk.application.lightservice import LightService
+from autodesk.hardware.noop import NoopOutputPin
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
@@ -49,11 +51,13 @@ async def client(mocker, aiohttp_client):
 
     timer = mocker.patch(
         'autodesk.timer.Timer', autospec=True)
-    hardware = Noop()
+    desk_service = DeskService(0, NoopOutputPin(0), NoopOutputPin(1))
+    light_service = LightService(NoopOutputPin(2))
     operation = Operation()
     limits = (Timedelta(minutes=30), Timedelta(minutes=30))
     scheduler = Scheduler(limits)
-    application = Application(model, timer, hardware, operation, scheduler)
+    application = Application(
+        model, timer, desk_service, light_service, operation, scheduler)
 
     factory = mocker.patch(
         'autodesk.applicationfactory.ApplicationFactory', autospec=True)

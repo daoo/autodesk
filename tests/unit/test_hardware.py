@@ -1,4 +1,4 @@
-from autodesk.hardware import create_hardware
+from autodesk.hardware import create_pin_factory
 
 
 def patch_module(mocker, module):
@@ -7,25 +7,25 @@ def patch_module(mocker, module):
     return fake
 
 
-def test_create_hardware_raspberry_pi(mocker):
+def test_create_pin_factory_raspberry_pi(mocker):
     raspberrypi_mock = patch_module(mocker, 'autodesk.hardware.raspberrypi')
 
-    create_hardware('raspberrypi', 5, (1, 2), 3)
+    create_pin_factory('raspberrypi')
 
-    raspberrypi_mock.RaspberryPi.assert_called_once_with(5, (1, 2), 3)
+    raspberrypi_mock.RaspberryPiPinFactory.assert_called_once()
 
 
-def test_create_hardware_ft232h(mocker):
+def test_create_pin_factory_ft232h(mocker):
     ft232h_mock = patch_module(mocker, 'autodesk.hardware.ft232h')
 
-    create_hardware('ft232h', 5, (1, 2), 3)
+    create_pin_factory('ft232h')
 
-    ft232h_mock.Ft232h.assert_called_once_with(5, (1, 2), 3)
+    ft232h_mock.Ft232hPinFactory.assert_called_once()
 
 
-def test_create_hardware_noop(mocker):
+def test_create_pin_factory_noop(mocker):
     noop_mock = patch_module(mocker, 'autodesk.hardware.noop')
 
-    create_hardware('noop', None, None, None)
+    create_pin_factory('noop')
 
-    noop_mock.Noop.assert_called_once_with()
+    noop_mock.NoopPinFactory.assert_called_once()

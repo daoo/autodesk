@@ -20,7 +20,7 @@ DESK_DENIED = [
 
 def test_set_desk_down_allowed_returns_true(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, _, application) = make_application(
+    (_, timer_mock, _, _, application) = make_application(
         mocker, ACTIVE, Timedelta(0), DOWN)
 
     result = application.set_desk(DOWN)
@@ -30,18 +30,18 @@ def test_set_desk_down_allowed_returns_true(mocker, now_stub):
 
 def test_set_desk_down_allowed_hardware_down(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, _, hardware_mock, application) = make_application(
+    (_, _, desk_service_mock, _, application) = make_application(
         mocker, ACTIVE, Timedelta(0), DOWN)
 
     application.set_desk(DOWN)
 
-    hardware_mock.desk.assert_called_with(DOWN)
+    desk_service_mock.move.assert_called_with(DOWN)
 
 
 @pytest.mark.parametrize("session,time", DESK_DENIED)
 def test_set_desk_down_denied_returns_false(mocker, now_stub, session, time):
     now_stub.return_value = time
-    (_, _, _, application) = make_application(
+    (_, _, _, _, application) = make_application(
         mocker, session, Timedelta(0), UP)
 
     result = application.set_desk(DOWN)
@@ -53,19 +53,19 @@ def test_set_desk_down_denied_returns_false(mocker, now_stub, session, time):
 def test_set_desk_down_denied_hardware_unchanged(
         mocker, now_stub, session, time):
     now_stub.return_value = time
-    (_, _, hardware_mock, application) = make_application(
+    (_, _, desk_service_mock, _, application) = make_application(
         mocker, session, Timedelta(0), UP)
 
     application.set_desk(DOWN)
 
-    hardware_mock.desk.assert_not_called()
+    desk_service_mock.move.assert_not_called()
 
 
 @pytest.mark.parametrize("session,time", DESK_DENIED)
 def test_set_desk_down_denied_timer_not_scheduled(
         mocker, now_stub, session, time):
     now_stub.return_value = time
-    (_, timer_mock, _, application) = make_application(
+    (_, timer_mock, _, _, application) = make_application(
         mocker, session, Timedelta(0), UP)
 
     application.set_desk(DOWN)
@@ -75,7 +75,7 @@ def test_set_desk_down_denied_timer_not_scheduled(
 
 def test_set_desk_down_allowed_timer_scheduled_right_time(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, _, application) = make_application(
+    (_, timer_mock, _, _, application) = make_application(
         mocker, ACTIVE, Timedelta(10), UP,
         limits=(Timedelta(20), Timedelta(30)))
 
@@ -86,7 +86,7 @@ def test_set_desk_down_allowed_timer_scheduled_right_time(mocker, now_stub):
 
 def test_set_desk_up_allowed_timer_scheduled_right_time(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, _, application) = make_application(
+    (_, timer_mock, _, _, application) = make_application(
         mocker, ACTIVE, Timedelta(10), UP,
         limits=(Timedelta(20), Timedelta(30)))
 
@@ -98,10 +98,10 @@ def test_set_desk_up_allowed_timer_scheduled_right_time(mocker, now_stub):
 @pytest.mark.parametrize("desk", [DOWN, UP])
 def test_set_desk_hardware_error_timer_cancelled(mocker, now_stub, desk):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, hardware_stub, application) = make_application(
+    (_, timer_mock, desk_service_stub, _, application) = make_application(
         mocker, ACTIVE, Timedelta(0), desk.next(),
         limits=(Timedelta(10), Timedelta(20)))
-    hardware_stub.desk.side_effect = HardwareError(RuntimeError())
+    desk_service_stub.move.side_effect = HardwareError(RuntimeError())
 
     application.set_desk(desk)
 

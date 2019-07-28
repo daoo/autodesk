@@ -5,17 +5,19 @@ import logging
 
 
 class Application:
-    def __init__(self, model, timer, hardware, operation, scheduler):
+    def __init__(self, model, timer, desk_service, light_service, operation,
+                 scheduler):
         self.logger = logging.getLogger('application')
         self.model = model
         self.timer = timer
-        self.hardware = hardware
+        self.desk_service = desk_service
+        self.light_service = light_service
         self.operation = operation
         self.scheduler = scheduler
 
     def init(self):
         session = self.model.get_session_state()
-        self.hardware.light(session)
+        self.light_service.set(session)
 
         time = Timestamp.now()
         if session == ACTIVE and self.operation.allowed(time):
@@ -26,7 +28,6 @@ class Application:
     def close(self):
         self.timer.cancel()
         self.model.close()
-        self.hardware.close()
 
     def get_active_time(self):
         return self.model.get_active_time(Timestamp.min, Timestamp.now())
@@ -44,7 +45,7 @@ class Application:
     def set_session(self, session):
         time = Timestamp.now()
         try:
-            self.hardware.light(session)
+            self.light_service.set(session)
             self.model.set_session(time, session)
 
             if session == ACTIVE and self.operation.allowed(time):
@@ -70,7 +71,7 @@ class Application:
             return False
 
         try:
-            self.hardware.desk(desk)
+            self.desk_service.move(desk)
             self.model.set_desk(time, desk)
             self._update_timer(
                 self.model.get_active_time(Timestamp.min, time),

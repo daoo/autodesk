@@ -1,61 +1,59 @@
 from autodesk.hardware.error import HardwareError
 import Adafruit_GPIO as GPIO
 import Adafruit_GPIO.FT232H as FT232H
-import time
 
 
-class Session:
-    def __init__(self, delay, motor_pins, light_pin):
-        self.delay = delay
-        self.motor_pins = motor_pins
-        self.light_pin = light_pin
-        self.reconnect()
+class DeviceWrapper:
+    def __init__(self):
+        FT232H.use_FT232H()
+        self.device = FT232H.FT232H()
+        self.pins = []
+
+    def add(self, pin, setup):
+        self.pins.append((pin, setup))
+        self.device.setup(pin, setup)
 
     def reconnect(self):
         FT232H.use_FT232H()
         self.device = FT232H.FT232H()
-
-        self.device.setup(self.motor_pins[0], GPIO.OUT)
-        self.device.setup(self.motor_pins[1], GPIO.OUT)
-        self.device.setup(self.light_pin, GPIO.OUT)
+        for (pin, setup) in self.pins:
+            self.device.setup(pin, setup)
 
     def close(self):
         self.device.close()
 
-    def desk(self, state):
-        pin = state.test(*self.motor_pins)
-        self.device.output(pin, GPIO.HIGH)
-        time.sleep(self.delay)
-        self.device.output(pin, GPIO.LOW)
+    def output(self, pin, value):
+        try:
+            self.device.output(pin, value)
+        except RuntimeError:
+            try:
+                self.reconnect()
+                self.device.output(pin, value)
+            except RuntimeError as error:
+                raise HardwareError(error)
 
-    def light(self, state):
-        gpio = state.test(GPIO.LOW, GPIO.HIGH)
-        self.device.output(self.light_pin, gpio)
+
+class Ft232hOutputPin:
+    def __init__(self, session, pin):
+        self.session = session
+        self.pin = pin
+
+    def write(self, value):
+        if value != 0 and value != 1:
+            raise ValueError(
+                'Pin value must be 0 or 1 but got {0}'.format(value))
+        gpio_value = GPIO.LOW if value == 0 else GPIO.HIGH
+        self.session.output(self.pin, gpio_value)
 
 
-class Ft232h:
-    def __init__(self, delay, motor_pins, light_pin):
-        self.session = Session(delay, motor_pins, light_pin)
+class Ft232hPinFactory:
+    def __enter__(self):
+        self.session = DeviceWrapper()
+        return self
 
-    def close(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()
 
-    def desk(self, state):
-        try:
-            self.session.desk(state)
-        except RuntimeError:
-            try:
-                self.session.reconnect()
-                self.session.desk(state)
-            except RuntimeError as error:
-                raise HardwareError(error)
-
-    def light(self, state):
-        try:
-            self.session.light(state)
-        except RuntimeError:
-            try:
-                self.session.reconnect()
-                self.session.light(state)
-            except RuntimeError as error:
-                raise HardwareError(error)
+    def create(self, pin):
+        self.session.add(pin, GPIO.OUT)
+        return Ft232hOutputPin(self.session, pin)

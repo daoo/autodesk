@@ -11,26 +11,26 @@ def now_stub(mocker):
 
 
 def test_set_session_inactive_light_off(mocker):
-    (_, _, hardware_mock, application) = make_application(
+    (_, _, _, light_service_mock, application) = make_application(
         mocker, ACTIVE, Timedelta(0), DOWN)
 
     application.set_session(INACTIVE)
 
-    hardware_mock.light.assert_called_with(INACTIVE)
+    light_service_mock.set.assert_called_with(INACTIVE)
 
 
 def test_set_session_active_light_on(mocker):
-    (_, _, hardware_mock, application) = make_application(
+    (_, _, _, light_service_mock, application) = make_application(
         mocker, INACTIVE, Timedelta(0), DOWN)
 
     application.set_session(ACTIVE)
 
-    hardware_mock.light.assert_called_with(ACTIVE)
+    light_service_mock.set.assert_called_with(ACTIVE)
 
 
 def test_set_session_active_model_set_active(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (model_mock, _, _, application) = make_application(
+    (model_mock, _, _, _, application) = make_application(
         mocker, INACTIVE, Timedelta(0), DOWN)
 
     application.set_session(ACTIVE)
@@ -40,7 +40,7 @@ def test_set_session_active_model_set_active(mocker, now_stub):
 
 def test_set_session_inactive_model_set_inactive(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (model_mock, _, _, application) = make_application(
+    (model_mock, _, _, _, application) = make_application(
         mocker, ACTIVE, Timedelta(0), DOWN)
 
     application.set_session(INACTIVE)
@@ -51,7 +51,7 @@ def test_set_session_inactive_model_set_inactive(mocker, now_stub):
 def test_set_session_active_desk_down_timer_scheduled_right_time(
         mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, _, application) = make_application(
+    (_, timer_mock, _, _, application) = make_application(
         mocker, INACTIVE, Timedelta(10), DOWN,
         limits=(Timedelta(20), Timedelta(30)))
 
@@ -63,7 +63,7 @@ def test_set_session_active_desk_down_timer_scheduled_right_time(
 def test_set_session_active_desk_up_timer_scheduled_right_time(
         mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, _, application) = make_application(
+    (_, timer_mock, _, _, application) = make_application(
         mocker, INACTIVE, Timedelta(10), UP,
         limits=(Timedelta(20), Timedelta(30)))
 
@@ -74,7 +74,7 @@ def test_set_session_active_desk_up_timer_scheduled_right_time(
 
 def test_set_session_inactive_timer_cancelled(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, _, application) = make_application(
+    (_, timer_mock, _, _, application) = make_application(
         mocker, ACTIVE, Timedelta(0), UP)
 
     application.set_session(INACTIVE)
@@ -85,9 +85,9 @@ def test_set_session_inactive_timer_cancelled(mocker, now_stub):
 @pytest.mark.parametrize("session", [INACTIVE, ACTIVE])
 def test_set_session_hardware_error_timer_cancelled(mocker, now_stub, session):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, hardware_stub, application) = make_application(
+    (_, timer_mock, _, light_service_stub, application) = make_application(
         mocker, session, Timedelta(0), DOWN)
-    hardware_stub.light.side_effect = HardwareError(RuntimeError())
+    light_service_stub.set.side_effect = HardwareError(RuntimeError())
 
     application.set_session(session)
 
@@ -98,9 +98,9 @@ def test_set_session_hardware_error_timer_cancelled(mocker, now_stub, session):
 def test_set_session_hardware_error_session_inactivated(
         mocker, now_stub, session):
     now_stub.return_value = TIME_ALLOWED
-    (model_mock, _, hardware_stub, application) = make_application(
+    (model_mock, _, _, light_service_mock, application) = make_application(
         mocker, session, Timedelta(0), DOWN)
-    hardware_stub.light.side_effect = HardwareError(RuntimeError())
+    light_service_mock.set.side_effect = HardwareError(RuntimeError())
 
     application.set_session(session)
 
@@ -109,18 +109,18 @@ def test_set_session_hardware_error_session_inactivated(
 
 def test_set_session_timer_lambda_called_hardware_called(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_stub, hardware_mock, application) = make_application(
+    (_, timer_stub, desk_service_mock, _, application) = make_application(
         mocker, ACTIVE, Timedelta(0), DOWN)
 
     application.set_session(ACTIVE)
     timer_stub.schedule.call_args[0][1]()
 
-    hardware_mock.desk.assert_called_with(UP)
+    desk_service_mock.move.assert_called_with(UP)
 
 
 def test_set_session_timer_lambda_called_model_updated(mocker, now_stub):
     now_stub.return_value = TIME_ALLOWED
-    (model_mock, timer_stub, _, application) = make_application(
+    (model_mock, timer_stub, _, _, application) = make_application(
         mocker, ACTIVE, Timedelta(0), UP)
 
     application.set_session(ACTIVE)

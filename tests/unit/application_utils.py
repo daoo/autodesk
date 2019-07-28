@@ -22,12 +22,16 @@ def make_application(
 
     timer_fake = mocker.patch(
         'autodesk.timer.Timer', autospec=True)
-    hardware_fake = mocker.patch(
-        'autodesk.hardware.noop.Noop', autospec=True)
+    desk_service_fake = mocker.patch(
+        'autodesk.application.deskservice.DeskService', autospec=True)
+    light_service_fake = mocker.patch(
+        'autodesk.application.lightservice.LightService', autospec=True)
     application = Application(
         model_fake,
         timer_fake,
-        hardware_fake,
+        desk_service_fake,
+        light_service_fake,
         Operation(),
         Scheduler(limits))
-    return (model_fake, timer_fake, hardware_fake, application)
+    return (model_fake, timer_fake, desk_service_fake, light_service_fake,
+            application)
