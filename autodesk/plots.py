@@ -13,8 +13,9 @@ def figure_to_base64(figure):
 def plot_weekday_hourly_count(full_week, dpi=80):
     working_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
     filtered = full_week[
-        (full_week.weekday.isin(working_days)) &
-        (full_week.hour >= 6) & (full_week.hour <= 20)
+        (full_week.weekday.isin(working_days))
+        & (full_week.hour >= 6)
+        & (full_week.hour <= 20)
     ]
     counts = filtered['counts']
     relative = (counts - counts.min()) / (counts.max() - counts.min())

@@ -3,7 +3,7 @@ from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
 from pandas import Timestamp, Timedelta
 from pandas.util.testing import assert_frame_equal
-from tests.utils import StubDataStore
+from tests.stubdatastore import StubDataStore
 import pandas as pd
 import pytest
 
@@ -135,8 +135,7 @@ def test_compute_hourly_count_active_30_minutes():
     ))
     result = model.compute_hourly_count(t1, t2)
     specific_hour = result[
-        (result.weekday == 'Wednesday') &
-        (result.hour == 10)
+        (result.weekday == 'Wednesday') & (result.hour == 10)
     ]
     assert specific_hour.counts.iloc[0] == 1
 

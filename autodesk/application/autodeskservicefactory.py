@@ -1,4 +1,7 @@
-from autodesk.application import Application
+from autodesk.application.autodeskservice import AutoDeskService
+from autodesk.application.deskservice import DeskService
+from autodesk.application.sessionservice import SessionService
+from autodesk.application.timeservice import TimeService
 from autodesk.deskcontroller import DeskController
 from autodesk.lightcontroller import LightController
 from autodesk.model import Model
@@ -8,7 +11,7 @@ from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.timer import Timer
 
 
-class ApplicationFactory:
+class AutoDeskServiceFactory:
     def __init__(self, database_path, pin_factory, limits, delay, motor_pins,
                  light_pin):
         self.database_path = database_path
@@ -29,6 +32,11 @@ class ApplicationFactory:
             self.pin_factory.create(self.motor_pins[1]))
         light_controller = LightController(
             self.pin_factory.create(self.light_pin))
-        return Application(
-            model, timer, desk_controller, light_controller, operation,
-            scheduler)
+        timer_service = TimeService()
+        session_service = SessionService(
+            model, light_controller, timer_service)
+        desk_service = DeskService(
+            operation, model, desk_controller, timer_service)
+        return AutoDeskService(
+            operation, scheduler, timer, timer_service, session_service,
+            desk_service)

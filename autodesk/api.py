@@ -10,14 +10,14 @@ async def route_set_session(request):
     body = await request.text()
     try:
         state = deserialize_session(body)
-        request.app['application'].set_session(state)
+        request.app['service'].set_session(state)
         return web.Response()
     except ValueError as error:
         return web.Response(text=str(error), status=400)
 
 
 async def route_get_session(request):
-    state = request.app['application'].get_session_state()
+    state = request.app['service'].get_session_state()
     return web.Response(text=state.test('inactive', 'active'))
 
 
@@ -25,25 +25,25 @@ async def route_set_desk(request):
     body = await request.text()
     try:
         state = deserialize_desk(body)
-        okay = request.app['application'].set_desk(state)
+        okay = request.app['service'].set_desk(state)
         return web.Response(status=200 if okay else 403)
     except ValueError as error:
         return web.Response(text=str(error), status=400)
 
 
 async def route_get_desk(request):
-    state = request.app['application'].get_desk_state()
+    state = request.app['service'].get_desk_state()
     return web.Response(text=state.test('down', 'up'))
 
 
 @aiohttp_jinja2.template('index.html')
 async def route_index(request):
-    application = request.app['application']
-    session_state = application.get_session_state().test('inactive', 'active')
-    desk_state = application.get_desk_state().test('down', 'up')
-    active_time = application.get_active_time()
+    service = request.app['service']
+    session_state = service.get_session_state().test('inactive', 'active')
+    desk_state = service.get_desk_state().test('down', 'up')
+    active_time = service.get_active_time()
     counts_figure = plots.plot_weekday_hourly_count(
-        application.compute_hourly_count())
+        service.compute_hourly_count())
     return {
         'session': session_state,
         'desk': desk_state,
@@ -53,19 +53,18 @@ async def route_index(request):
 
 
 async def init(app):
-    app['application'] = app['application_factory'].create(
-        asyncio.get_running_loop())
-    del app['application_factory']
-    app['application'].init()
+    app['service'] = app['factory'].create(asyncio.get_running_loop())
+    del app['factory']
+    app['service'].init()
 
 
 async def cleanup(app):
-    app['application'].close()
+    pass
 
 
-def setup_app(application_factory):
+def setup_app(factory):
     app = web.Application()
-    app['application_factory'] = application_factory
+    app['factory'] = factory
 
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('autodesk', 'templates'))

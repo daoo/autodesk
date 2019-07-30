@@ -1,4 +1,6 @@
-from autodesk.application import Application
+from autodesk.application.autodeskservice import AutoDeskService
+from autodesk.application.deskservice import DeskService
+from autodesk.application.sessionservice import SessionService
 from autodesk.deskcontroller import DeskController
 from autodesk.hardware.noop import NoopOutputPin
 from autodesk.lightcontroller import LightController
@@ -7,7 +9,7 @@ from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
 from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
 from pandas import Timestamp, Timedelta
-from tests.utils import StubDataStore
+from tests.stubdatastore import StubDataStore
 import autodesk.api as api
 import base64
 import os
@@ -40,10 +42,10 @@ DESK_EVENTS = [
 
 @pytest.fixture
 async def client(mocker, aiohttp_client):
-    timestamp = mocker.patch(
-        'autodesk.application.Timestamp', autospec=True)
-    timestamp.min = Timestamp.min
-    timestamp.now.return_value = Timestamp(2019, 4, 25, 12, 0)
+    time_service = mocker.patch(
+        'autodesk.application.timeservice.TimeService', autospec=True)
+    time_service.min = Timestamp.min
+    time_service.now.return_value = Timestamp(2019, 4, 25, 12, 0)
 
     model = Model(StubDataStore(
         session_events=SESSION_EVENTS,
@@ -56,14 +58,18 @@ async def client(mocker, aiohttp_client):
     operation = Operation()
     limits = (Timedelta(minutes=30), Timedelta(minutes=30))
     scheduler = Scheduler(limits)
-    application = Application(
-        model, timer, desk_controller, light_controller, operation, scheduler)
+    session_service = SessionService(model, light_controller, time_service)
+    desk_service = DeskService(operation, model, desk_controller, time_service)
+    service = AutoDeskService(
+        operation, scheduler, timer, time_service, session_service,
+        desk_service)
 
     factory = mocker.patch(
-        'autodesk.applicationfactory.ApplicationFactory', autospec=True)
-    factory.create.return_value = application
+        'autodesk.application.autodeskservicefactory.AutoDeskServiceFactory',
+        autospec=True)
+    factory.create.return_value = service
 
-    return await aiohttp_client(api.setup_app(factory))
+    yield await aiohttp_client(api.setup_app(factory))
 
 
 @pytest.fixture
