@@ -1,3 +1,4 @@
+from autodesk.states import ACTIVE
 from datetime import time
 import logging
 
@@ -8,7 +9,10 @@ class Operation:
         self.allowance_start = time(8, 0, 0)
         self.allowance_end = time(18, 0, 0)
 
-    def allowed(self, at):
+    def allowed(self, session_state, at):
+        return session_state == ACTIVE and self._check_time(at)
+
+    def _check_time(self, at):
         monday = 0
         friday = 4
         time_at = time(at.hour, at.minute, at.second)

@@ -1,5 +1,5 @@
 from autodesk.hardware.error import HardwareError
-from autodesk.states import INACTIVE, ACTIVE
+from autodesk.states import INACTIVE
 from pandas import Timestamp
 import logging
 
@@ -20,7 +20,7 @@ class Application:
         self.light_service.set(session)
 
         time = Timestamp.now()
-        if session == ACTIVE and self.operation.allowed(time):
+        if self.operation.allowed(session, time):
             self._update_timer(
                 self.model.get_active_time(Timestamp.min, time),
                 self.model.get_desk_state())
@@ -48,7 +48,7 @@ class Application:
             self.light_service.set(session)
             self.model.set_session(time, session)
 
-            if session == ACTIVE and self.operation.allowed(time):
+            if self.operation.allowed(session, time):
                 self._update_timer(
                     self.model.get_active_time(Timestamp.min, time),
                     self.model.get_desk_state())
@@ -61,13 +61,9 @@ class Application:
 
     def set_desk(self, desk):
         time = Timestamp.now()
-        if not self.operation.allowed(time):
-            self.logger.warning('desk operation not allowed at this time')
-            return False
-
         session = self.model.get_session_state()
-        if session == INACTIVE:
-            self.logger.warning('desk operation not allowed when inactive')
+        if not self.operation.allowed(session, time):
+            self.logger.warning('desk operation not allowed')
             return False
 
         try:

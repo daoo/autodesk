@@ -1,4 +1,5 @@
 from autodesk.operation import Operation
+from autodesk.states import INACTIVE, ACTIVE
 from datetime import date, time
 from pandas import Timestamp
 import pytest
@@ -46,10 +47,20 @@ offdatetimes = \
 
 
 @pytest.mark.parametrize("at", ondatetimes)
-def test_operation_allow(at):
-    assert Operation().allowed(at)
+def test_session_inactive_at_allowed_time(at):
+    assert not Operation().allowed(INACTIVE, at)
+
+
+@pytest.mark.parametrize("at", ondatetimes)
+def test_session_active_at_allowed_time(at):
+    assert Operation().allowed(ACTIVE, at)
 
 
 @pytest.mark.parametrize("at", offdatetimes)
-def test_operation_disallow(at):
-    assert not Operation().allowed(at)
+def test_session_inactive_at_disallowed_time(at):
+    assert not Operation().allowed(INACTIVE, at)
+
+
+@pytest.mark.parametrize("at", offdatetimes)
+def test_session_active_at_disallowed_time(at):
+    assert not Operation().allowed(ACTIVE, at)
