@@ -6,7 +6,7 @@ def test_constructor_succeeds(mocker):
     Application(
         mocker.patch('autodesk.model.Model', autospec=True),
         mocker.patch('autodesk.timer.Timer', autospec=True),
-        mocker.patch('autodesk.application.deskservice.DeskService',
+        mocker.patch('autodesk.deskcontroller.DeskController',
                      autospec=True),
         mocker.patch('autodesk.application.lightservice.LightService',
                      autospec=True),

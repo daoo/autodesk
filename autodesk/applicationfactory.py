@@ -1,6 +1,6 @@
-from autodesk.application.deskservice import DeskService
-from autodesk.application.lightservice import LightService
 from autodesk.application import Application
+from autodesk.application.lightservice import LightService
+from autodesk.deskcontroller import DeskController
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
@@ -23,11 +23,11 @@ class ApplicationFactory:
         timer = Timer(loop)
         model = Model(SqliteDataStore(self.database_path))
         scheduler = Scheduler(self.limits)
-        desk_service = DeskService(
+        desk_controller = DeskController(
             self.delay,
             self.pin_factory.create(self.motor_pins[0]),
             self.pin_factory.create(self.motor_pins[1]))
         light_service = LightService(
             self.pin_factory.create(self.light_pin))
         return Application(
-            model, timer, desk_service, light_service, operation, scheduler)
+            model, timer, desk_controller, light_service, operation, scheduler)

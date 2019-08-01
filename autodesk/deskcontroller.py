@@ -1,7 +1,7 @@
 import time
 
 
-class DeskService:
+class DeskController:
     def __init__(self, delay, pin_down, pin_up):
         self.delay = delay
         self.pin_down = pin_down

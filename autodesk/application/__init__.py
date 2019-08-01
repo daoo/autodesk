@@ -5,12 +5,12 @@ import logging
 
 
 class Application:
-    def __init__(self, model, timer, desk_service, light_service, operation,
+    def __init__(self, model, timer, desk_controller, light_service, operation,
                  scheduler):
         self.logger = logging.getLogger('application')
         self.model = model
         self.timer = timer
-        self.desk_service = desk_service
+        self.desk_controller = desk_controller
         self.light_service = light_service
         self.operation = operation
         self.scheduler = scheduler
@@ -67,7 +67,7 @@ class Application:
             return False
 
         try:
-            self.desk_service.move(desk)
+            self.desk_controller.move(desk)
             self.model.set_desk(time, desk)
             self._update_timer(
                 self.model.get_active_time(Timestamp.min, time),
