@@ -5,19 +5,19 @@ import logging
 
 
 class Application:
-    def __init__(self, model, timer, desk_controller, light_service, operation,
-                 scheduler):
+    def __init__(self, model, timer, desk_controller, light_controller,
+                 operation, scheduler):
         self.logger = logging.getLogger('application')
         self.model = model
         self.timer = timer
         self.desk_controller = desk_controller
-        self.light_service = light_service
+        self.light_controller = light_controller
         self.operation = operation
         self.scheduler = scheduler
 
     def init(self):
         session = self.model.get_session_state()
-        self.light_service.set(session)
+        self.light_controller.set(session)
 
         time = Timestamp.now()
         if self.operation.allowed(session, time):
@@ -45,7 +45,7 @@ class Application:
     def set_session(self, session):
         time = Timestamp.now()
         try:
-            self.light_service.set(session)
+            self.light_controller.set(session)
             self.model.set_session(time, session)
 
             if self.operation.allowed(session, time):

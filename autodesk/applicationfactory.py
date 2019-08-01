@@ -1,6 +1,6 @@
 from autodesk.application import Application
-from autodesk.application.lightservice import LightService
 from autodesk.deskcontroller import DeskController
+from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
@@ -27,7 +27,8 @@ class ApplicationFactory:
             self.delay,
             self.pin_factory.create(self.motor_pins[0]),
             self.pin_factory.create(self.motor_pins[1]))
-        light_service = LightService(
+        light_controller = LightController(
             self.pin_factory.create(self.light_pin))
         return Application(
-            model, timer, desk_controller, light_service, operation, scheduler)
+            model, timer, desk_controller, light_controller, operation,
+            scheduler)

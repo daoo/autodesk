@@ -1,4 +1,4 @@
-class LightService:
+class LightController:
     def __init__(self, pin_session):
         self.pin_session = pin_session
 

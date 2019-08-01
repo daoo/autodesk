@@ -11,21 +11,21 @@ def now_stub(mocker):
 
 
 def test_set_session_inactive_light_off(mocker):
-    (_, _, _, light_service_mock, application) = make_application(
+    (_, _, _, light_controller_mock, application) = make_application(
         mocker, ACTIVE, Timedelta(0), DOWN)
 
     application.set_session(INACTIVE)
 
-    light_service_mock.set.assert_called_with(INACTIVE)
+    light_controller_mock.set.assert_called_with(INACTIVE)
 
 
 def test_set_session_active_light_on(mocker):
-    (_, _, _, light_service_mock, application) = make_application(
+    (_, _, _, light_controller_mock, application) = make_application(
         mocker, INACTIVE, Timedelta(0), DOWN)
 
     application.set_session(ACTIVE)
 
-    light_service_mock.set.assert_called_with(ACTIVE)
+    light_controller_mock.set.assert_called_with(ACTIVE)
 
 
 def test_set_session_active_model_set_active(mocker, now_stub):
@@ -85,9 +85,9 @@ def test_set_session_inactive_timer_cancelled(mocker, now_stub):
 @pytest.mark.parametrize("session", [INACTIVE, ACTIVE])
 def test_set_session_hardware_error_timer_cancelled(mocker, now_stub, session):
     now_stub.return_value = TIME_ALLOWED
-    (_, timer_mock, _, light_service_stub, application) = make_application(
+    (_, timer_mock, _, light_controller_stub, application) = make_application(
         mocker, session, Timedelta(0), DOWN)
-    light_service_stub.set.side_effect = HardwareError(RuntimeError())
+    light_controller_stub.set.side_effect = HardwareError(RuntimeError())
 
     application.set_session(session)
 
@@ -98,9 +98,9 @@ def test_set_session_hardware_error_timer_cancelled(mocker, now_stub, session):
 def test_set_session_hardware_error_session_inactivated(
         mocker, now_stub, session):
     now_stub.return_value = TIME_ALLOWED
-    (model_mock, _, _, light_service_mock, application) = make_application(
+    (model_mock, _, _, light_controller_mock, application) = make_application(
         mocker, session, Timedelta(0), DOWN)
-    light_service_mock.set.side_effect = HardwareError(RuntimeError())
+    light_controller_mock.set.side_effect = HardwareError(RuntimeError())
 
     application.set_session(session)
 

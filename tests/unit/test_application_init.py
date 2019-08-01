@@ -11,21 +11,21 @@ def now_stub(mocker):
 
 
 def test_init_inactive_light_off(mocker):
-    (_, _, _, light_service_mock, application) = make_application(
+    (_, _, _, light_controller_mock, application) = make_application(
         mocker, INACTIVE, Timedelta(0), DOWN)
 
     application.init()
 
-    light_service_mock.set.assert_called_with(INACTIVE)
+    light_controller_mock.set.assert_called_with(INACTIVE)
 
 
 def test_init_active_light_on(mocker):
-    (_, _, _, light_service_mock, application) = make_application(
+    (_, _, _, light_controller_mock, application) = make_application(
         mocker, ACTIVE, Timedelta(0), DOWN)
 
     application.init()
 
-    light_service_mock.set.assert_called_with(ACTIVE)
+    light_controller_mock.set.assert_called_with(ACTIVE)
 
 
 def test_init_active_denied_timer_not_scheduled(mocker, now_stub):

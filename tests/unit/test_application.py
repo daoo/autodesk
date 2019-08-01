@@ -8,7 +8,7 @@ def test_constructor_succeeds(mocker):
         mocker.patch('autodesk.timer.Timer', autospec=True),
         mocker.patch('autodesk.deskcontroller.DeskController',
                      autospec=True),
-        mocker.patch('autodesk.application.lightservice.LightService',
+        mocker.patch('autodesk.lightcontroller.LightController',
                      autospec=True),
         Operation(),
         mocker.patch('autodesk.scheduler.Scheduler', autospec=True))

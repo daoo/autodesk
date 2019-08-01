@@ -1,4 +1,4 @@
-from autodesk.application.lightservice import LightService
+from autodesk.lightcontroller import LightController
 from autodesk.states import ACTIVE, INACTIVE
 import pytest
 
@@ -9,7 +9,7 @@ def pin_mock(mocker):
 
 
 def test_set_inactive(pin_mock):
-    service = LightService(pin_mock)
+    service = LightController(pin_mock)
 
     service.set(INACTIVE)
 
@@ -17,7 +17,7 @@ def test_set_inactive(pin_mock):
 
 
 def test_set_active(pin_mock):
-    service = LightService(pin_mock)
+    service = LightController(pin_mock)
 
     service.set(ACTIVE)
 
