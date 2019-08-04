@@ -1,7 +1,7 @@
 from aiohttp import web
+from autodesk.api import setup_app
 from autodesk.applicationfactory import ApplicationFactory
 from autodesk.hardware import create_pin_factory
-from autodesk.server import setup_app
 from pandas import Timedelta
 import logging
 import os

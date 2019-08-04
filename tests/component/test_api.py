@@ -8,7 +8,7 @@ from autodesk.scheduler import Scheduler
 from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
 from pandas import Timestamp, Timedelta
 from tests.utils import StubDataStore
-import autodesk.server as server
+import autodesk.api as api
 import base64
 import os
 import pytest
@@ -63,7 +63,7 @@ async def client(mocker, aiohttp_client):
         'autodesk.applicationfactory.ApplicationFactory', autospec=True)
     factory.create.return_value = application
 
-    return await aiohttp_client(server.setup_app(factory))
+    return await aiohttp_client(api.setup_app(factory))
 
 
 @pytest.fixture

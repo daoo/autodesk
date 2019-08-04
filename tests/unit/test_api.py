@@ -1,5 +1,5 @@
 from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
-import autodesk.server as server
+import autodesk.api as api
 import pytest
 
 
@@ -14,7 +14,7 @@ async def client(mocker, application, aiohttp_client):
     factory = mocker.patch(
         'autodesk.applicationfactory.ApplicationFactory', autospec=True)
     factory.create.return_value = application
-    return await aiohttp_client(server.setup_app(factory))
+    return await aiohttp_client(api.setup_app(factory))
 
 
 async def test_setup(client, application):
