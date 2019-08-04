@@ -2,5 +2,8 @@
 
 set -eu
 
-pycodestyle autodesk bin tests
-pyflakes autodesk bin tests
+exitcode=0
+pycodestyle autodesk bin tests || exitcode=1
+pyflakes autodesk bin tests || exitcode=1
+
+exit $exitcode
