@@ -1,5 +1,5 @@
 hardware: "ft232h"
-delay: 20
+delay: 14
 limits:
   down: 2880
   up: 720
