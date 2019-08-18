@@ -132,7 +132,7 @@ The host name could be localhost if using the previously mentioned FT232H.
 ### Windows
 
 On Windows, many extra steps are needed to set the right USB driver and
-installing libftdi.
+to install libftdi.
 
 #### Server
 
@@ -185,7 +185,7 @@ To build libftdi in the launched shell:
     $ cd build
     $ cmake -G "MSYS Makefiles" ..
     $ make
-    $ install-into-venv.sh /c/Users/USER/opt/program/venv
+    $ install-into-venv.sh /c/Users/USER/opt/autodesk/venv
 
 Now the autodesk server can be started back in the Windows shell:
 
