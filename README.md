@@ -35,10 +35,8 @@ For desk controllers that uses 8P8C connectors, you can use a regular (RJ45)
 Ethernet cable and strip one end. The tested desk used the blue, brown and
 white wires for up/down like this:
 
-```
-  blue <-> blue/white => up
-  blue <-> brown      => down
-```
+    blue <-> blue/white => up
+    blue <-> brown      => down
 
 ### 7-pin DIN jack
 
@@ -46,19 +44,15 @@ For desk controllers that uses 7-pin DIN connectors you have to get your hands
 a connector with cable that can be stripped and connected to the GPIO. The
 tested desk used pins 1, 2 and 3 for up/down like this:
 
-```
-  1 <-> 2 => up
-  1 <-> 3 => down
-```
+    1 <-> 2 => up
+    1 <-> 3 => down
 
 (numbering clockwise male connector):
 
-```
-     4
-   3   5
-  2     6
-   1   7
-```
+       4
+     3   5
+    2     6
+     1   7
 
 ### Example Schematic
 
@@ -79,32 +73,129 @@ The server runs on a raspberry or directly on the same PC as the client if you h
 for example a [Adafruit FT232H](https://learn.adafruit.com/adafruit-ft232h-breakout/overview).
 In general it needs to be a computer with access to GPIO pins.
 
-The server provides a HTTP API for manually controlling the desk, setting the
-session state and also showing some nice statistics. The client must be able to
-reach this API over HTTP for the entire system to function. If running the
-server on a raspberry Pi it is recommended to use SSH for security.
+A HTTP API for manually controlling the desk, setting the session state and
+also showing some nice statistics. The client must be able to reach this API
+over HTTP for the entire system to function. If running the server on a
+raspberry Pi it is recommended to use SSH for security.
+
+To interface with the FT232H the
+[Adafruit_Python_GPIO](https://github.com/adafruit/Adafruit_Python_GPIO)
+library is used and it must be installed manually from git as it is not up to
+date in the python repository (as of 2019-08-16).
 
 ### Client
 
-The client can be any computer that can make HTTP requests, the tricky part is
-hooking in to the lock/unlock events. Methods for both Linux and Windows have
-been developed and used with great success.
+The client can be any computer that can make HTTP requests to set the session
+state on the server. The tricky part is hooking in to the lock/unlock events.
+On Linux a [pydbus](https://github.com/LEW21/pydbus) is used to listen to the
+session activation events. On Windows the task scheduler can be set up to run
+specific scripts on session activation events.
 
-#### Linux
+## Installation and Setup
+
+The program can be setup on a Windows or a Linux computer using the following
+instructions.
+
+### Linux
+
+On Linux the installation is very straight forward.
+
+#### Server
+
+Make sure `libftdi` and its python library is installed using the
+system package manager. For example, on Arch Linux:
+
+    # pacman -S libftdi
+
+Use the following commands to setup the server:
+
+    $ cd ~/opt
+    $ git clone https://github.com/daoo/autodesk
+    $ git clone https://github.com/adafruit/Adafruit_Python_GPIO
+    $ cd autodesk
+    $ python -m venv venv
+    $ ./venv/bin/python -m pip install --upgrade pip setuptools
+    $ ./venv/bin/pip install .
+    $ ./venv/bin/pip install ../Adafruit_Python_GPIO
+    $ ./bin/start-autodesk.sh
+
+#### Client
 
 On Linux, run the `logger.py` script to listen for lock/unlock events via DBus.
 Supply it with the URL to the session API endpoint like this (`autodesk` is the
 host name of the computer running the server):
 
-    logger.py http://autodesk/api/session
+    $ logger.py http://autodesk/api/session
 
 The host name could be localhost if using the previously mentioned FT232H.
 
-#### Windows
+### Windows
+
+On Windows, many extra steps are needed to set the right USB driver and
+installing libftdi.
+
+#### Server
+
+Use the following commands to setup the server:
+
+    $ cd ~/opt
+    $ git clone https://github.com/daoo/autodesk
+    $ git clone https://github.com/adafruit/Adafruit_Python_GPIO
+    $ cd autodesk
+    $ python -m venv venv
+    $ ./venv/Scripts/python -m pip install --upgrade pip setuptools
+    $ ./venv/Scripts/pip install .
+    $ ./venv/Scripts/pip install ../Adafruit_Python_GPIO
+
+Before running the autodesk server the USB driver needs to be configured and
+libftdi needs to be installed into the virtual environment.
+
+#### FT23H2 Zadig
+
+Download [Zadig](http://zadig.akeo.ie/) and use it to change the driver to
+`libusbK` for the FT232H device. See [Adafruit's
+guide](https://learn.adafruit.com/adafruit-ft232h-breakout/windows-setup) for
+more information.
+
+#### Build and install libftdi
+
+Use [msys2](https://www.msys2.org/) to build and install libftdi. Make sure to
+use MinGW 64 bit with Python 3 installed in Windows. To start msys2 MinGW 64
+with PATH imported from Windows, run the following command:
+
+    msys2_shell.cmd -use-full-path -mingw64
+
+The default cmake script does not work with Python 3 in Windows. There is a
+modified script available in the `python3` branch at
+[daoo/libftdi](https://github.com/daoo/libftdi) together with a custom install
+script `install-into-venv.sh`.
+
+To build libftdi in the launched shell:
+
+    $ pacman -S mingw-w64-x86_64-cmake \
+          mingw-w64-x86_64-confuse mingw-w64-x86_64-libusb mingw-w64-x86_64-swig \
+          mingw-w64-x86_64-boost mingw-w64-x86_64-toolchain
+    $ pacman -Rsc mingw-w64-x86_64-python3
+    $ which cmake # ensure this is mingw64
+    $ cd ~/opt
+    $ git clone https://github.com/daoo/libftdi
+    $ cd libftdi
+    $ git checkout python3
+    $ mkdir build
+    $ cd build
+    $ cmake -G "MSYS Makefiles" ..
+    $ make
+    $ install-into-venv.sh /c/Users/USER/opt/program/venv
+
+Now the autodesk server can be started back in the Windows shell:
+
+    $ ./bin/start-autodesk.ps1
+
+#### Client
 
 On Windows, use the task scheduler to setup tasks that sets the session state
 with curl (`autodesk` is again the host name of the computer running the
 server):
 
-    curl -X PUT -d "0" http://autodesk/api/session
-    curl -X PUT -d "1" http://autodesk/api/session
+    $ curl -X PUT -d "0" http://autodesk/api/session
+    $ curl -X PUT -d "1" http://autodesk/api/session
