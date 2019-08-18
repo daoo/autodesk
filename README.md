@@ -193,9 +193,5 @@ Now the autodesk server can be started back in the Windows shell:
 
 #### Client
 
-On Windows, use the task scheduler to setup tasks that sets the session state
-with curl (`autodesk` is again the host name of the computer running the
-server):
-
-    $ curl -X PUT -d "0" http://autodesk/api/session
-    $ curl -X PUT -d "1" http://autodesk/api/session
+Use the Windows task scheduler to setup tasks that sets the session state using
+the `bin/autodesk-activate.ps1` and `bin/autodesk-deactivate.ps1` scripts.
