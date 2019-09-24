@@ -6,8 +6,8 @@ import logging
 class Operation:
     def __init__(self):
         self.logger = logging.getLogger('operation')
-        self.allowance_start = time(8, 0, 0)
-        self.allowance_end = time(18, 0, 0)
+        self.allowance_start = time(7, 0, 0)
+        self.allowance_end = time(20, 0, 0)
 
     def allowed(self, session_state, at):
         return session_state == ACTIVE and self._check_time(at)
