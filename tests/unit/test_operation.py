@@ -28,12 +28,12 @@ ontimes = [
     time(11, 34, 0),
     time(13, 38, 0),
     time(17, 30, 0),
-    time(18, 0, 0),
+    time(20, 0, 0),
 ]
 
 offtimes = [
-    time(7, 59, 0),
-    time(18, 1, 0),
+    time(6, 59, 0),
+    time(20, 1, 0),
     time(23, 0, 0),
     time(3, 0, 0),
     time(6, 0, 0),

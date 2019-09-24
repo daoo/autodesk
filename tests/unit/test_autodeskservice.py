@@ -8,7 +8,7 @@ import pytest
 
 
 TIME_ALLOWED = Timestamp(2018, 4, 23, 13, 0)
-TIME_DENIED = Timestamp(2018, 4, 23, 20, 0)
+TIME_DENIED = Timestamp(2018, 4, 23, 21, 0)
 DESK_DENIED = [
     (ACTIVE, TIME_DENIED),
     (INACTIVE, TIME_ALLOWED),
