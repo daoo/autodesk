@@ -13,13 +13,13 @@ from autodesk.timer import Timer
 
 class AutoDeskServiceFactory:
     def __init__(self, database_path, pin_factory, limits, delay, motor_pins,
-                 light_pin):
+                 light_pins):
         self.database_path = database_path
         self.pin_factory = pin_factory
         self.limits = limits
         self.delay = delay
         self.motor_pins = motor_pins
-        self.light_pin = light_pin
+        self.light_pins = light_pins
 
     def create(self, loop):
         operation = Operation()
@@ -29,9 +29,10 @@ class AutoDeskServiceFactory:
         desk_controller = DeskController(
             self.delay,
             self.pin_factory.create(self.motor_pins[0]),
-            self.pin_factory.create(self.motor_pins[1]))
+            self.pin_factory.create(self.motor_pins[1]),
+            self.pin_factory.create(self.light_pins[0]))
         light_controller = LightController(
-            self.pin_factory.create(self.light_pin))
+            self.pin_factory.create(self.light_pins[1]))
         timer_service = TimeService()
         session_service = SessionService(
             model, light_controller, timer_service)

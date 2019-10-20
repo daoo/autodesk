@@ -38,7 +38,10 @@ with create_pin_factory(config['hardware']) as pin_factory:
             config['motor_pins']['down'],
             config['motor_pins']['up'],
         ),
-        config['light_pin'],
+        (
+            config['light_pins']['desk'],
+            config['light_pins']['session'],
+        ),
     )
 
     web.run_app(setup_app(factory), host=address, port=port)

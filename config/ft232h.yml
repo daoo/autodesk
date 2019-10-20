@@ -4,6 +4,8 @@ limits:
   down: 2880
   up: 720
 motor_pins:
-  down: 12
-  up: 11
-light_pin: 8
+  down: 8
+  up: 15
+light_pins:
+  desk: 2
+  session: 6

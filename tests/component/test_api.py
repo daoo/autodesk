@@ -53,7 +53,8 @@ async def client(mocker, aiohttp_client):
 
     timer = mocker.patch(
         'autodesk.timer.Timer', autospec=True)
-    desk_controller = DeskController(0, NoopOutputPin(0), NoopOutputPin(1))
+    desk_controller = DeskController(
+        0, NoopOutputPin(0), NoopOutputPin(1), NoopOutputPin(3))
     light_controller = LightController(NoopOutputPin(2))
     operation = Operation()
     limits = (Timedelta(minutes=30), Timedelta(minutes=30))

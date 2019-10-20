@@ -6,4 +6,6 @@ limits:
 motor_pins:
   down: 1
   up: 2
-light_pin: 3
+light_pins:
+  desk: 3
+  session: 4
