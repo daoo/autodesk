@@ -113,11 +113,14 @@ Use the following commands to setup the server:
     $ git clone https://github.com/daoo/autodesk
     $ git clone https://github.com/adafruit/Adafruit_Python_GPIO
     $ cd autodesk
-    $ python -m venv venv
+    $ python -m venv --system-site-packages venv
     $ ./venv/bin/python -m pip install --upgrade pip setuptools
     $ ./venv/bin/pip install .
     $ ./venv/bin/pip install ../Adafruit_Python_GPIO
     $ ./bin/start-autodesk.sh
+
+`--system-site-packages` is needed as libftdi is installed
+system-wide and not part of the specific virtual env.
 
 #### Client
 
