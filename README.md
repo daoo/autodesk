@@ -17,7 +17,7 @@ The client observes the lock/unlock events of the used computer as an activity
 indicator and passes these events on to the server. The server then uses
 them to calculate when to raise or lower the desk.
 
-## Hardware Wiring
+## Connecting to the desk
 
 The GPIO pins are wired up to control two electrical switches (relays,
 transistors, opto-couplers or something with similar function). These
@@ -54,14 +54,25 @@ tested desk used pins 1, 2 and 3 for up/down like this:
     2     6
      1   7
 
-### Example Schematic
+## Hardware controller
 
 Below is an example schematic connecting the digital GPIO pins of a FT232H (can
 also use a Raspberry Pi) with the desk controller using two `4N35`
-optocouplers. Additionally, a LED to indicate the session state is also
-included.
+optocouplers. Additionally, the following features are included:
 
-<img src="schematic.svg" alt="Example autodesk controller schematic." width="449" />
+  * LED to indicate that the desk is moving,
+  * LED to indicate the session state,
+  * override buttons for manually adjusting desk height,
+  * additional input button for software features.
+
+<img src="schematic.svg" alt="autodesk controller schematic." width="1080" />
+
+A PCB have been designed for the schematic above:
+
+<img src="pcb.svg" alt="autodesk controller PCB." width="400" />
+
+Schematic and PCB design created with EasyEDA and available here:
+[easyeda.com/daoo/autodesk](https://easyeda.com/daoo/autodesk).
 
 ## Software
 
@@ -91,7 +102,7 @@ On Linux a [pydbus](https://github.com/LEW21/pydbus) is used to listen to the
 session activation events. On Windows the task scheduler can be set up to run
 specific scripts on session activation events.
 
-## Installation and Setup
+## Installation and setup
 
 The program can be setup on a Windows or a Linux computer using the following
 instructions.
