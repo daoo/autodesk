@@ -65,11 +65,11 @@ optocouplers. Additionally, the following features are included:
   * override buttons for manually adjusting desk height,
   * additional input button for software features.
 
-![autodesk controller schematic](./schematic.svg)
+![autodesk controller schematic](./schematic.png)
 
 A PCB have been designed for the schematic above:
 
-![autodesk controller PCB](./pcb.svg)
+![autodesk controller PCB](./pcb.png)
 
 Schematic and PCB design created with EasyEDA and available here:
 [easyeda.com/daoo/autodesk](https://easyeda.com/daoo/autodesk).
