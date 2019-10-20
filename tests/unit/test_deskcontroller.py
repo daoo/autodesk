@@ -12,7 +12,8 @@ def create_controller(mocker, delay):
     pin_down_fake = mocker.MagicMock()
     pin_up_fake = mocker.MagicMock()
     pin_light_fake = mocker.MagicMock()
-    controller = DeskController(delay, pin_down_fake, pin_up_fake, pin_light_fake)
+    controller = DeskController(
+        delay, pin_down_fake, pin_up_fake, pin_light_fake)
     return (pin_down_fake, pin_up_fake, pin_light_fake, controller)
 
 
