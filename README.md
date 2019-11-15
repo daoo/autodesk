@@ -199,7 +199,7 @@ To build libftdi in the launched shell:
     $ cd build
     $ cmake -G "MSYS Makefiles" ..
     $ make
-    $ install-into-venv.sh /c/Users/USER/opt/autodesk/venv
+    $ ../install-into-venv.sh /c/Users/USER/opt/autodesk/venv
 
 Now the autodesk server can be started back in the Windows shell:
 
