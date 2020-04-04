@@ -25,6 +25,7 @@ setuptools.setup(
         'matplotlib>=3.2.1, <3.3',
         'numpy>=1.18.2, <1.19',
         'pandas>=1.0.3, <1.1',
-        'pyyaml>=5.3.1, <5.4'
+        'pyyaml>=5.3.1, <5.4',
+        'pyftdi>=0.50, <0.51',
     ],
 )

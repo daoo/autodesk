@@ -5,7 +5,7 @@ limits:
   up: 720
 motor_pins:
   down: 8
-  up: 15
+  up: 14
 light_pins:
-  desk: 2
-  session: 6
+  desk: 6
+  session: 7

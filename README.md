@@ -89,11 +89,6 @@ also showing some nice statistics. The client must be able to reach this API
 over HTTP for the entire system to function. If running the server on a
 raspberry Pi it is recommended to use SSH for security.
 
-To interface with the FT232H the
-[Adafruit_Python_GPIO](https://github.com/adafruit/Adafruit_Python_GPIO)
-library is used and it must be installed manually from git as it is not up to
-date in the python repository (as of 2019-08-16).
-
 ### Client
 
 The client can be any computer that can make HTTP requests to set the session
@@ -107,33 +102,27 @@ specific scripts on session activation events.
 The program can be setup on a Windows or a Linux computer using the following
 instructions.
 
-### Linux
+### Linux Server
 
-On Linux the installation is very straight forward.
+Make sure `libusb` is installed using the system package manager. For example,
+on Arch Linux:
 
-#### Server
-
-Make sure `libftdi` and its python library is installed using the
-system package manager. For example, on Arch Linux:
-
-    # pacman -S libftdi
+    # pacman -S libusb
 
 Use the following commands to setup the server:
 
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
-    $ git clone https://github.com/adafruit/Adafruit_Python_GPIO
     $ cd autodesk
-    $ python -m venv --system-site-packages venv
+    $ python -m venv venv
     $ ./venv/bin/python -m pip install --upgrade pip setuptools
     $ ./venv/bin/pip install .
-    $ ./venv/bin/pip install ../Adafruit_Python_GPIO
+
+Now the autodesk server can be started in the the shell:
+
     $ ./bin/start-autodesk.sh
 
-`--system-site-packages` is needed as libftdi is installed
-system-wide and not part of the specific virtual env.
-
-#### Client
+### Linux Client
 
 On Linux, run the `logger.py` script to listen for lock/unlock events via DBus.
 Supply it with the URL to the session API endpoint like this (`autodesk` is the
@@ -143,69 +132,28 @@ host name of the computer running the server):
 
 The host name could be localhost if using the previously mentioned FT232H.
 
-### Windows
+### Windows Server
 
-On Windows, many extra steps are needed to set the right USB driver and
-to install libftdi.
-
-#### Server
+Before running the autodesk server the USB driver needs to be configured.
+Download [Zadig](http://zadig.akeo.ie/) and use it to change the driver to
+`libusbK` for the FT232H device. See [Adafruit's
+guide](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/windows#plug-in-ft232h-and-fix-driver-with-zadig-3-4)
+for more information.
 
 Use the following commands to setup the server:
 
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
-    $ git clone https://github.com/adafruit/Adafruit_Python_GPIO
     $ cd autodesk
     $ python -m venv venv
     $ ./venv/Scripts/python -m pip install --upgrade pip setuptools
     $ ./venv/Scripts/pip install .
-    $ ./venv/Scripts/pip install ../Adafruit_Python_GPIO
 
-Before running the autodesk server the USB driver needs to be configured and
-libftdi needs to be installed into the virtual environment.
-
-#### FT23H2 Zadig
-
-Download [Zadig](http://zadig.akeo.ie/) and use it to change the driver to
-`libusbK` for the FT232H device. See [Adafruit's
-guide](https://learn.adafruit.com/adafruit-ft232h-breakout/windows-setup) for
-more information.
-
-#### Build and install libftdi
-
-Use [msys2](https://www.msys2.org/) to build and install libftdi. Make sure to
-use MinGW 64 bit with Python 3 installed in Windows. To start msys2 MinGW 64
-with PATH imported from Windows, run the following command:
-
-    msys2_shell.cmd -use-full-path -mingw64
-
-The default cmake script does not work with Python 3 in Windows. There is a
-modified script available in the `python3` branch at
-[daoo/libftdi](https://github.com/daoo/libftdi) together with a custom install
-script `install-into-venv.sh`.
-
-To build libftdi in the launched shell:
-
-    $ pacman -S mingw-w64-x86_64-cmake \
-          mingw-w64-x86_64-confuse mingw-w64-x86_64-libusb mingw-w64-x86_64-swig \
-          mingw-w64-x86_64-boost mingw-w64-x86_64-toolchain
-    $ pacman -Rsc mingw-w64-x86_64-python3
-    $ which cmake # ensure this is mingw64
-    $ cd ~/opt
-    $ git clone https://github.com/daoo/libftdi
-    $ cd libftdi
-    $ git checkout python3
-    $ mkdir build
-    $ cd build
-    $ cmake -G "MSYS Makefiles" ..
-    $ make
-    $ ../install-into-venv.sh /c/Users/USER/opt/autodesk/venv
-
-Now the autodesk server can be started back in the Windows shell:
+Now the autodesk server can be started in the shell:
 
     $ ./bin/start-autodesk.ps1
 
-#### Client
+### Windows Client
 
 Use the Windows task scheduler to setup tasks that sets the session state using
 the `bin/autodesk-activate.ps1` and `bin/autodesk-deactivate.ps1` scripts.
