@@ -2,7 +2,7 @@ from autodesk.model import Model
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
 from pandas import Timestamp, Timedelta
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 from tests.stubdatastore import StubDataStore
 import pandas as pd
 import pytest

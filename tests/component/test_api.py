@@ -41,7 +41,7 @@ DESK_EVENTS = [
 
 
 @pytest.fixture
-async def client(mocker, aiohttp_client):
+def client(mocker, loop, aiohttp_client):
     time_service = mocker.patch(
         'autodesk.application.timeservice.TimeService', autospec=True)
     time_service.min = Timestamp.min
@@ -70,7 +70,7 @@ async def client(mocker, aiohttp_client):
         autospec=True)
     factory.create.return_value = service
 
-    yield await aiohttp_client(api.setup_app(factory))
+    return loop.run_until_complete(aiohttp_client(api.setup_app(factory)))
 
 
 @pytest.fixture

@@ -20,11 +20,11 @@ setuptools.setup(
     },
     include_package_data=True,
     install_requires=[
-        'aiohttp>=3.5.4, <3.6',
-        'aiohttp_jinja2>=1.1.2, <1.2',
-        'matplotlib>=3.1.1, <3.2',
-        'numpy>=1.16.4, <1.17',
-        'pandas>=0.25, <0.26',
-        'pyyaml>=5.1.1, <5.2'
+        'aiohttp>=3.6.2, <3.7',
+        'aiohttp_jinja2>=1.2.0, <1.3',
+        'matplotlib>=3.2.1, <3.3',
+        'numpy>=1.18.2, <1.19',
+        'pandas>=1.0.3, <1.1',
+        'pyyaml>=5.3.1, <5.4'
     ],
 )

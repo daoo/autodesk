@@ -22,8 +22,8 @@ def plot_weekday_hourly_count(full_week, dpi=80):
 
     figure = plt.figure(figsize=(800 / dpi, 400 / dpi), dpi=dpi)
     figure.suptitle('Weekday Hourly Relative Presence')
-    ax = figure.add_subplot(111)
-    ax.set(xlabel='Hour')
+    ax = figure.add_subplot()
+    ax.set_xlabel('Hour')
     ax.scatter(
         x=filtered.hour,
         y=filtered.weekday,
