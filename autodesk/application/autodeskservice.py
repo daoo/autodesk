@@ -17,8 +17,9 @@ class AutoDeskService:
         try:
             self.session_service.init()
             self._update_timer()
-        except HardwareError:
+        except HardwareError as error:
             self.logger.warning('hardware failure, timer not started')
+            self.logger.debug(error)
             self.timer.cancel()
 
     def get_session_state(self):
@@ -28,8 +29,9 @@ class AutoDeskService:
         try:
             self.session_service.set(state)
             self._update_timer()
-        except HardwareError:
+        except HardwareError as error:
             self.logger.warning('hardware failure, timer cancelled')
+            self.logger.debug(error)
             self.timer.cancel()
 
     def get_desk_state(self):
@@ -39,8 +41,9 @@ class AutoDeskService:
         try:
             self.desk_service.set(state)
             self._update_timer()
-        except HardwareError:
+        except HardwareError as error:
             self.logger.warning('hardware failure, timer cancelled')
+            self.logger.debug(error)
             self.timer.cancel()
 
     def get_active_time(self):

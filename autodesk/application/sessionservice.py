@@ -29,7 +29,8 @@ class SessionService:
         self.model.set_session(now, state)
         try:
             self.light_controller.set(state)
-        except HardwareError:
+        except HardwareError as error:
             self.logger.warning(
                 'hardware failure, could not set session light')
+            self.logger.debug(error)
             raise

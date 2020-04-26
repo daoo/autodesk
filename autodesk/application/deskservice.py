@@ -23,7 +23,8 @@ class DeskService:
         try:
             self.desk_controller.move(desk)
             self.model.set_desk(self.time_service.now(), desk)
-        except HardwareError:
+        except HardwareError as error:
             self.logger.error(
                 'hardware failure, desk state not updated in model')
+            self.logger.debug(error)
             raise
