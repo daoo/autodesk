@@ -53,17 +53,47 @@ def test_factory_exit(rpi_stub, gpio_mock):
     gpio_mock.cleanup.assert_called_once()
 
 
-def test_factory_create(gpio_mock, factory):
+def test_factory_create_input(gpio_mock, factory):
     pin_number = 0
 
-    factory.create(pin_number)
+    factory.create_input(pin_number)
+
+    gpio_mock.setup.assert_called_once_with(pin_number, gpio_mock.IN)
+
+
+def test_factory_create_output(gpio_mock, factory):
+    pin_number = 0
+
+    factory.create_output(pin_number)
 
     gpio_mock.setup.assert_called_once_with(pin_number, gpio_mock.OUT)
 
 
+def test_pin_read_low(gpio_mock, factory):
+    pin_number = 0
+    gpio_mock.input.return_value = gpio_mock.LOW
+    pin = factory.create_input(pin_number)
+
+    actual = pin.read()
+
+    gpio_mock.input.assert_called_once_with(pin_number)
+    assert actual == 0
+
+
+def test_pin_read_high(gpio_mock, factory):
+    pin_number = 0
+    gpio_mock.input.return_value = gpio_mock.HIGH
+    pin = factory.create_input(pin_number)
+
+    actual = pin.read()
+
+    gpio_mock.input.assert_called_once_with(pin_number)
+    assert actual == 1
+
+
 def test_pin_write_low(gpio_mock, factory):
     pin_number = 0
-    pin = factory.create(pin_number)
+    pin = factory.create_output(pin_number)
 
     pin.write(0)
 
@@ -72,7 +102,7 @@ def test_pin_write_low(gpio_mock, factory):
 
 def test_pin_write_high(gpio_mock, factory):
     pin_number = 0
-    pin = factory.create(pin_number)
+    pin = factory.create_output(pin_number)
 
     pin.write(1)
 
@@ -81,7 +111,7 @@ def test_pin_write_high(gpio_mock, factory):
 
 def test_pin_write_invalid_value(factory):
     pin_number = 0
-    pin = factory.create(pin_number)
+    pin = factory.create_output(pin_number)
 
     with pytest.raises(ValueError):
         pin.write(2)

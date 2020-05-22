@@ -28,11 +28,11 @@ class AutoDeskServiceFactory:
         scheduler = Scheduler(self.limits)
         desk_controller = DeskController(
             self.delay,
-            self.pin_factory.create(self.motor_pins[0]),
-            self.pin_factory.create(self.motor_pins[1]),
-            self.pin_factory.create(self.light_pins[0]))
+            self.pin_factory.create_output(self.motor_pins[0]),
+            self.pin_factory.create_output(self.motor_pins[1]),
+            self.pin_factory.create_output(self.light_pins[0]))
         light_controller = LightController(
-            self.pin_factory.create(self.light_pins[1]))
+            self.pin_factory.create_output(self.light_pins[1]))
         timer_service = TimeService()
         session_service = SessionService(
             model, light_controller, timer_service)

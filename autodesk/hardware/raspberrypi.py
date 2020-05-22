@@ -1,7 +1,18 @@
 import RPi.GPIO as GPIO
 
 
-class RaspberryPiPin:
+class RaspberryPiInputPin:
+    def __init__(self, pin):
+        self.pin = pin
+        GPIO.setup(self.pin, GPIO.IN)
+
+    def read(self):
+        gpio_value = GPIO.input(self.pin)
+        value = 1 if gpio_value == GPIO.HIGH else 0
+        return value
+
+
+class RaspberryPiOutputPin:
     def __init__(self, pin):
         self.pin = pin
         GPIO.setup(self.pin, GPIO.OUT)
@@ -22,5 +33,8 @@ class RaspberryPiPinFactory:
     def __exit__(self, exc_type, exc_val, exc_tb):
         GPIO.cleanup()
 
-    def create(self, pin):
-        return RaspberryPiPin(pin)
+    def create_input(self, pin):
+        return RaspberryPiInputPin(pin)
+
+    def create_output(self, pin):
+        return RaspberryPiOutputPin(pin)

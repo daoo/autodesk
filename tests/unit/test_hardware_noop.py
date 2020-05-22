@@ -11,16 +11,27 @@ def test_factory_exit():
         pass
 
 
-def test_factory_create():
+def test_factory_create_input():
     pin = 0
-    NoopPinFactory().create(pin)
+    NoopPinFactory().create_input(pin)
 
 
-def test_pin_write_low():
+def test_factory_create_output():
     pin = 0
-    NoopPinFactory().create(pin).write(0)
+    NoopPinFactory().create_output(pin)
+
+
+def test_pin_read():
+    pin = 0
+    value = NoopPinFactory().create_input(pin).read()
+    assert value == 0
 
 
 def test_pin_write_high():
     pin = 0
-    NoopPinFactory().create(pin).write(1)
+    NoopPinFactory().create_output(pin).write(1)
+
+
+def test_pin_write_low():
+    pin = 0
+    NoopPinFactory().create_output(pin).write(0)

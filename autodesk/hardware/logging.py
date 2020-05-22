@@ -6,6 +6,11 @@ class LoggingPin:
         self.logger = logging.getLogger('hardware')
         self.inner = inner
 
+    def read(self):
+        value = self.inner.read()
+        self.logger.debug('read %d %d', self.inner.pin, value)
+        return value
+
     def write(self, value):
         self.logger.info('write %d %d', self.inner.pin, value)
         self.inner.write(value)
@@ -24,6 +29,10 @@ class LoggingPinFactory:
         self.logger.info('close')
         self.inner.__exit__(exc_type, exc_val, exc_tb)
 
-    def create(self, pin):
+    def create_input(self, pin):
         self.logger.info('create %d', pin)
-        return LoggingPin(self.inner.create(pin))
+        return LoggingPin(self.inner.create_input(pin))
+
+    def create_output(self, pin):
+        self.logger.info('create %d', pin)
+        return LoggingPin(self.inner.create_output(pin))

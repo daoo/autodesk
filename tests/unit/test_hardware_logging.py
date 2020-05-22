@@ -11,7 +11,8 @@ def mock_pin(mocker):
 def mock_factory(mocker, mock_pin):
     factory = mocker.patch(
         'autodesk.hardware.noop.NoopPinFactory', autospec=True)
-    factory.create.return_value = mock_pin
+    factory.create_output.return_value = mock_pin
+    factory.create_input.return_value = mock_pin
     return factory
 
 
@@ -32,17 +33,36 @@ def test_factory_exit(mock_factory):
     mock_factory.__exit__.assert_called_once()
 
 
-def test_factory_create(mock_factory, factory):
+def test_factory_create_input(mock_factory, factory):
     pin_number = 0
 
-    factory.create(pin_number)
+    factory.create_input(pin_number)
 
-    mock_factory.create.assert_called_once_with(pin_number)
+    mock_factory.create_input.assert_called_once_with(pin_number)
+
+
+def test_factory_create_output(mock_factory, factory):
+    pin_number = 0
+
+    factory.create_output(pin_number)
+
+    mock_factory.create_output.assert_called_once_with(pin_number)
+
+
+@pytest.mark.parametrize('value', [0, 1])
+def test_pin_read_return_same_as_mock(mock_pin, factory, value):
+    pin_number = 0
+    mock_pin.read.return_value = value
+    pin = factory.create_input(pin_number)
+
+    actual = pin.read()
+
+    assert actual == value
 
 
 def test_pin_write_low(mock_pin, factory):
     pin_number = 0
-    pin = factory.create(pin_number)
+    pin = factory.create_output(pin_number)
 
     pin.write(0)
 
@@ -51,7 +71,7 @@ def test_pin_write_low(mock_pin, factory):
 
 def test_pin_write_high(mock_pin, factory):
     pin_number = 0
-    pin = factory.create(pin_number)
+    pin = factory.create_output(pin_number)
 
     pin.write(1)
 
