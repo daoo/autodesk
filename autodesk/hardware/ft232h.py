@@ -40,10 +40,10 @@ class DeviceWrapper:
             self.gpio.set_direction(pin_mask, new_direction)
         except UsbToolsError as error:
             self.gpio = None
-            raise HardwareError(error)
+            raise HardwareError(error) from None
         except USBError as error:
             self.gpio = None
-            raise HardwareError(error)
+            raise HardwareError(error) from None
 
     def _connect(self):
         if self.gpio:
