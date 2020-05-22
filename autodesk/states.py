@@ -21,6 +21,9 @@ class Down:
 
 
 class Active:
+    def next(self):
+        return Inactive()
+
     def test(self, _, b):
         return b
 
@@ -29,6 +32,9 @@ class Active:
 
 
 class Inactive:
+    def next(self):
+        return Active()
+
     def test(self, a, _):
         return a
 

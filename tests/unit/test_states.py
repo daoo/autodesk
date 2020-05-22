@@ -17,6 +17,14 @@ def test_up_test():
     assert UP.test(0, 1) == 1
 
 
+def test_inactive_next():
+    assert INACTIVE.next() == ACTIVE
+
+
+def test_active_next():
+    assert ACTIVE.next() == INACTIVE
+
+
 def test_inactive_test():
     assert INACTIVE.test(0, 1) == 0
 
