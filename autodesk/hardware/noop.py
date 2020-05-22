@@ -1,4 +1,4 @@
-class NoopOutputPin:
+class NoopPin:
     def __init__(self, pin):
         self.pin = pin
 
@@ -14,4 +14,4 @@ class NoopPinFactory:
         pass
 
     def create(self, pin):
-        return NoopOutputPin(pin)
+        return NoopPin(pin)

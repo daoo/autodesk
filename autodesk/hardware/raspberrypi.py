@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 
 
-class RaspberryPiOutputPin:
+class RaspberryPiPin:
     def __init__(self, pin):
         self.pin = pin
         GPIO.setup(self.pin, GPIO.OUT)
@@ -23,4 +23,4 @@ class RaspberryPiPinFactory:
         GPIO.cleanup()
 
     def create(self, pin):
-        return RaspberryPiOutputPin(pin)
+        return RaspberryPiPin(pin)

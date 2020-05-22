@@ -5,7 +5,7 @@ import pytest
 
 @pytest.fixture
 def pin_mock(mocker):
-    return mocker.patch('autodesk.hardware.noop.NoopOutputPin', autospec=True)
+    return mocker.patch('autodesk.hardware.noop.NoopPin', autospec=True)
 
 
 def test_set_inactive(pin_mock):

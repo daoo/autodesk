@@ -2,7 +2,7 @@ from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
 from autodesk.deskcontroller import DeskController
-from autodesk.hardware.noop import NoopOutputPin
+from autodesk.hardware.noop import NoopPin
 from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.operation import Operation
@@ -54,8 +54,8 @@ def client(mocker, loop, aiohttp_client):
     timer = mocker.patch(
         'autodesk.timer.Timer', autospec=True)
     desk_controller = DeskController(
-        0, NoopOutputPin(0), NoopOutputPin(1), NoopOutputPin(3))
-    light_controller = LightController(NoopOutputPin(2))
+        0, NoopPin(0), NoopPin(1), NoopPin(3))
+    light_controller = LightController(NoopPin(2))
     operation = Operation()
     limits = (Timedelta(minutes=30), Timedelta(minutes=30))
     scheduler = Scheduler(limits)

@@ -84,7 +84,7 @@ class DeviceWrapper:
                 raise HardwareError(error1)
 
 
-class Ft232hOutputPin:
+class Ft232hPin:
     def __init__(self, wrapper, pin):
         self.wrapper = wrapper
         self.pin = pin
@@ -106,4 +106,4 @@ class Ft232hPinFactory:
 
     def create(self, pin):
         self.wrapper.add_pin(pin)
-        return Ft232hOutputPin(self.wrapper, pin)
+        return Ft232hPin(self.wrapper, pin)

@@ -1,7 +1,7 @@
 import logging
 
 
-class LoggingOutputPin:
+class LoggingPin:
     def __init__(self, inner):
         self.logger = logging.getLogger('hardware')
         self.inner = inner
@@ -11,7 +11,7 @@ class LoggingOutputPin:
         self.inner.write(value)
 
 
-class LoggingOutputPinFactory:
+class LoggingPinFactory:
     def __init__(self, inner):
         self.logger = logging.getLogger('hardware')
         self.inner = inner
@@ -26,4 +26,4 @@ class LoggingOutputPinFactory:
 
     def create(self, pin):
         self.logger.info('create %d', pin)
-        return LoggingOutputPin(self.inner.create(pin))
+        return LoggingPin(self.inner.create(pin))

@@ -1,4 +1,4 @@
-from autodesk.hardware.logging import LoggingOutputPinFactory
+from autodesk.hardware.logging import LoggingPinFactory
 import logging
 
 
@@ -7,13 +7,13 @@ def create_pin_factory(kind):
 
     if kind == 'raspberrypi':
         logger.info('using rpi hardware')
-        return LoggingOutputPinFactory(create_raspberry_pi())
+        return LoggingPinFactory(create_raspberry_pi())
     if kind == 'ft232h':
         logger.info('using ft232h hardware')
-        return LoggingOutputPinFactory(create_ft232h())
+        return LoggingPinFactory(create_ft232h())
 
     logger.info('using noop hardware')
-    return LoggingOutputPinFactory(create_noop())
+    return LoggingPinFactory(create_noop())
 
 
 def create_raspberry_pi():
