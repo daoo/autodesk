@@ -4,12 +4,13 @@ import pytest
 
 @pytest.fixture
 def mock_pin(mocker):
-    return mocker.MagicMock()
+    return mocker.patch('autodesk.hardware.noop.NoopPin')
 
 
 @pytest.fixture
 def mock_factory(mocker, mock_pin):
-    factory = mocker.MagicMock()
+    factory = mocker.patch(
+        'autodesk.hardware.noop.NoopPinFactory', autospec=True)
     factory.create.return_value = mock_pin
     return factory
 
