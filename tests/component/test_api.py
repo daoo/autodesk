@@ -51,6 +51,7 @@ def client(mocker, loop, aiohttp_client):
         session_events=SESSION_EVENTS,
         desk_events=DESK_EVENTS))
 
+    button_pin = NoopPin(4)
     timer = mocker.patch(
         'autodesk.timer.Timer', autospec=True)
     desk_controller = DeskController(
@@ -70,7 +71,8 @@ def client(mocker, loop, aiohttp_client):
         autospec=True)
     factory.create.return_value = service
 
-    return loop.run_until_complete(aiohttp_client(api.setup_app(factory)))
+    return loop.run_until_complete(
+        aiohttp_client(api.setup_app(button_pin, factory)))
 
 
 @pytest.fixture

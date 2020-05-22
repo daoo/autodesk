@@ -1,4 +1,5 @@
 from aiohttp import web
+from autodesk.button import Button
 from autodesk.states import deserialize_session, deserialize_desk
 import aiohttp_jinja2
 import asyncio
@@ -53,17 +54,24 @@ async def route_index(request):
 
 
 async def init(app):
-    app['service'] = app['factory'].create(asyncio.get_running_loop())
+    loop = asyncio.get_running_loop()
+    button_pin = app['button_pin']
+    service = app['factory'].create(loop)
+    service.init()
+    button = Button(button_pin, service)
+    loop.create_task(button.poll())
+    del app['button_pin']
     del app['factory']
-    app['service'].init()
+    app['service'] = service
 
 
 async def cleanup(app):
     pass
 
 
-def setup_app(factory):
+def setup_app(button_pin, factory):
     app = web.Application()
+    app['button_pin'] = button_pin
     app['factory'] = factory
 
     aiohttp_jinja2.setup(

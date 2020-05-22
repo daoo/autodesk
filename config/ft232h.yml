@@ -3,6 +3,7 @@ delay: 14
 limits:
   down: 2880
   up: 720
+button_pin: 4
 motor_pins:
   down: 8
   up: 14

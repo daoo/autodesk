@@ -3,6 +3,7 @@ delay: 1
 limits:
   down: 5
   up: 5
+button_pin: 0
 motor_pins:
   down: 1
   up: 2

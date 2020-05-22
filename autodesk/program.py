@@ -1,7 +1,7 @@
 from aiohttp import web
 from autodesk.api import setup_app
-from autodesk.hardware import create_pin_factory
 from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
+from autodesk.hardware import create_pin_factory
 from pandas import Timedelta
 import logging
 import os
@@ -26,6 +26,7 @@ with open(config_path, 'r') as file:
     config = yaml.load(file, Loader=yaml.SafeLoader)
 
 with create_pin_factory(config['hardware']) as pin_factory:
+    button_pin = pin_factory.create_input(config['button_pin'])
     factory = AutoDeskServiceFactory(
         database,
         pin_factory,
@@ -43,5 +44,5 @@ with create_pin_factory(config['hardware']) as pin_factory:
             config['light_pins']['session'],
         ),
     )
-
-    web.run_app(setup_app(factory), host=address, port=port)
+    app = setup_app(button_pin, factory)
+    web.run_app(app, host=address, port=port)
