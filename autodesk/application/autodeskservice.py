@@ -34,6 +34,10 @@ class AutoDeskService:
             self.logger.debug(error)
             self.timer.cancel()
 
+    def toggle_session(self):
+        session_state = self.session_service.get()
+        self.set_session(session_state.next())
+
     def get_desk_state(self):
         return self.desk_service.get()
 

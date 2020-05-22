@@ -61,3 +61,23 @@ def test_set_session_hardware_error_timer_cancelled(mocker):
     service.set_session(ACTIVE)
 
     timer_mock.cancel.assert_called_once()
+
+
+def test_toggle_session_from_inactive(mocker):
+    (_, session_service_mock, _, service) = create_service(
+        mocker, TIME_ALLOWED, INACTIVE, Timedelta(10), DOWN,
+        limits=(Timedelta(20), Timedelta(30)))
+
+    service.toggle_session()
+
+    session_service_mock.set.assert_called_with(ACTIVE)
+
+
+def test_toggle_session_from_active(mocker):
+    (_, session_service_mock, _, service) = create_service(
+        mocker, TIME_ALLOWED, ACTIVE, Timedelta(10), DOWN,
+        limits=(Timedelta(20), Timedelta(30)))
+
+    service.toggle_session()
+
+    session_service_mock.set.assert_called_with(INACTIVE)
