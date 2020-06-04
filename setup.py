@@ -26,6 +26,6 @@ setuptools.setup(
         'numpy>=1.18.2, <1.19',
         'pandas>=1.0.3, <1.1',
         'pyyaml>=5.3.1, <5.4',
-        'pyftdi>=0.50, <0.51',
+        'pyftdi>=0.51, <0.52',
     ],
 )

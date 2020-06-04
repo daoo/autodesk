@@ -25,22 +25,24 @@ def gpio_fake(controller_fake):
 
 @pytest.fixture
 def factory(controller_fake, gpio_fake):
-    with Ft232hPinFactory() as factory_instance:
-        yield factory_instance
+    factory_instance = Ft232hPinFactory()
+    yield factory_instance
+    factory_instance.close()
 
 
-def test_factory_enter(controller_fake):
-    with Ft232hPinFactory():
-        pass
+def test_factory_constructor(controller_fake):
+    factory = Ft232hPinFactory()
+    factory.close()
 
 
-def test_factory_exit(controller_fake, gpio_fake):
+def test_factory_close(controller_fake, gpio_fake):
     pin_number = 1
     gpio_fake.all_pins = 0b0110
+    factory = Ft232hPinFactory()
+    pin = factory.create_output(pin_number)
+    pin.write(0)  # Must do a write to trigger connection
 
-    with Ft232hPinFactory() as factory:
-        pin = factory.create_output(pin_number)
-        pin.write(0)  # Must do a write to trigger connection
+    factory.close()
 
     controller_fake.close.assert_called_once()
 

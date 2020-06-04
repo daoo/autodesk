@@ -123,11 +123,10 @@ class Ft232hInputPin:
 
 
 class Ft232hPinFactory:
-    def __enter__(self):
+    def __init__(self):
         self.wrapper = DeviceWrapper()
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         self.wrapper.disconnect()
 
     def create_input(self, pin):

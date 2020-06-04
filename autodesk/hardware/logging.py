@@ -21,13 +21,9 @@ class LoggingPinFactory:
         self.logger = logging.getLogger('hardware')
         self.inner = inner
 
-    def __enter__(self):
-        self.inner.__enter__()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         self.logger.info('close')
-        self.inner.__exit__(exc_type, exc_val, exc_tb)
+        self.inner.close()
 
     def create_input(self, pin):
         self.logger.info('create %d', pin)

@@ -1,14 +1,10 @@
 from autodesk.hardware.noop import NoopPinFactory
 
 
-def test_factory_enter():
-    with NoopPinFactory():
-        pass
+def test_factory_close():
+    factory = NoopPinFactory()
 
-
-def test_factory_exit():
-    with NoopPinFactory():
-        pass
+    factory.close()
 
 
 def test_factory_create_input():

@@ -18,19 +18,17 @@ def mock_factory(mocker, mock_pin):
 
 @pytest.fixture
 def factory(mock_factory):
-    with LoggingPinFactory(mock_factory) as pin_factory:
-        yield pin_factory
+    pin_factory = LoggingPinFactory(mock_factory)
+    yield pin_factory
+    pin_factory.close()
 
 
-def test_factory_enter(mock_factory):
-    with LoggingPinFactory(mock_factory):
-        mock_factory.__enter__.assert_called_once()
+def test_factory_close(mock_factory):
+    pin_factory = LoggingPinFactory(mock_factory)
 
+    pin_factory.close()
 
-def test_factory_exit(mock_factory):
-    with LoggingPinFactory(mock_factory):
-        pass
-    mock_factory.__exit__.assert_called_once()
+    mock_factory.close.assert_called_once()
 
 
 def test_factory_create_input(mock_factory, factory):

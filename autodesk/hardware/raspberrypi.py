@@ -26,11 +26,10 @@ class RaspberryPiOutputPin:
 
 
 class RaspberryPiPinFactory:
-    def __enter__(self):
+    def __init__(self):
         GPIO.setmode(GPIO.BOARD)
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         GPIO.cleanup()
 
     def create_input(self, pin):

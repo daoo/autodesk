@@ -10,10 +10,7 @@ class NoopPin:
 
 
 class NoopPinFactory:
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         pass
 
     def create_input(self, pin):
