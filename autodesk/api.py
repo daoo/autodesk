@@ -1,10 +1,12 @@
 from aiohttp import web
 from autodesk.button import Button
+from autodesk.hardware.error import HardwareError
 from autodesk.states import deserialize_session, deserialize_desk
 import aiohttp_jinja2
 import asyncio
 import autodesk.plots as plots
 import jinja2
+import logging
 
 
 async def route_set_session(request):
@@ -53,13 +55,28 @@ async def route_index(request):
     }
 
 
+POLLING_DELAY = 0.1
+HARDWARE_ERROR_DELAY = 5
+
+
+async def poll_button(button):
+    logger = logging.getLogger('poll_button')
+    while True:
+        try:
+            button.poll()
+            await asyncio.sleep(POLLING_DELAY)
+        except HardwareError as error:
+            logger.debug(error)
+            await asyncio.sleep(HARDWARE_ERROR_DELAY)
+
+
 async def init(app):
     loop = asyncio.get_running_loop()
     button_pin = app['button_pin']
     service = app['factory'].create(loop)
     service.init()
     button = Button(button_pin, service)
-    loop.create_task(button.poll())
+    loop.create_task(poll_button(button))
     del app['button_pin']
     del app['factory']
     app['service'] = service
