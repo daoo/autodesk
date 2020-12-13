@@ -21,6 +21,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt -r requirements-ci.txt
     - name: Run ci.sh script
-      run: ci.sh
+      run: ./ci.sh
     - name: Upload to codecov
       uses: codecov/codecov-action@v1.0.15
