@@ -2,9 +2,9 @@
 
 Automatic standing desk control over GPIO.
 
-![Build](https://github.com/daoo/autodesk/workflows/build/badge.svg)
+[![Build](https://github.com/daoo/autodesk/workflows/build/badge.svg)](https://github.com/daoo/autodesk/actions?query=workflow%3Abuild)
 [![CodeCov](https://codecov.io/gh/daoo/autodesk/branch/master/graph/badge.svg)](https://codecov.io/gh/daoo/autodesk)
-![License](https://img.shields.io/github/license/daoo/autodesk.svg)
+[![License](https://img.shields.io/github/license/daoo/autodesk.svg)](https://github.com/daoo/autodesk/blob/master/LICENSE.txt)
 
 ## Design
 
