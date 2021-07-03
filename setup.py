@@ -22,10 +22,10 @@ setuptools.setup(
     install_requires=[
         'aiohttp>=3.7.3, <3.8',
         'aiohttp_jinja2>=1.4.2, <1.5',
-        'matplotlib>=3.3.3, <3.4',
-        'numpy>=1.19.4, <1.20',
-        'pandas>=1.1.5, <1.2',
-        'pyyaml>=5.3.1, <5.4',
-        'pyftdi>=0.52, <0.53',
+        'matplotlib>=3.4.2, <3.5',
+        'numpy>=1.21.0, <1.22',
+        'pandas>=1.2.5, <1.3',
+        'pyyaml>=5.4.1, <5.5',
+        'pyftdi>=0.53.1, <0.54',
     ],
 )
