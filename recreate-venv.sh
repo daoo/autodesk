@@ -12,5 +12,4 @@ python -m venv "./venv"
 ./venv/bin/python -m pip install --upgrade pip setuptools
 ./venv/bin/pip install \
   -r requirements.txt \
-  -r requirements-ci.txt \
-  -r requirements-dev.txt
+  -r requirements-ci.txt

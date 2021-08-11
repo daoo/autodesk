@@ -1,2 +1,0 @@
-jedi<0.18
-python-language-server[all]
