@@ -41,7 +41,7 @@ DESK_EVENTS = [
 
 
 @pytest.fixture
-def client(mocker, loop, aiohttp_client):
+def client(mocker, event_loop, aiohttp_client):
     time_service = mocker.patch(
         'autodesk.application.timeservice.TimeService', autospec=True)
     time_service.min = Timestamp.min
@@ -71,7 +71,7 @@ def client(mocker, loop, aiohttp_client):
         autospec=True)
     factory.create.return_value = service
 
-    return loop.run_until_complete(
+    return event_loop.run_until_complete(
         aiohttp_client(api.setup_app(button_pin, factory)))
 
 
@@ -86,6 +86,7 @@ def expected_figure(testdir):
         return file.read()
 
 
+@pytest.mark.asyncio
 async def test_index(client, expected_figure):
     response = await client.get('/')
     text = await response.text()
@@ -101,11 +102,13 @@ async def test_index(client, expected_figure):
     assert expected_figure_string in text
 
 
+@pytest.mark.asyncio
 async def test_set_desk_invalid(client):
     response = await client.put('/api/desk', data=b'invalid state string')
     assert 400 == response.status
 
 
+@pytest.mark.asyncio
 async def test_set_session_invalid(client):
     response = await client.put('/api/session', data=b'invalid state string')
     assert 400 == response.status

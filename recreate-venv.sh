@@ -9,7 +9,7 @@ fi
 
 rm -rf "./venv/"
 python -m venv "./venv"
-./venv/bin/python -m pip install --upgrade pip setuptools
+./venv/bin/python -m pip install --upgrade pip setuptools wheel
 ./venv/bin/pip install \
   -r requirements.txt \
   -r requirements-ci.txt
