@@ -68,10 +68,9 @@ async def poll_button(button, polling_delay, hardware_error_delay):
 
 async def init(app):
     loop = asyncio.get_running_loop()
-    button_pin = app['button_pin']
     service = app['factory'].create(loop)
     service.init()
-    button = Button(button_pin, service)
+    button = Button(app['button_pin'], service)
     app['poll_button_task'] = loop.create_task(poll_button(
         button, app['button_polling_delay'], app['hardware_error_delay']))
     del app['button_pin']
@@ -80,7 +79,7 @@ async def init(app):
 
 
 async def cleanup(app):
-    pass
+    app['poll_button_task'].cancel()
 
 
 def setup_app(
