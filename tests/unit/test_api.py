@@ -22,8 +22,12 @@ def client(event_loop, mocker, button_pin_stub, service_mock, aiohttp_client):
         'autodesk.application.autodeskservicefactory.AutoDeskServiceFactory',
         autospec=True)
     factory.create.return_value = service_mock
-    return event_loop.run_until_complete(aiohttp_client(
-        api.setup_app(button_pin_stub, factory)))
+    return event_loop.run_until_complete(
+        aiohttp_client(api.setup_app(
+            button_pin_stub,
+            factory,
+            button_polling_delay=0.1,
+            hardware_error_delay=0.1)))
 
 
 @pytest.mark.asyncio
@@ -109,5 +113,5 @@ async def test_button_press_after_hardware_error(
     await asyncio.sleep(0.1)
     button_pin_stub.read.side_effect = None
     button_pin_stub.read.return_value = 1
-    await asyncio.sleep(5)
+    await asyncio.sleep(0.1)
     service_mock.toggle_session.assert_called_once()

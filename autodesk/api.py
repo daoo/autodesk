@@ -55,19 +55,15 @@ async def route_index(request):
     }
 
 
-POLLING_DELAY = 0.1
-HARDWARE_ERROR_DELAY = 5
-
-
-async def poll_button(button):
+async def poll_button(button, polling_delay, hardware_error_delay):
     logger = logging.getLogger('poll_button')
     while True:
         try:
             button.poll()
-            await asyncio.sleep(POLLING_DELAY)
+            await asyncio.sleep(polling_delay)
         except HardwareError as error:
             logger.debug(error)
-            await asyncio.sleep(HARDWARE_ERROR_DELAY)
+            await asyncio.sleep(hardware_error_delay)
 
 
 async def init(app):
@@ -76,7 +72,8 @@ async def init(app):
     service = app['factory'].create(loop)
     service.init()
     button = Button(button_pin, service)
-    loop.create_task(poll_button(button))
+    app['poll_button_task'] = loop.create_task(poll_button(
+        button, app['button_polling_delay'], app['hardware_error_delay']))
     del app['button_pin']
     del app['factory']
     app['service'] = service
@@ -86,8 +83,12 @@ async def cleanup(app):
     pass
 
 
-def setup_app(button_pin, factory):
+def setup_app(
+        button_pin, factory, button_polling_delay=0.1, hardware_error_delay=5):
     app = web.Application()
+
+    app['button_polling_delay'] = button_polling_delay
+    app['hardware_error_delay'] = hardware_error_delay
     app['button_pin'] = button_pin
     app['factory'] = factory
 
