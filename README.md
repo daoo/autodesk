@@ -36,22 +36,18 @@ table on
 Wikipedia](https://en.wikipedia.org/wiki/ANSI/TIA-568#T568A_and_T568B_termination),
 not including the two unused pins at either end of the connector):
 
-| Pin | Desk connector | T568B color |
-|-----|----------------|-------------|
-| 1   | not connected  |             |
-| 2   | not connected  |             |
-| 3   | not connected  |             |
-| 4   | white          | blue        |
-| 5   | black          | white/blue  |
-| 6   | brown          | green       |
-| 7   | not connected  |             |
-| 8   | not connected  |             |
+| Pin | Desk connector | T568B color | Voltage | Function |
+|-----|----------------|-------------|---------|----------|
+| 1   | not connected  |             |         |          |
+| 2   | not connected  |             |         |          |
+| 3   | not connected  |             |         |          |
+| 4   | white          | blue        | +5V     | down     |
+| 5   | black          | white/blue  | +5V     | up       |
+| 6   | brown          | green       | 0V      | common   |
+| 7   | not connected  |             |         |          |
+| 8   | not connected  |             |         |          |
 
-Wiring up a T568B terminated ethernet cable gives the following function at the
-other end:
-
-    green (0V) <-> blue/white (+5V) => up
-    green (0V) <-> blue       (+5V) => down
+Bridging down/up to common moves the desk accordingly.
 
 ### Unknown brand 8P8C connector (RJ45/Ethernet)
 
