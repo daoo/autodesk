@@ -25,24 +25,49 @@ electrical switches are connected to the ports of the up/down buttons on the
 desk's control dongle. If your desk use a more complicated control protocol,
 you have to use a different approach.
 
-Two desks have been tested, one with a
-[8P8C](https://en.wikipedia.org/wiki/Modular_connector#8P8C) connector and one
-with a [7-pin DIN](https://en.wikipedia.org/wiki/DIN_connector) connector.
+Several desks with different connectors have been tested.
 
-### 8P8C jack (RJ45 or Ethernet)
+### TiMOTION TC11 10P10C connector
 
-For desk controllers that uses 8P8C connectors, you can use a regular (RJ45)
-Ethernet cable and strip one end. The tested desk used the blue, brown and
-white wires for up/down like this:
+The TiMOTION TC11 desk controller uses the following wiring with a [10P10C
+connector](https://en.wikipedia.org/wiki/Modular_connector#10P10C). Wiring of
+the included two-button controller as follows (counting as in the [TIA-568
+table on
+Wikipedia](https://en.wikipedia.org/wiki/ANSI/TIA-568#T568A_and_T568B_termination),
+not including the two unused pins at either end of the connector):
+
+| Pin | Desk connector | T568B color |
+|-----|----------------|-------------|
+| 1   | not connected  |             |
+| 2   | not connected  |             |
+| 3   | not connected  |             |
+| 4   | white          | blue        |
+| 5   | black          | white/blue  |
+| 6   | brown          | green       |
+| 7   | not connected  |             |
+| 8   | not connected  |             |
+
+Wiring up a T568B terminated ethernet cable gives the following function at the
+other end:
+
+    green (0V) <-> blue/white (+5V) => up
+    green (0V) <-> blue       (+5V) => down
+
+### Unknown brand 8P8C connector (RJ45/Ethernet)
+
+The tested desk (whose brand has since been forgotten) used the following
+wiring with a [8P8C
+connector](https://en.wikipedia.org/wiki/Modular_connector#8P8C), colors being
+from the [T568A
+standard](https://en.wikipedia.org/wiki/ANSI/TIA-568#T568A_and_T568B_termination):
 
     blue <-> blue/white => up
     blue <-> brown      => down
 
-### 7-pin DIN jack
+### Unknown brand 7-pin DIN connector
 
-For desk controllers that uses 7-pin DIN connectors you have to get your hands
-a connector with cable that can be stripped and connected to the GPIO. The
-tested desk used pins 1, 2 and 3 for up/down like this:
+The tested desk (whose brand has since been forgotten) used the following
+wiring for [7-pin DIN connector](https://en.wikipedia.org/wiki/DIN_connector):
 
     1 <-> 2 => up
     1 <-> 3 => down
