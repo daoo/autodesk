@@ -100,7 +100,7 @@ class Model:
             for (day, hour) in enumerate_hours(span.start, span.end):
                 rows[day * 24 + hour] += 1
 
-        weekdays = [
+        weekdays = pd.Series([
             'Monday',
             'Tuesday',
             'Wednesday',
@@ -108,7 +108,7 @@ class Model:
             'Friday',
             'Saturday',
             'Sunday'
-        ]
+        ], dtype='string')
         return pd.DataFrame({
             'weekday': np.repeat(weekdays, 24),
             'hour': np.tile(np.arange(24), 7),
