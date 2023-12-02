@@ -7,6 +7,9 @@ import asyncio
 import autodesk.plots as plots
 import jinja2
 import logging
+import traceback
+
+logger = logging.getLogger("api")
 
 
 async def route_set_session(request):
@@ -15,8 +18,9 @@ async def route_set_session(request):
         state = deserialize_session(body)
         request.app["service"].set_session(state)
         return web.Response()
-    except ValueError as error:
-        return web.Response(text=str(error), status=400)
+    except ValueError:
+        logger.error(traceback.format_exc())
+        return web.Response(text="Invalid session state", status=400)
 
 
 async def route_get_session(request):
@@ -30,8 +34,9 @@ async def route_set_desk(request):
         state = deserialize_desk(body)
         okay = request.app["service"].set_desk(state)
         return web.Response(status=200 if okay else 403)
-    except ValueError as error:
-        return web.Response(text=str(error), status=400)
+    except ValueError:
+        logger.error(traceback.format_exc())
+        return web.Response(text="Invalid desk state", status=400)
 
 
 async def route_get_desk(request):
@@ -55,7 +60,6 @@ async def route_index(request):
 
 
 async def poll_button(button, polling_delay, hardware_error_delay):
-    logger = logging.getLogger("poll_button")
     while True:
         try:
             button.poll()
