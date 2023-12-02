@@ -3,4 +3,4 @@
 set -eu
 
 pytest --cov=autodesk --cov-branch
-ruff check src tests
+ruff check autodesk tests
