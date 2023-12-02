@@ -8,46 +8,34 @@ import pytest
 
 TIME_ALLOWED = Timestamp(2018, 4, 23, 13, 0)
 TIME_DENIED = Timestamp(2018, 4, 23, 21, 0)
-DESK_DENIED = [
-    (ACTIVE, TIME_DENIED),
-    (INACTIVE, TIME_ALLOWED),
-    (INACTIVE, TIME_DENIED)
-]
+DESK_DENIED = [(ACTIVE, TIME_DENIED), (INACTIVE, TIME_ALLOWED), (INACTIVE, TIME_DENIED)]
 
 
-def create_service(
-        mocker,
-        now,
-        session_state,
-        active_time,
-        desk_state):
-    model_fake = mocker.patch(
-        'autodesk.model.Model', autospec=True)
+def create_service(mocker, now, session_state, active_time, desk_state):
+    model_fake = mocker.patch("autodesk.model.Model", autospec=True)
     model_fake.get_active_time.return_value = active_time
     model_fake.get_session_state.return_value = session_state
     model_fake.get_desk_state.return_value = desk_state
 
     time_service_fake = mocker.patch(
-        'autodesk.application.timeservice.TimeService', autospec=True)
+        "autodesk.application.timeservice.TimeService", autospec=True
+    )
     time_service_fake.now.return_value = now
 
     desk_controller_fake = mocker.patch(
-        'autodesk.deskcontroller.DeskController', autospec=True)
+        "autodesk.deskcontroller.DeskController", autospec=True
+    )
     service = DeskService(
-        Operation(),
-        model_fake,
-        desk_controller_fake,
-        time_service_fake)
-    return (
-        model_fake,
-        desk_controller_fake,
-        service)
+        Operation(), model_fake, desk_controller_fake, time_service_fake
+    )
+    return (model_fake, desk_controller_fake, service)
 
 
 @pytest.mark.parametrize("session,now", DESK_DENIED)
 def test_set_denied_desk_controller_not_called(mocker, session, now):
     (_, desk_controller_mock, service) = create_service(
-        mocker, now, session, Timedelta(0), DOWN)
+        mocker, now, session, Timedelta(0), DOWN
+    )
 
     service.set(UP)
 
@@ -56,18 +44,18 @@ def test_set_denied_desk_controller_not_called(mocker, session, now):
 
 @pytest.mark.parametrize("session,now", DESK_DENIED)
 def test_set_denied_desk_model_not_updated(mocker, session, now):
-    (model_mock, _, service) = create_service(
-        mocker, now, session, Timedelta(0), DOWN)
+    (model_mock, _, service) = create_service(mocker, now, session, Timedelta(0), DOWN)
 
     service.set(UP)
 
     model_mock.set_desk.assert_not_called()
 
 
-@pytest.mark.parametrize('direction', [DOWN, UP])
+@pytest.mark.parametrize("direction", [DOWN, UP])
 def test_set_allowed_model_updated(mocker, direction):
     (model_mock, _, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN)
+        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN
+    )
 
     service.set(direction)
 
@@ -76,7 +64,8 @@ def test_set_allowed_model_updated(mocker, direction):
 
 def test_set_allowed_desk_controller_called(mocker):
     (_, desk_controller_mock, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN)
+        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN
+    )
 
     service.set(DOWN)
 
@@ -85,7 +74,8 @@ def test_set_allowed_desk_controller_called(mocker):
 
 def test_set_hardware_error_is_passed_up(mocker):
     (model_mock, desk_controller_stub, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN)
+        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN
+    )
     desk_controller_stub.move.side_effect = HardwareError(RuntimeError())
 
     with pytest.raises(HardwareError):
@@ -94,7 +84,8 @@ def test_set_hardware_error_is_passed_up(mocker):
 
 def test_set_hardware_error_model_not_updated(mocker):
     (model_mock, desk_controller_stub, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN)
+        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN
+    )
     desk_controller_stub.move.side_effect = HardwareError(RuntimeError())
 
     try:

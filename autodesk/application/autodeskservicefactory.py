@@ -12,8 +12,9 @@ from autodesk.timer import Timer
 
 
 class AutoDeskServiceFactory:
-    def __init__(self, database_path, pin_factory, limits, delay, motor_pins,
-                 light_pins):
+    def __init__(
+        self, database_path, pin_factory, limits, delay, motor_pins, light_pins
+    ):
         self.database_path = database_path
         self.pin_factory = pin_factory
         self.limits = limits
@@ -30,14 +31,14 @@ class AutoDeskServiceFactory:
             self.delay,
             self.pin_factory.create_output(self.motor_pins[0]),
             self.pin_factory.create_output(self.motor_pins[1]),
-            self.pin_factory.create_output(self.light_pins[0]))
+            self.pin_factory.create_output(self.light_pins[0]),
+        )
         light_controller = LightController(
-            self.pin_factory.create_output(self.light_pins[1]))
+            self.pin_factory.create_output(self.light_pins[1])
+        )
         timer_service = TimeService()
-        session_service = SessionService(
-            model, light_controller, timer_service)
-        desk_service = DeskService(
-            operation, model, desk_controller, timer_service)
+        session_service = SessionService(model, light_controller, timer_service)
+        desk_service = DeskService(operation, model, desk_controller, timer_service)
         return AutoDeskService(
-            operation, scheduler, timer, timer_service, session_service,
-            desk_service)
+            operation, scheduler, timer, timer_service, session_service, desk_service
+        )

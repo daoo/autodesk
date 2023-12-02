@@ -34,7 +34,7 @@ def cut(start, end, spans):
             yield (
                 start if span.start < start else span.start,
                 end if span.end > end else span.end,
-                span.state
+                span.state,
             )
 
 
@@ -56,18 +56,18 @@ class Model:
             default_state=DOWN,
             initial=initial,
             final=final,
-            events=self.datastore.get_desk_events())
-        return pd.DataFrame.from_records(
-            spans, columns=['start', 'end', 'state'])
+            events=self.datastore.get_desk_events(),
+        )
+        return pd.DataFrame.from_records(spans, columns=["start", "end", "state"])
 
     def get_session_spans(self, initial, final):
         spans = collect(
             default_state=INACTIVE,
             initial=initial,
             final=final,
-            events=self.datastore.get_session_events())
-        return pd.DataFrame.from_records(
-            spans, columns=['start', 'end', 'state'])
+            events=self.datastore.get_session_events(),
+        )
+        return pd.DataFrame.from_records(spans, columns=["start", "end", "state"])
 
     def get_session_state(self):
         events = self.datastore.get_session_events()
@@ -84,10 +84,10 @@ class Model:
             return Timedelta(0)
 
         desk_spans = self.get_desk_spans(initial, final)
-        current_spans = pd.DataFrame.from_records(cut(
-            desk_spans.iloc[-1].start,
-            desk_spans.iloc[-1].end,
-            session_spans), columns=['start', 'end', 'state'])
+        current_spans = pd.DataFrame.from_records(
+            cut(desk_spans.iloc[-1].start, desk_spans.iloc[-1].end, session_spans),
+            columns=["start", "end", "state"],
+        )
 
         active_spans = current_spans[current_spans.state == ACTIVE]
         return (active_spans.end - active_spans.start).sum()
@@ -97,20 +97,25 @@ class Model:
 
         rows = np.zeros((7 * 24))
         for span in spans[spans.state == ACTIVE].itertuples():
-            for (day, hour) in enumerate_hours(span.start, span.end):
+            for day, hour in enumerate_hours(span.start, span.end):
                 rows[day * 24 + hour] += 1
 
-        weekdays = pd.Series([
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-            'Saturday',
-            'Sunday'
-        ], dtype='string')
-        return pd.DataFrame({
-            'weekday': np.repeat(weekdays, 24),
-            'hour': np.tile(np.arange(24), 7),
-            'counts': rows
-        })
+        weekdays = pd.Series(
+            [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+            ],
+            dtype="string",
+        )
+        return pd.DataFrame(
+            {
+                "weekday": np.repeat(weekdays, 24),
+                "hour": np.tile(np.arange(24), 7),
+                "counts": rows,
+            }
+        )

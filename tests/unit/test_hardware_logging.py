@@ -4,13 +4,12 @@ import pytest
 
 @pytest.fixture
 def mock_pin(mocker):
-    return mocker.patch('autodesk.hardware.noop.NoopPin')
+    return mocker.patch("autodesk.hardware.noop.NoopPin")
 
 
 @pytest.fixture
 def mock_factory(mocker, mock_pin):
-    factory = mocker.patch(
-        'autodesk.hardware.noop.NoopPinFactory', autospec=True)
+    factory = mocker.patch("autodesk.hardware.noop.NoopPinFactory", autospec=True)
     factory.create_output.return_value = mock_pin
     factory.create_input.return_value = mock_pin
     return factory
@@ -47,7 +46,7 @@ def test_factory_create_output(mock_factory, factory):
     mock_factory.create_output.assert_called_once_with(pin_number)
 
 
-@pytest.mark.parametrize('value', [0, 1])
+@pytest.mark.parametrize("value", [0, 1])
 def test_pin_read_return_same_as_mock(mock_pin, factory, value):
     pin_number = 0
     mock_pin.read.return_value = value

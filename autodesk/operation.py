@@ -5,7 +5,7 @@ import logging
 
 class Operation:
     def __init__(self):
-        self.logger = logging.getLogger('operation')
+        self.logger = logging.getLogger("operation")
         self.allowance_start = time(7, 0, 0)
         self.allowance_end = time(20, 0, 0)
 
@@ -17,7 +17,9 @@ class Operation:
         friday = 4
         time_at = time(at.hour, at.minute, at.second)
         weekday = at.weekday()
-        return \
-            time_at >= self.allowance_start and \
-            time_at <= self.allowance_end and \
-            weekday >= monday and weekday <= friday
+        return (
+            time_at >= self.allowance_start
+            and time_at <= self.allowance_end
+            and weekday >= monday
+            and weekday <= friday
+        )

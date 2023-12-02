@@ -6,8 +6,7 @@ import pytest
 
 
 def combine(dates, times):
-    return [Timestamp.combine(day, stroke)
-            for day in dates for stroke in times]
+    return [Timestamp.combine(day, stroke) for day in dates for stroke in times]
 
 
 ondates = [
@@ -40,10 +39,11 @@ offtimes = [
 ]
 
 ondatetimes = combine(ondates, ontimes)
-offdatetimes = \
-    combine(offdates, offtimes) + \
-    combine(ondates, offtimes) + \
-    combine(offdates, ontimes)
+offdatetimes = (
+    combine(offdates, offtimes)
+    + combine(ondates, offtimes)
+    + combine(offdates, ontimes)
+)
 
 
 @pytest.mark.parametrize("at", ondatetimes)

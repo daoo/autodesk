@@ -13,11 +13,15 @@ def gpio_mock(rpi_stub):
 
 @pytest.fixture
 def factory(mocker, rpi_stub, gpio_mock):
-    mocker.patch.dict('sys.modules', **{
-        'RPi': rpi_stub,
-        'RPi.GPIO': gpio_mock,
-    })
+    mocker.patch.dict(
+        "sys.modules",
+        **{
+            "RPi": rpi_stub,
+            "RPi.GPIO": gpio_mock,
+        },
+    )
     from autodesk.hardware.raspberrypi import RaspberryPiPinFactory
+
     factory = RaspberryPiPinFactory()
     yield factory
     factory.close()
@@ -25,10 +29,13 @@ def factory(mocker, rpi_stub, gpio_mock):
 
 
 def test_factory_constructor(mocker, rpi_stub, gpio_mock):
-    mocker.patch.dict('sys.modules', **{
-        'RPi': rpi_stub,
-        'RPi.GPIO': gpio_mock,
-    })
+    mocker.patch.dict(
+        "sys.modules",
+        **{
+            "RPi": rpi_stub,
+            "RPi.GPIO": gpio_mock,
+        },
+    )
     from autodesk.hardware.raspberrypi import RaspberryPiPinFactory
 
     RaspberryPiPinFactory()
@@ -37,11 +44,15 @@ def test_factory_constructor(mocker, rpi_stub, gpio_mock):
 
 
 def test_factory_close(mocker, rpi_stub, gpio_mock):
-    mocker.patch.dict('sys.modules', **{
-        'RPi': rpi_stub,
-        'RPi.GPIO': gpio_mock,
-    })
+    mocker.patch.dict(
+        "sys.modules",
+        **{
+            "RPi": rpi_stub,
+            "RPi.GPIO": gpio_mock,
+        },
+    )
     from autodesk.hardware.raspberrypi import RaspberryPiPinFactory
+
     factory = RaspberryPiPinFactory()
 
     factory.close()

@@ -6,20 +6,18 @@ import pytest
 
 
 def create_service(mocker, session_state, now=Timestamp.min):
-    model_fake = mocker.patch(
-        'autodesk.model.Model', autospec=True)
+    model_fake = mocker.patch("autodesk.model.Model", autospec=True)
     model_fake.get_session_state.return_value = session_state
 
     time_service_fake = mocker.patch(
-        'autodesk.application.timeservice.TimeService', autospec=True)
+        "autodesk.application.timeservice.TimeService", autospec=True
+    )
     time_service_fake.now.return_value = now
 
     light_controller_fake = mocker.patch(
-        'autodesk.lightcontroller.LightController', autospec=True)
-    service = SessionService(
-        model_fake,
-        light_controller_fake,
-        time_service_fake)
+        "autodesk.lightcontroller.LightController", autospec=True
+    )
+    service = SessionService(model_fake, light_controller_fake, time_service_fake)
     return (model_fake, light_controller_fake, service)
 
 
@@ -83,8 +81,7 @@ def test_set_hardware_error_is_passed_up(mocker):
 
 def test_set_hardware_error_model_still_called(mocker):
     now = Timestamp(2019, 8, 1, 13, 0)
-    (model_mock, light_controller_stub, service) = create_service(
-        mocker, INACTIVE, now)
+    (model_mock, light_controller_stub, service) = create_service(mocker, INACTIVE, now)
     light_controller_stub.set.side_effect = HardwareError(RuntimeError())
 
     try:

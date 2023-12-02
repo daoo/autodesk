@@ -50,18 +50,18 @@ ACTIVE = Active()
 
 
 def deserialize_session(value):
-    if value in (b'inactive', 'inactive'):
+    if value in (b"inactive", "inactive"):
         return INACTIVE
-    if value in (b'active', 'active'):
+    if value in (b"active", "active"):
         return ACTIVE
 
     raise ValueError('Incorrect session state "{0}".'.format(value))
 
 
 def deserialize_desk(value):
-    if value in (b'down', 'down'):
+    if value in (b"down", "down"):
         return DOWN
-    if value in (b'up', 'up'):
+    if value in (b"up", "up"):
         return UP
 
     raise ValueError('Incorrect desk state "{0}".'.format(value))

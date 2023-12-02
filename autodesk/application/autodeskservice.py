@@ -3,9 +3,10 @@ import logging
 
 
 class AutoDeskService:
-    def __init__(self, operation, scheduler, timer, time_service,
-                 session_service, desk_service):
-        self.logger = logging.getLogger('autodeskservice')
+    def __init__(
+        self, operation, scheduler, timer, time_service, session_service, desk_service
+    ):
+        self.logger = logging.getLogger("autodeskservice")
         self.operation = operation
         self.timer = timer
         self.scheduler = scheduler
@@ -18,7 +19,7 @@ class AutoDeskService:
             self.session_service.init()
             self._update_timer()
         except HardwareError as error:
-            self.logger.warning('hardware failure, timer not started')
+            self.logger.warning("hardware failure, timer not started")
             self.logger.debug(error)
             self.timer.cancel()
 
@@ -30,7 +31,7 @@ class AutoDeskService:
             self.session_service.set(state)
             self._update_timer()
         except HardwareError as error:
-            self.logger.warning('hardware failure, timer cancelled')
+            self.logger.warning("hardware failure, timer cancelled")
             self.logger.debug(error)
             self.timer.cancel()
 
@@ -46,7 +47,7 @@ class AutoDeskService:
             self.desk_service.set(state)
             self._update_timer()
         except HardwareError as error:
-            self.logger.warning('hardware failure, timer cancelled')
+            self.logger.warning("hardware failure, timer cancelled")
             self.logger.debug(error)
             self.timer.cancel()
 
@@ -64,6 +65,7 @@ class AutoDeskService:
             active_time = self.session_service.get_active_time()
             self.timer.schedule(
                 self.scheduler.compute_delay(active_time, desk_state),
-                lambda: self.set_desk(desk_state.next()))
+                lambda: self.set_desk(desk_state.next()),
+            )
         else:
             self.timer.cancel()

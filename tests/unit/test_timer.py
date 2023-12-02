@@ -5,7 +5,7 @@ import pytest
 
 @pytest.fixture
 def loop(mocker):
-    return mocker.patch('asyncio.AbstractEventLoop', autospec=True)
+    return mocker.patch("asyncio.AbstractEventLoop", autospec=True)
 
 
 @pytest.fixture

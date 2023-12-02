@@ -8,9 +8,7 @@ import pytest
 
 @pytest.fixture
 def controller_fake(mocker):
-    return mocker \
-        .patch('autodesk.hardware.ft232h.GpioMpsseController') \
-        .return_value
+    return mocker.patch("autodesk.hardware.ft232h.GpioMpsseController").return_value
 
 
 @pytest.fixture
@@ -19,6 +17,7 @@ def gpio_fake(controller_fake):
 
     def assign_direction(_, direction):
         fake.direction = direction
+
     fake.set_direction.side_effect = assign_direction
     return fake
 
@@ -57,7 +56,8 @@ def test_factory_create_input_followed_by_read(gpio_fake, factory):
     expected_pin_mask = 0b0010
     expected_direction = 0b0000
     gpio_fake.set_direction.assert_called_once_with(
-        expected_pin_mask, expected_direction)
+        expected_pin_mask, expected_direction
+    )
 
 
 def test_factory_create_output_followed_by_write(gpio_fake, factory):
@@ -70,7 +70,8 @@ def test_factory_create_output_followed_by_write(gpio_fake, factory):
     expected_pin_mask = 0b0010
     expected_direction = 0b0010
     gpio_fake.set_direction.assert_called_once_with(
-        expected_pin_mask, expected_direction)
+        expected_pin_mask, expected_direction
+    )
 
 
 def test_factory_create_input_invalid_pin(gpio_fake, factory):
@@ -146,7 +147,8 @@ def test_pin_write_invalid_value(factory):
 def test_pin_read_failure_recovery(mocker, gpio_fake, factory):
     def fail_once():
         gpio_fake.read.side_effect = None
-        raise FtdiError('Stubbed error for unit testing.')
+        raise FtdiError("Stubbed error for unit testing.")
+
     gpio_fake.read.side_effect = fail_once
     pin_number = 1
     gpio_fake.all_pins = 0b0110
@@ -155,16 +157,17 @@ def test_pin_read_failure_recovery(mocker, gpio_fake, factory):
 
     actual = pin.read()
 
-    gpio_fake.read.assert_has_calls([
-        mocker.call(),  # failed attempt
-        mocker.call(),
-    ])
+    gpio_fake.read.assert_has_calls(
+        [
+            mocker.call(),  # failed attempt
+            mocker.call(),
+        ]
+    )
     assert actual == 0
 
 
 def test_pin_read_two_failures_raises(mocker, gpio_fake, factory):
-    gpio_fake.read.side_effect = FtdiError(
-        'Stubbed error for unit testing.')
+    gpio_fake.read.side_effect = FtdiError("Stubbed error for unit testing.")
     pin_number = 1
     gpio_fake.all_pins = 0b0110
     gpio_fake.read.return_value = (0b0100,)
@@ -173,16 +176,19 @@ def test_pin_read_two_failures_raises(mocker, gpio_fake, factory):
     with pytest.raises(HardwareError):
         pin.read()
 
-    gpio_fake.read.assert_has_calls([
-        mocker.call(),  # failed attempt
-        mocker.call(),  # failed attempt
-    ])
+    gpio_fake.read.assert_has_calls(
+        [
+            mocker.call(),  # failed attempt
+            mocker.call(),  # failed attempt
+        ]
+    )
 
 
 def test_pin_write_failure_recovery(mocker, gpio_fake, factory):
     def fail_once(value):
         gpio_fake.write.side_effect = None
-        raise FtdiError('Stubbed error for unit testing.')
+        raise FtdiError("Stubbed error for unit testing.")
+
     gpio_fake.write.side_effect = fail_once
     pin_number = 1
     gpio_fake.all_pins = 0b0110
@@ -191,15 +197,16 @@ def test_pin_write_failure_recovery(mocker, gpio_fake, factory):
 
     pin.write(1)
 
-    gpio_fake.write.assert_has_calls([
-        mocker.call(0b0010),  # failed attempt
-        mocker.call(0b0010),
-    ])
+    gpio_fake.write.assert_has_calls(
+        [
+            mocker.call(0b0010),  # failed attempt
+            mocker.call(0b0010),
+        ]
+    )
 
 
 def test_pin_write_two_failures_raises(mocker, gpio_fake, factory):
-    gpio_fake.write.side_effect = FtdiError(
-        'Stubbed error for unit testing.')
+    gpio_fake.write.side_effect = FtdiError("Stubbed error for unit testing.")
     pin_number = 1
     gpio_fake.all_pins = 0b0110
     gpio_fake.read.return_value = (0b0100,)
@@ -208,10 +215,12 @@ def test_pin_write_two_failures_raises(mocker, gpio_fake, factory):
     with pytest.raises(HardwareError):
         pin.write(1)
 
-    gpio_fake.write.assert_has_calls([
-        mocker.call(0b0010),  # failed attempt
-        mocker.call(0b0010),  # failed attempt
-    ])
+    gpio_fake.write.assert_has_calls(
+        [
+            mocker.call(0b0010),  # failed attempt
+            mocker.call(0b0010),  # failed attempt
+        ]
+    )
 
 
 def test_two_reads_connects_once(controller_fake, gpio_fake, factory):
@@ -240,7 +249,8 @@ def test_two_writes_connects_once(controller_fake, gpio_fake, factory):
 
 def test_input_connect_usb_tools_error(controller_fake, gpio_fake, factory):
     controller_fake.configure.side_effect = UsbToolsError(
-        'Stubbed error for unit testing.')
+        "Stubbed error for unit testing."
+    )
     pin_number = 1
     gpio_fake.all_pins = 0b0110
     gpio_fake.read.return_value = (0b0100,)
@@ -251,8 +261,7 @@ def test_input_connect_usb_tools_error(controller_fake, gpio_fake, factory):
 
 
 def test_input_connect_usb_error(controller_fake, gpio_fake, factory):
-    controller_fake.configure.side_effect = USBError(
-        'Stubbed error for unit testing.')
+    controller_fake.configure.side_effect = USBError("Stubbed error for unit testing.")
     pin_number = 1
     gpio_fake.all_pins = 0b0110
     gpio_fake.read.return_value = (0b0100,)
@@ -264,7 +273,8 @@ def test_input_connect_usb_error(controller_fake, gpio_fake, factory):
 
 def test_output_connect_usb_tools_error(controller_fake, gpio_fake, factory):
     controller_fake.configure.side_effect = UsbToolsError(
-        'Stubbed error for unit testing.')
+        "Stubbed error for unit testing."
+    )
     pin_number = 1
     gpio_fake.all_pins = 0b0110
     gpio_fake.read.return_value = (0b0100,)
@@ -275,8 +285,7 @@ def test_output_connect_usb_tools_error(controller_fake, gpio_fake, factory):
 
 
 def test_output_connect_usb_error(controller_fake, gpio_fake, factory):
-    controller_fake.configure.side_effect = USBError(
-        'Stubbed error for unit testing.')
+    controller_fake.configure.side_effect = USBError("Stubbed error for unit testing.")
     pin_number = 1
     gpio_fake.all_pins = 0b0110
     gpio_fake.read.return_value = (0b0100,)

@@ -8,33 +8,34 @@ import sys
 
 
 def notify(url, active):
-    state = b'active' if active else b'inactive'
+    state = b"active" if active else b"inactive"
     requests.put(url, data=state)
 
 
 def properties_handler(hostname, interface, changed, invalidated):
     print(datetime.now(), interface, changed, invalidated)
-    if interface == 'org.freedesktop.login1.Session':
-        if 'Active' in changed:
-            notify(hostname, changed['Active'])
+    if interface == "org.freedesktop.login1.Session":
+        if "Active" in changed:
+            notify(hostname, changed["Active"])
 
 
 def program(hostname):
     bus = SystemBus()
-    login = bus.get('org.freedesktop.login1')
-    for (sid, uid, uname, seat, path) in login.ListSessions():
-        print('Connecting to {}'.format(path))
-        sessionbus = bus.get('org.freedesktop.login1', path)
+    login = bus.get("org.freedesktop.login1")
+    for sid, uid, uname, seat, path in login.ListSessions():
+        print("Connecting to {}".format(path))
+        sessionbus = bus.get("org.freedesktop.login1", path)
         sessionbus.PropertiesChanged.connect(
             lambda interface, changed, invalidated: properties_handler(
-                hostname, interface, changed, invalidated))
+                hostname, interface, changed, invalidated
+            )
+        )
     GLib.MainLoop().run()
 
 
 def main():
     if len(sys.argv) != 2:
-        sys.stderr.write(
-            'Usage: {} URL\n'.format(sys.argv[0]))
+        sys.stderr.write("Usage: {} URL\n".format(sys.argv[0]))
         sys.exit(1)
 
     try:

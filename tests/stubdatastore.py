@@ -3,10 +3,8 @@ import pandas as pd
 
 class StubDataStore:
     def __init__(self, session_events, desk_events):
-        self.session_events = pd.DataFrame(
-            session_events, columns=['date', 'state'])
-        self.desk_events = pd.DataFrame(
-            desk_events, columns=['date', 'state'])
+        self.session_events = pd.DataFrame(session_events, columns=["date", "state"])
+        self.desk_events = pd.DataFrame(desk_events, columns=["date", "state"])
 
     def close(self):
         pass
