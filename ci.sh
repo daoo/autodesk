@@ -3,4 +3,4 @@
 set -eu
 
 pytest --cov=autodesk --cov-branch
-./lint.sh
+ruff check src tests
