@@ -1,8 +1,24 @@
 import autodesk.states as states
+import datetime
 import logging
 import pandas as pd
 import sqlite3
 
+
+def adapt_datetime_iso(val):
+    """Adapt datetime.datetime to timezone-naive ISO 8601 date."""
+    print("adapt", repr(val))
+    return val.isoformat(sep=' ')
+
+
+def convert_datetime(val):
+    """Convert ISO 8601 datetime to datetime.datetime object."""
+    print("convert_datetime", repr(val))
+    return datetime.datetime.fromisoformat(val.decode())
+
+
+sqlite3.register_adapter(datetime.datetime, adapt_datetime_iso)
+sqlite3.register_converter("timestamp", convert_datetime)
 
 sqlite3.register_adapter(states.Down, lambda _: "down")
 sqlite3.register_adapter(states.Up, lambda _: "up")
