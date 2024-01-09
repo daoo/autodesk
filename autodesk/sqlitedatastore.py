@@ -7,13 +7,11 @@ import sqlite3
 
 def adapt_datetime_iso(val):
     """Adapt datetime.datetime to timezone-naive ISO 8601 date."""
-    print("adapt", repr(val))
     return val.isoformat(sep=' ')
 
 
 def convert_datetime(val):
     """Convert ISO 8601 datetime to datetime.datetime object."""
-    print("convert_datetime", repr(val))
     return datetime.datetime.fromisoformat(val.decode())
 
 
