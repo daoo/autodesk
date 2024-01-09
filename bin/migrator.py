@@ -8,9 +8,7 @@ sessions = pd.read_sql_query("SELECT * FROM session ORDER BY date ASC", old)
 old.close()
 
 new = sqlite3.connect(sys.argv[2])
-new.execute(
-    "CREATE TABLE session(date TIMESTAMP NOT NULL, state SESSION NOT NULL)"
-)
+new.execute("CREATE TABLE session(date TIMESTAMP NOT NULL, state SESSION NOT NULL)")
 new.execute("CREATE TABLE desk(date TIMESTAMP NOT NULL, state DESK NOT NULL)")
 
 for desk in desks.itertuples():

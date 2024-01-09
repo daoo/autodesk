@@ -14,7 +14,7 @@ def make_spans(records):
 
 @pytest.fixture()
 def inmemory_model():
-    model = Model(SqliteDataStore(":memory:"))
+    model = Model(SqliteDataStore.open(":memory:"))
     yield model
     model.close()
 

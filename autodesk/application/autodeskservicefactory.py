@@ -25,7 +25,7 @@ class AutoDeskServiceFactory:
     def create(self, loop):
         operation = Operation()
         timer = Timer(loop)
-        model = Model(SqliteDataStore(self.database_path))
+        model = Model(SqliteDataStore.open(self.database_path))
         scheduler = Scheduler(self.limits)
         desk_controller = DeskController(
             self.delay,

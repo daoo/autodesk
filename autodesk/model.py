@@ -16,14 +16,14 @@ def collect(default_state, initial, final, events):
     start = initial
     state = default_state
     for event in events.itertuples():
-        assert start <= event.date
+        assert start <= event.timestamp
         if state == event.state:
             # aggregate consecutive events with same state
             continue
-        if start != event.date:
+        if start != event.timestamp:
             # do not emit zero-length spans
-            yield (start, event.date, state)
-        start = event.date
+            yield (start, event.timestamp, state)
+        start = event.timestamp
         state = event.state
     yield (start, final, state)
 
@@ -45,11 +45,11 @@ class Model:
     def close(self):
         self.datastore.close()
 
-    def set_desk(self, date, state):
-        self.datastore.set_desk(date, state)
+    def set_desk(self, timestamp, state):
+        self.datastore.set_desk(timestamp, state)
 
-    def set_session(self, date, state):
-        self.datastore.set_session(date, state)
+    def set_session(self, timestamp, state):
+        self.datastore.set_session(timestamp, state)
 
     def get_desk_spans(self, initial, final):
         spans = collect(
