@@ -45,6 +45,7 @@ def _migrate(logger, connection, old_table, new_table, order_by):
         connection.executemany(f"INSERT INTO {new_table} VALUES(?, ?)", data)
         connection.execute(f"DROP TABLE {old_table}")
         connection.commit()
+        connection.execute("VACUUM")
 
 
 class SqliteDataStore:
