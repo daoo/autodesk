@@ -1,6 +1,5 @@
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
-from pandas import Timestamp
 from pandas.testing import assert_frame_equal
 import pandas as pd
 import pytest
