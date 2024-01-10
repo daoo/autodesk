@@ -65,3 +65,21 @@ def deserialize_desk(value):
         return UP
 
     raise ValueError('Incorrect desk state "{0}".'.format(value))
+
+
+def deserialize_session_int(value):
+    if value == b'0':
+        return INACTIVE
+    if value == b'1':
+        return ACTIVE
+
+    raise ValueError('Incorrect session state "{0}".'.format(value))
+
+
+def deserialize_desk_int(value):
+    if value == b'0':
+        return DOWN
+    if value == b'1':
+        return UP
+
+    raise ValueError('Incorrect desk state "{0}".'.format(value))

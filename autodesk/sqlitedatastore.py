@@ -21,21 +21,23 @@ sqlite3.register_adapter(datetime.datetime, adapt_datetime_epoch)
 sqlite3.register_converter("timestamp", convert_datetime)
 sqlite3.register_converter("unix_timestamp", convert_timestamp)
 
-sqlite3.register_adapter(states.Down, lambda _: "down")
-sqlite3.register_adapter(states.Up, lambda _: "up")
-sqlite3.register_adapter(states.Inactive, lambda _: "inactive")
-sqlite3.register_adapter(states.Active, lambda _: "active")
+sqlite3.register_adapter(states.Down, lambda _: 0)
+sqlite3.register_adapter(states.Up, lambda _: 1)
+sqlite3.register_adapter(states.Inactive, lambda _: 0)
+sqlite3.register_adapter(states.Active, lambda _: 1)
 sqlite3.register_converter("desk", states.deserialize_desk)
 sqlite3.register_converter("session", states.deserialize_session)
+sqlite3.register_converter("desk_int", states.deserialize_desk_int)
+sqlite3.register_converter("session_int", states.deserialize_session_int)
 
 
-def _migrate(logger, connection, old_table, new_table):
+def _migrate(logger, connection, old_table, new_table, order_by):
     tables = connection.execute(
         f"SELECT name FROM sqlite_master WHERE type='table' AND name='{old_table}'"
     )
     name = tables.fetchone()
     if name:
-        rows = connection.execute(f"SELECT * FROM {old_table} ORDER BY date ASC")
+        rows = connection.execute(f"SELECT * FROM {old_table} ORDER BY {order_by} ASC")
         data = rows.fetchall()
         logger.info(
             "migrating table %s with %d row(s) to %s", old_table, len(data), new_table
@@ -50,18 +52,20 @@ class SqliteDataStore:
         self.logger = logger
         self.connection = connection
         self.connection.execute(
-            "CREATE TABLE IF NOT EXISTS session2("
+            "CREATE TABLE IF NOT EXISTS session3("
             "timestamp UNIX_TIMESTAMP NOT NULL,"
-            "state SESSION NOT NULL)"
+            "state SESSION_INT NOT NULL)"
         )
         self.connection.execute(
-            "CREATE TABLE IF NOT EXISTS desk2("
+            "CREATE TABLE IF NOT EXISTS desk3("
             "timestamp UNIX_TIMESTAMP NOT NULL,"
-            "state DESK NOT NULL)"
+            "state DESK_INT NOT NULL)"
         )
 
-        _migrate(self.logger, self.connection, "desk", "desk2")
-        _migrate(self.logger, self.connection, "session", "session2")
+        _migrate(self.logger, self.connection, "desk", "desk3", "date")
+        _migrate(self.logger, self.connection, "session", "session3", "date")
+        _migrate(self.logger, self.connection, "desk2", "desk3", "timestamp")
+        _migrate(self.logger, self.connection, "session2", "session3", "timestamp")
 
     @staticmethod
     def open(path):
@@ -77,19 +81,19 @@ class SqliteDataStore:
         return pd.read_sql_query(query, self.connection)
 
     def get_desk_events(self):
-        return self._get("SELECT * FROM desk2 ORDER BY timestamp ASC")
+        return self._get("SELECT * FROM desk3 ORDER BY timestamp ASC")
 
     def get_session_events(self):
-        return self._get("SELECT * FROM session2 ORDER BY timestamp ASC")
+        return self._get("SELECT * FROM session3 ORDER BY timestamp ASC")
 
     def set_desk(self, at, state):
         self.logger.debug("set desk %s %s", at, state.test("down", "up"))
         values = (at.to_pydatetime(), state)
-        self.connection.execute("INSERT INTO desk2 values(?, ?)", values)
+        self.connection.execute("INSERT INTO desk3 values(?, ?)", values)
         self.connection.commit()
 
     def set_session(self, at, state):
         self.logger.debug("set session %s %s", at, state.test("inactive", "active"))
         values = (at.to_pydatetime(), state)
-        self.connection.execute("INSERT INTO session2 values(?, ?)", values)
+        self.connection.execute("INSERT INTO session3 values(?, ?)", values)
         self.connection.commit()
