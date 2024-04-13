@@ -8,8 +8,7 @@ if [[ -n "${VIRTUAL_ENV+}" ]]; then
 fi
 
 rm -rf "./venv/"
-python -m venv "./venv"
-./venv/bin/python -m pip install --upgrade pip setuptools wheel
-./venv/bin/pip install \
-  -r requirements.txt \
-  -r requirements-ci.txt
+uv venv venv
+
+source ./venv/bin/activate
+uv pip install -r requirements.txt -r requirements-ci.txt -r requirements-dev.txt
