@@ -135,9 +135,9 @@ Use the following commands to setup the server:
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
     $ cd autodesk
-    $ python -m venv venv
-    $ ./venv/bin/python -m pip install --upgrade pip setuptools
-    $ ./venv/bin/pip install .
+    $ python -m venv ./.venv
+    $ ./.venv/bin/python -m pip install --upgrade pip setuptools
+    $ ./.venv/bin/pip install .
 
 Now the autodesk server can be started in the the shell:
 
@@ -166,9 +166,9 @@ Use the following commands to setup the server:
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
     $ cd autodesk
-    $ python -m venv venv
-    $ ./venv/Scripts/python -m pip install --upgrade pip setuptools
-    $ ./venv/Scripts/pip install .
+    $ python -m venv ./.venv
+    $ ./.venv/Scripts/python -m pip install --upgrade pip setuptools
+    $ ./.venv/Scripts/pip install .
 
 Now the autodesk server can be started in the shell:
 
