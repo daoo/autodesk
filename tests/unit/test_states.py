@@ -1,4 +1,12 @@
-from autodesk.states import UP, DOWN, INACTIVE, ACTIVE
+import pytest
+from autodesk.states import (
+    UP,
+    DOWN,
+    INACTIVE,
+    ACTIVE,
+    deserialize_session_int,
+    deserialize_desk_int,
+)
 
 
 def test_down_next():
@@ -31,3 +39,17 @@ def test_inactive_test():
 
 def test_active_test():
     assert ACTIVE.test(0, 1) == 1
+
+
+def test_deserialize_desk_int():
+    assert deserialize_desk_int(b"0") == DOWN
+    assert deserialize_desk_int(b"1") == UP
+    with pytest.raises(ValueError):
+        assert deserialize_desk_int("1")
+
+
+def test_deserialize_session_int():
+    assert deserialize_session_int(b"0") == INACTIVE
+    assert deserialize_session_int(b"1") == ACTIVE
+    with pytest.raises(ValueError):
+        assert deserialize_session_int("1")
