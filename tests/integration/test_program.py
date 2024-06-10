@@ -6,7 +6,7 @@ import subprocess
 
 @pytest.fixture
 def process():
-    cmd = ["python3", "-u", "-m", "autodesk.program"]
+    cmd = ["python3", "-u", "-m", "autodesk"]
     env = os.environ.copy()
     env["AUTODESK_ADDRESS"] = "127.0.0.1"
     env["AUTODESK_CONFIG"] = "config/testing.yml"

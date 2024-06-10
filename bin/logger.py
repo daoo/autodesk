@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "pydbus",
+#     "pygobject",
+#     "requests",
+# ]
+# ///
 
 from datetime import datetime
 from gi.repository import GLib

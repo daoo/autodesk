@@ -121,7 +121,8 @@ specific scripts on session activation events.
 ## Installation and setup
 
 The program can be setup on a Windows or a Linux computer using the following
-instructions.
+instructions. Uses [uv](https://github.com/astral-sh/uv) for project
+management.
 
 ### Linux Server
 
@@ -130,18 +131,12 @@ on Arch Linux:
 
     # pacman -S libusb
 
-Use the following commands to setup the server:
+Use the following commands to setup and start the server (in test mode):
 
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
     $ cd autodesk
-    $ python -m venv ./.venv
-    $ ./.venv/bin/python -m pip install --upgrade pip setuptools
-    $ ./.venv/bin/pip install .
-
-Now the autodesk server can be started in the the shell:
-
-    $ ./bin/start-autodesk.sh
+    $ uv run autodesk
 
 ### Linux Client
 
@@ -149,7 +144,7 @@ On Linux, run the `logger.py` script to listen for lock/unlock events via DBus.
 Supply it with the URL to the session API endpoint like this (`autodesk` is the
 host name of the computer running the server):
 
-    $ logger.py http://autodesk/api/session
+    $ uv run bin/logger.py http://autodesk/api/session
 
 The host name could be localhost if using the previously mentioned FT232H.
 
@@ -161,18 +156,14 @@ Download [Zadig](http://zadig.akeo.ie/) and use it to change the driver to
 guide](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/windows#plug-in-ft232h-and-fix-driver-with-zadig-3-4)
 for more information.
 
-Use the following commands to setup the server:
+Use the following commands to setup and start the server (in test mode):
 
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
     $ cd autodesk
-    $ python -m venv ./.venv
-    $ ./.venv/Scripts/python -m pip install --upgrade pip setuptools
-    $ ./.venv/Scripts/pip install .
+    $ uv run autodesk
 
-Now the autodesk server can be started in the shell:
-
-    $ ./bin/start-autodesk.ps1
+See [./bin/start-autodesk.ps1](./bin/start-autodesk.ps1) for start-up example.
 
 ### Windows Client
 

@@ -1,7 +1,4 @@
-*.egg-info/
-.coverage
-.eggs/
-.venv/
+.coverage*
 __pycache__/
-build/
+dist/
 coverage.json

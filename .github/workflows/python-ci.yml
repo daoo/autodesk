@@ -14,17 +14,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12.x'
-    - name: Install uv
-      run: python -m pip install --upgrade uv
-    - name: Create venv
-      run: uv venv
-    - name: Install requirements
-      run: uv pip install -r requirements.txt -r requirements-ci.txt
-    - name: Run ci.sh script
-      run: ./ci.sh
+    - uses: astral-sh/setup-uv@v2
+    - name: Set up python
+      run: uv python install
+    - name: Install the project
+      run: uv sync --all-extras --dev
+    - name: Run ruff check
+      run: uv run ruff check bin autodesk tests
+    - name: Run tests
+      run: uv run pytest --cov=autodesk --cov-branch --cov-report=term --cov-report=json tests
+    - name: Run coverage JSON report
+      run: uv run coverage json
     - name: Upload to codecov
       uses: codecov/codecov-action@v4
       with:
