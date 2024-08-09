@@ -16,7 +16,7 @@ setuptools.setup(
     package_data={"autodesk": ["templates/*.*"]},
     include_package_data=True,
     install_requires=[
-        "aiohttp==3.9.5",
+        "aiohttp==3.10.2",
         "aiohttp-jinja2==1.6",
         "matplotlib==3.9.0",
         "numpy==1.26.4",
