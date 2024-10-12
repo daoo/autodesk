@@ -12,7 +12,7 @@ import traceback
 logger = logging.getLogger("api")
 
 
-async def route_set_session(request):
+async def route_set_session(request: web.Request):
     body = await request.text()
     try:
         state = deserialize_session(body)
@@ -23,12 +23,12 @@ async def route_set_session(request):
         return web.Response(text="Invalid session state", status=400)
 
 
-async def route_get_session(request):
+async def route_get_session(request: web.Request):
     state = request.app["service"].get_session_state()
     return web.Response(text=state.test("inactive", "active"))
 
 
-async def route_set_desk(request):
+async def route_set_desk(request: web.Request):
     body = await request.text()
     try:
         state = deserialize_desk(body)
@@ -39,13 +39,13 @@ async def route_set_desk(request):
         return web.Response(text="Invalid desk state", status=400)
 
 
-async def route_get_desk(request):
+async def route_get_desk(request: web.Request):
     state = request.app["service"].get_desk_state()
     return web.Response(text=state.test("down", "up"))
 
 
 @aiohttp_jinja2.template("index.html")
-async def route_index(request):
+async def route_index(request: web.Request):
     service = request.app["service"]
     session_state = service.get_session_state().test("inactive", "active")
     desk_state = service.get_desk_state().test("down", "up")
@@ -59,7 +59,9 @@ async def route_index(request):
     }
 
 
-async def poll_button(button, polling_delay, hardware_error_delay):
+async def poll_button(
+    button: Button, polling_delay: float, hardware_error_delay: float
+):
     while True:
         try:
             button.poll()
@@ -69,7 +71,7 @@ async def poll_button(button, polling_delay, hardware_error_delay):
             await asyncio.sleep(hardware_error_delay)
 
 
-async def init(app):
+async def init(app: web.Application):
     loop = asyncio.get_running_loop()
     service = app["factory"].create(loop)
     service.init()
@@ -82,7 +84,7 @@ async def init(app):
     app["service"] = service
 
 
-async def cleanup(app):
+async def cleanup(app: web.Application):
     app["poll_button_task"].cancel()
 
 

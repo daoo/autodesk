@@ -49,7 +49,7 @@ INACTIVE = Inactive()
 ACTIVE = Active()
 
 
-def deserialize_session(value):
+def deserialize_session(value: bytes | str):
     if value in (b"inactive", "inactive"):
         return INACTIVE
     if value in (b"active", "active"):
@@ -58,7 +58,7 @@ def deserialize_session(value):
     raise ValueError('Incorrect session state "{0}".'.format(value))
 
 
-def deserialize_desk(value):
+def deserialize_desk(value: bytes | str) -> Down | Up:
     if value in (b"down", "down"):
         return DOWN
     if value in (b"up", "up"):

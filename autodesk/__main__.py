@@ -9,6 +9,11 @@ import os
 import yaml
 
 
+def read_yaml(path):
+    with open(path, "r") as file:
+        return yaml.load(file, Loader=yaml.SafeLoader)
+
+
 def main():
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s"
@@ -22,20 +27,17 @@ def main():
     port = int(os.getenv("AUTODESK_PORT", "8080"))
 
     logger.info('Reading config "%s"', config_path)
+    config = read_yaml(config_path)
 
-    config = None
-    with open(config_path, "r") as file:
-        config = yaml.load(file, Loader=yaml.SafeLoader)
+    limit_down = Timedelta(seconds=config["limits"]["down"])
+    limit_up = Timedelta(seconds=config["limits"]["up"])
 
     with closing(create_pin_factory(config["hardware"])) as pin_factory:
         button_pin = pin_factory.create_input(config["button_pin"])
         factory = AutoDeskServiceFactory(
             database,
             pin_factory,
-            (
-                Timedelta(seconds=config["limits"]["down"]),
-                Timedelta(seconds=config["limits"]["up"]),
-            ),
+            (limit_down, limit_up),
             config["delay"],
             (
                 config["motor_pins"]["down"],
@@ -48,5 +50,6 @@ def main():
         )
         app = setup_app(button_pin, factory)
         web.run_app(app, host=address, port=port)
+
 
 main()

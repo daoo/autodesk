@@ -2,7 +2,7 @@ import time
 
 
 class DeskController:
-    def __init__(self, delay, pin_down, pin_up, pin_light):
+    def __init__(self, delay: float, pin_down, pin_up, pin_light):
         self.delay = delay
         self.pin_down = pin_down
         self.pin_up = pin_up

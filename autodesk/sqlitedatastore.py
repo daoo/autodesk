@@ -69,7 +69,7 @@ class SqliteDataStore:
         _migrate(self.logger, self.connection, "session2", "session3", "timestamp")
 
     @staticmethod
-    def open(path):
+    def open(path: str):
         logger = logging.getLogger("sqlite3")
         logger.info("Opening database %s", path)
         connection = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)

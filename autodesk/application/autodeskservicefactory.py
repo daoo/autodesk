@@ -10,10 +10,18 @@ from autodesk.scheduler import Scheduler
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.timer import Timer
 
+from pandas import Timedelta
+
 
 class AutoDeskServiceFactory:
     def __init__(
-        self, database_path, pin_factory, limits, delay, motor_pins, light_pins
+        self,
+        database_path: str,
+        pin_factory,
+        limits: tuple[Timedelta, Timedelta],
+        delay: float,
+        motor_pins: tuple[int, int],
+        light_pins: tuple[int, int],
     ):
         self.database_path = database_path
         self.pin_factory = pin_factory

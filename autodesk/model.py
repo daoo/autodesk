@@ -1,10 +1,11 @@
 from autodesk.states import INACTIVE, ACTIVE, DOWN
+from typing import Generator
 from pandas import Timedelta
 import numpy as np
 import pandas as pd
 
 
-def enumerate_hours(start, end):
+def enumerate_hours(start, end) -> Generator[tuple[int, int], None, None]:
     time = start
     while time < end:
         yield (time.weekday(), time.hour)
