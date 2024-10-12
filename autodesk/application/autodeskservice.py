@@ -1,4 +1,5 @@
 from autodesk.hardware.error import HardwareError
+from autodesk.states import Desk, Session
 import logging
 
 
@@ -23,10 +24,10 @@ class AutoDeskService:
             self.logger.debug(error)
             self.timer.cancel()
 
-    def get_session_state(self):
+    def get_session_state(self) -> Session:
         return self.session_service.get()
 
-    def set_session(self, state):
+    def set_session(self, state: Session):
         try:
             self.session_service.set(state)
             self._update_timer()
@@ -39,10 +40,10 @@ class AutoDeskService:
         session_state = self.session_service.get()
         self.set_session(session_state.next())
 
-    def get_desk_state(self):
+    def get_desk_state(self) -> Desk:
         return self.desk_service.get()
 
-    def set_desk(self, state):
+    def set_desk(self, state: Desk):
         try:
             self.desk_service.set(state)
             self._update_timer()
@@ -58,8 +59,8 @@ class AutoDeskService:
         return self.session_service.compute_hourly_count()
 
     def _update_timer(self):
-        session_state = self.session_service.get()
-        desk_state = self.desk_service.get()
+        session_state: Session = self.session_service.get()
+        desk_state: Desk = self.desk_service.get()
         now = self.time_service.now()
         if self.operation.allowed(session_state, now):
             active_time = self.session_service.get_active_time()

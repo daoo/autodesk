@@ -1,52 +1,42 @@
-class Up:
-    def next(self):
-        return Down()
+class Desk:
+    def __init__(self, state: bool):
+        self._state = state
 
-    def test(self, _, b):
-        return b
+    def value(self):
+        return int(self._state)
+
+    def next(self):
+        return Desk(not self._state)
+
+    def test[T](self, a: T, b: T) -> T:
+        return b if self._state else a
 
     def __eq__(self, other):
-        return isinstance(other, Up)
+        return isinstance(other, Desk) and self._state == other._state
 
 
-class Down:
+class Session:
+    def __init__(self, state: bool):
+        self._state = state
+
+    def value(self):
+        return int(self._state)
+
     def next(self):
-        return Up()
+        return Session(not self._state)
 
-    def test(self, a, _):
-        return a
+    def test[T](self, a: T, b: T) -> T:
+        return b if self._state else a
 
     def __eq__(self, other):
-        return isinstance(other, Down)
+        return isinstance(other, Session) and self._state == other._state
 
 
-class Active:
-    def next(self):
-        return Inactive()
+DOWN = Desk(False)
+UP = Desk(True)
 
-    def test(self, _, b):
-        return b
-
-    def __eq__(self, other):
-        return isinstance(other, Active)
-
-
-class Inactive:
-    def next(self):
-        return Active()
-
-    def test(self, a, _):
-        return a
-
-    def __eq__(self, other):
-        return isinstance(other, Inactive)
-
-
-DOWN = Down()
-UP = Up()
-
-INACTIVE = Inactive()
-ACTIVE = Active()
+INACTIVE = Session(False)
+ACTIVE = Session(True)
 
 
 def deserialize_session(value: bytes | str):
@@ -58,7 +48,7 @@ def deserialize_session(value: bytes | str):
     raise ValueError('Incorrect session state "{0}".'.format(value))
 
 
-def deserialize_desk(value: bytes | str) -> Down | Up:
+def deserialize_desk(value: bytes | str):
     if value in (b"down", "down"):
         return DOWN
     if value in (b"up", "up"):
@@ -67,19 +57,19 @@ def deserialize_desk(value: bytes | str) -> Down | Up:
     raise ValueError('Incorrect desk state "{0}".'.format(value))
 
 
-def deserialize_session_int(value):
-    if value == b'0':
+def deserialize_session_int(value: bytes):
+    if value == b"0":
         return INACTIVE
-    if value == b'1':
+    if value == b"1":
         return ACTIVE
 
     raise ValueError('Incorrect session state "{0}".'.format(value))
 
 
-def deserialize_desk_int(value):
-    if value == b'0':
+def deserialize_desk_int(value: bytes):
+    if value == b"0":
         return DOWN
-    if value == b'1':
+    if value == b"1":
         return UP
 
     raise ValueError('Incorrect desk state "{0}".'.format(value))
