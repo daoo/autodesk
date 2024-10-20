@@ -1,5 +1,6 @@
-from autodesk.hardware.error import HardwareError
 import logging
+
+from autodesk.hardware.error import HardwareError
 
 
 class DeskService:

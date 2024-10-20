@@ -1,10 +1,10 @@
+import pytest
+from pandas import Timedelta, Timestamp
+
 from autodesk.application.deskservice import DeskService
 from autodesk.hardware.error import HardwareError
 from autodesk.operation import Operation
-from autodesk.states import ACTIVE, INACTIVE, DOWN, UP
-from pandas import Timedelta, Timestamp
-import pytest
-
+from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 
 TIME_ALLOWED = Timestamp(2018, 4, 23, 13, 0)
 TIME_DENIED = Timestamp(2018, 4, 23, 21, 0)

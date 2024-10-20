@@ -1,7 +1,7 @@
 from autodesk.hardware import create_pin_factory
 
 
-def patch_module(mocker, module):
+def patch_module(mocker, module: str):
     fake = mocker.MagicMock()
     mocker.patch.dict("sys.modules", {module: fake})
     return fake

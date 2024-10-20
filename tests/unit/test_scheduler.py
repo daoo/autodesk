@@ -1,6 +1,7 @@
-from autodesk.scheduler import Scheduler
-from autodesk.states import UP, DOWN
 from pandas import Timedelta
+
+from autodesk.scheduler import Scheduler
+from autodesk.states import DOWN, UP
 
 
 def test_active_for_30minutes_with_60minute_limit_and_desk_down():

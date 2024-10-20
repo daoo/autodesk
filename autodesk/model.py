@@ -1,9 +1,12 @@
-from autodesk.sqlitedatastore import SqliteDataStore
-from autodesk.states import INACTIVE, ACTIVE, DOWN, Desk, Session
-from typing import Any, Generator
-from pandas import Timedelta, Timestamp
+from collections.abc import Generator
+from typing import Any
+
 import numpy as np
 import pandas as pd
+from pandas import Timedelta, Timestamp
+
+from autodesk.sqlitedatastore import SqliteDataStore
+from autodesk.states import ACTIVE, DOWN, INACTIVE, Desk, Session
 
 
 def enumerate_hours(start, end) -> Generator[tuple[int, int], None, None]:
@@ -102,7 +105,7 @@ class Model:
     def compute_hourly_count(self, initial: Timestamp, final: Timestamp):
         spans = self.get_session_spans(initial, final)
 
-        rows = np.zeros((7 * 24))
+        rows = np.zeros(7 * 24)
         for span in spans[spans.state == ACTIVE].itertuples():
             for day, hour in enumerate_hours(span.start, span.end):
                 rows[day * 24 + hour] += 1

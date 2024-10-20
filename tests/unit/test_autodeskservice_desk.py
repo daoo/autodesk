@@ -1,8 +1,9 @@
+import pytest
+from pandas import Timedelta
+
 from autodesk.hardware.error import HardwareError
 from autodesk.states import ACTIVE, DOWN, UP
-from pandas import Timedelta
-from tests.autodeskservice import TIME_ALLOWED, DESK_DENIED, create_service
-import pytest
+from tests.autodeskservice import DESK_DENIED, TIME_ALLOWED, create_service
 
 
 @pytest.mark.parametrize("session,now", DESK_DENIED)

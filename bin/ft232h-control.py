@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-from pyftdi.gpio import GpioMpsseController
 import time
+
+from pyftdi.gpio import GpioMpsseController
 
 
 def toggle(gpio, delay):

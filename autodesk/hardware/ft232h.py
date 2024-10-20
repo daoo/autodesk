@@ -1,8 +1,9 @@
-from autodesk.hardware.error import HardwareError
 from pyftdi.ftdi import FtdiError
 from pyftdi.gpio import GpioMpsseController
 from pyftdi.usbtools import UsbTools, UsbToolsError
 from usb.core import USBError
+
+from autodesk.hardware.error import HardwareError
 
 
 def set_bit(mask, bit, value):
@@ -34,7 +35,7 @@ class DeviceWrapper:
             invalid_pins = ((valid_pins | used_pins) & ~valid_pins) & used_pins
             if invalid_pins != 0:
                 formatted = [i for i in range(0, 16) if invalid_pins & 1 << i != 0]
-                raise HardwareError("Cannot use pin(s) {} as GPIO.".format(formatted))
+                raise HardwareError(f"Cannot use pin(s) {formatted} as GPIO.")
             # A low bit (equal to 0) indicates an input pin.
             # A high bit (equal to 1) indicates an output pin.
             new_direction = self.output_pins & ~self.input_pins
@@ -90,8 +91,8 @@ class DeviceWrapper:
                 self.disconnect()
                 self._connect()
                 return action()
-            except FtdiError:
-                raise HardwareError(error1)
+            except FtdiError as err:
+                raise HardwareError(error1) from err
 
     def read(self, pin):
         return self._reconnect_and_try_again(lambda: self._read_no_error_handling(pin))
@@ -107,7 +108,7 @@ class Ft232hOutputPin:
 
     def write(self, value):
         if value != 0 and value != 1:
-            raise ValueError("Pin value must be 0 or 1 but got {0}".format(value))
+            raise ValueError(f"Pin value must be 0 or 1 but got {value}")
         self.wrapper.write(self.pin, value)
 
 

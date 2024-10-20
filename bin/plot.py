@@ -1,8 +1,10 @@
+import sys
+
+from pandas import Timestamp
+
 from autodesk.model import Model
 from autodesk.plots import plot_weekday_hourly_count
 from autodesk.sqlitedatastore import SqliteDataStore
-from pandas import Timestamp
-import sys
 
 model = Model(SqliteDataStore.open(sys.argv[1]))
 figure = plot_weekday_hourly_count(

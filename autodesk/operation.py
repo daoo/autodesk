@@ -1,6 +1,7 @@
-from autodesk.states import ACTIVE
-from datetime import time
 import logging
+from datetime import time
+
+from autodesk.states import ACTIVE
 
 
 class Operation:

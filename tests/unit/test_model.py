@@ -1,11 +1,12 @@
-from autodesk.model import Model
-from autodesk.sqlitedatastore import SqliteDataStore
-from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
-from pandas import Timestamp, Timedelta
-from pandas.testing import assert_frame_equal
-from tests.stubdatastore import empty_data_store, fake_data_store
 import pandas as pd
 import pytest
+from pandas import Timedelta, Timestamp
+from pandas.testing import assert_frame_equal
+
+from autodesk.model import Model
+from autodesk.sqlitedatastore import SqliteDataStore
+from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
+from tests.stubdatastore import empty_data_store, fake_data_store
 
 
 def make_spans(records):

@@ -1,9 +1,10 @@
-from autodesk.hardware.error import HardwareError
-from autodesk.hardware.ft232h import Ft232hPinFactory
+import pytest
 from pyftdi.ftdi import FtdiError
 from pyftdi.usbtools import UsbToolsError
 from usb.core import USBError
-import pytest
+
+from autodesk.hardware.error import HardwareError
+from autodesk.hardware.ft232h import Ft232hPinFactory
 
 
 @pytest.fixture

@@ -1,9 +1,11 @@
-from autodesk.sqlitedatastore import SqliteDataStore
-from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
-from pandas.testing import assert_frame_equal
+import sqlite3
+
 import pandas as pd
 import pytest
-import sqlite3
+from pandas.testing import assert_frame_equal
+
+from autodesk.sqlitedatastore import SqliteDataStore
+from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 
 
 @pytest.fixture

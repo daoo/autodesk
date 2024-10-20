@@ -1,3 +1,10 @@
+import base64
+import os
+
+import pytest
+from pandas import Timedelta, Timestamp
+
+import autodesk.api as api
 from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
@@ -7,14 +14,8 @@ from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
-from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
-from pandas import Timestamp, Timedelta
+from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 from tests.stubdatastore import fake_data_store
-import autodesk.api as api
-import base64
-import os
-import pytest
-
 
 SESSION_EVENTS = [
     # Tuesdays

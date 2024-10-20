@@ -1,8 +1,10 @@
-from autodesk.operation import Operation
-from autodesk.states import INACTIVE, ACTIVE
 from datetime import date, time
-from pandas import Timestamp
+
 import pytest
+from pandas import Timestamp
+
+from autodesk.operation import Operation
+from autodesk.states import ACTIVE, INACTIVE
 
 
 def combine(dates, times):

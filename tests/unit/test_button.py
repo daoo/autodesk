@@ -1,5 +1,6 @@
-from autodesk.button import Button
 import pytest
+
+from autodesk.button import Button
 
 
 @pytest.fixture

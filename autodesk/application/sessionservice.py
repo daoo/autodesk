@@ -1,7 +1,7 @@
-from autodesk.application.timeservice import TimeService
-from autodesk.hardware.error import HardwareError
 import logging
 
+from autodesk.application.timeservice import TimeService
+from autodesk.hardware.error import HardwareError
 from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.states import Session

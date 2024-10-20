@@ -19,7 +19,7 @@ class RaspberryPiOutputPin:
 
     def write(self, value):
         if value != 0 and value != 1:
-            raise ValueError("Pin value must be 0 or 1 but got {0}".format(value))
+            raise ValueError(f"Pin value must be 0 or 1 but got {value}")
         gpio_value = GPIO.LOW if value == 0 else GPIO.HIGH
         GPIO.output(self.pin, gpio_value)
 

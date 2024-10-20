@@ -1,7 +1,8 @@
 import os
+import subprocess
+
 import pytest
 import requests
-import subprocess
 
 
 @pytest.fixture

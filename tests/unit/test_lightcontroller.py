@@ -1,6 +1,7 @@
+import pytest
+
 from autodesk.lightcontroller import LightController
 from autodesk.states import ACTIVE, INACTIVE
-import pytest
 
 
 @pytest.fixture

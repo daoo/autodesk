@@ -1,6 +1,7 @@
-from autodesk.hardware.error import HardwareError
-from autodesk.states import INACTIVE, ACTIVE, DOWN
 from pandas import Timedelta
+
+from autodesk.hardware.error import HardwareError
+from autodesk.states import ACTIVE, DOWN, INACTIVE
 from tests.autodeskservice import TIME_ALLOWED, TIME_DENIED, create_service
 
 

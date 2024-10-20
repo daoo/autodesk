@@ -1,13 +1,15 @@
-from aiohttp import web
-from autodesk.button import Button
-from autodesk.hardware.error import HardwareError
-from autodesk.states import Desk, Session, deserialize_session, deserialize_desk
-import aiohttp_jinja2
 import asyncio
-import autodesk.plots as plots
-import jinja2
 import logging
 import traceback
+
+import aiohttp_jinja2
+import jinja2
+from aiohttp import web
+
+import autodesk.plots as plots
+from autodesk.button import Button
+from autodesk.hardware.error import HardwareError
+from autodesk.states import Desk, Session, deserialize_desk, deserialize_session
 
 logger = logging.getLogger("api")
 

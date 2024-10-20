@@ -1,5 +1,6 @@
-from autodesk.hardware.logging import LoggingPinFactory
 import pytest
+
+from autodesk.hardware.logging import LoggingPinFactory
 
 
 @pytest.fixture

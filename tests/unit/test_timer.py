@@ -1,6 +1,7 @@
-from autodesk.timer import Timer
-from pandas import Timedelta
 import pytest
+from pandas import Timedelta
+
+from autodesk.timer import Timer
 
 
 @pytest.fixture

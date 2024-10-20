@@ -1,3 +1,5 @@
+from pandas import Timedelta
+
 from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
@@ -9,8 +11,6 @@ from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.timer import Timer
-
-from pandas import Timedelta
 
 
 class AutoDeskServiceFactory:

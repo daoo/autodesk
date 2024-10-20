@@ -1,6 +1,7 @@
+import pytest
+
 from autodesk.deskcontroller import DeskController
 from autodesk.states import DOWN, UP
-import pytest
 
 
 @pytest.fixture

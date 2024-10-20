@@ -1,8 +1,10 @@
-from autodesk.hardware.error import HardwareError
-from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
 import asyncio
-import autodesk.api as api
+
 import pytest
+
+import autodesk.api as api
+from autodesk.hardware.error import HardwareError
+from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 
 
 @pytest.fixture

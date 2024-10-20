@@ -1,8 +1,9 @@
+import pytest
+from pandas import Timestamp
+
 from autodesk.application.sessionservice import SessionService
 from autodesk.hardware.error import HardwareError
 from autodesk.states import ACTIVE, INACTIVE
-from pandas import Timestamp
-import pytest
 
 
 def create_service(mocker, session_state, now=Timestamp.min):

@@ -1,9 +1,9 @@
+from pandas import Timedelta, Timestamp
+
 from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
-from autodesk.states import INACTIVE, ACTIVE
-from pandas import Timestamp, Timedelta
-
+from autodesk.states import ACTIVE, INACTIVE
 
 TIME_ALLOWED = Timestamp(2018, 4, 23, 13, 0)
 TIME_DENIED = Timestamp(2018, 4, 23, 21, 0)

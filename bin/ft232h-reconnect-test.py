@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-from pyftdi.gpio import GpioMpsseController
 import traceback
+
+from pyftdi.gpio import GpioMpsseController
 from pyftdi.usbtools import UsbTools
 
 print("Creating, configuring, writing and closing a GpioMpsseController...")
@@ -11,7 +12,7 @@ controller.configure(
 gpio = controller.get_gpio()
 gpio.write(0xFFFF & gpio.direction)  # type: ignore
 value = gpio.read()[0]  # type: ignore
-print("  Success (read {0})!".format(hex(value)))
+print(f"  Success (read {hex(value)})!")
 
 input("Now, disconnect and reconnect hardware and press enter.")
 try:

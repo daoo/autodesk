@@ -1,16 +1,18 @@
+import logging
+import os
+from contextlib import closing
+
+import yaml
 from aiohttp import web
+from pandas import Timedelta
+
 from autodesk.api import setup_app
 from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.hardware import create_pin_factory
-from contextlib import closing
-from pandas import Timedelta
-import logging
-import os
-import yaml
 
 
 def read_yaml(path):
-    with open(path, "r") as file:
+    with open(path) as file:
         return yaml.load(file, Loader=yaml.SafeLoader)
 
 

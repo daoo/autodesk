@@ -1,11 +1,12 @@
 import pytest
+
 from autodesk.states import (
-    UP,
+    ACTIVE,
     DOWN,
     INACTIVE,
-    ACTIVE,
-    deserialize_session_int,
+    UP,
     deserialize_desk_int,
+    deserialize_session_int,
 )
 
 
