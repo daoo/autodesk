@@ -9,7 +9,7 @@ from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
 from autodesk.states import DOWN, UP, INACTIVE, ACTIVE
 from pandas import Timestamp, Timedelta
-from tests.stubdatastore import StubDataStore
+from tests.stubdatastore import fake_data_store
 import autodesk.api as api
 import base64
 import os
@@ -46,7 +46,9 @@ def client(mocker, event_loop, aiohttp_client):
     time_service.min = Timestamp.min
     time_service.now.return_value = Timestamp(2019, 4, 25, 12, 0)
 
-    model = Model(StubDataStore(session_events=SESSION_EVENTS, desk_events=DESK_EVENTS))
+    model = Model(
+        fake_data_store(mocker, session_events=SESSION_EVENTS, desk_events=DESK_EVENTS)
+    )
 
     button_pin = NoopPin(4)
     timer = mocker.patch("autodesk.timer.Timer", autospec=True)

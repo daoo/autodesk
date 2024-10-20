@@ -30,7 +30,7 @@ def properties_handler(hostname, interface, changed, invalidated):
 def program(hostname):
     bus = SystemBus()
     login = bus.get("org.freedesktop.login1")
-    for sid, uid, uname, seat, path in login.ListSessions():
+    for _, _, _, _, path in login.ListSessions():
         print("Connecting to {}".format(path))
         sessionbus = bus.get("org.freedesktop.login1", path)
         sessionbus.PropertiesChanged.connect(

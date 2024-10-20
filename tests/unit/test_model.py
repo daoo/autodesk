@@ -3,7 +3,7 @@ from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import UP, DOWN, ACTIVE, INACTIVE
 from pandas import Timestamp, Timedelta
 from pandas.testing import assert_frame_equal
-from tests.stubdatastore import StubDataStore
+from tests.stubdatastore import empty_data_store, fake_data_store
 import pandas as pd
 import pytest
 
@@ -19,10 +19,10 @@ def inmemory_model():
     model.close()
 
 
-def test_get_desk_spans_empty():
+def test_get_desk_spans_empty(mocker):
     t1 = Timestamp.min
     t2 = Timestamp.max
-    model = Model(StubDataStore.empty())
+    model = Model(empty_data_store(mocker))
 
     result = model.get_desk_spans(t1, t2)
 
@@ -30,10 +30,10 @@ def test_get_desk_spans_empty():
     assert_frame_equal(result, expected)
 
 
-def test_get_session_spans_empty():
+def test_get_session_spans_empty(mocker):
     t1 = Timestamp.min
     t2 = Timestamp.max
-    model = Model(StubDataStore.empty())
+    model = Model(empty_data_store(mocker))
 
     result = model.get_session_spans(t1, t2)
 
@@ -41,11 +41,11 @@ def test_get_session_spans_empty():
     assert_frame_equal(result, expected)
 
 
-def test_get_desk_spans_one_up_span():
+def test_get_desk_spans_one_up_span(mocker):
     t1 = Timestamp(2018, 1, 1)
     t2 = Timestamp(2018, 1, 2)
     t3 = Timestamp(2018, 1, 3)
-    model = Model(StubDataStore(session_events=[], desk_events=[(t2, UP)]))
+    model = Model(fake_data_store(mocker, session_events=[], desk_events=[(t2, UP)]))
 
     result = model.get_desk_spans(t1, t3)
 
@@ -53,11 +53,13 @@ def test_get_desk_spans_one_up_span():
     assert_frame_equal(result, expected)
 
 
-def test_get_session_spans_one_active_span():
+def test_get_session_spans_one_active_span(mocker):
     t1 = Timestamp(2018, 1, 1)
     t2 = Timestamp(2018, 1, 2)
     t3 = Timestamp(2018, 1, 3)
-    model = Model(StubDataStore(session_events=[(t2, ACTIVE)], desk_events=[]))
+    model = Model(
+        fake_data_store(mocker, session_events=[(t2, ACTIVE)], desk_events=[])
+    )
 
     result = model.get_session_spans(t1, t3)
 
@@ -65,64 +67,74 @@ def test_get_session_spans_one_active_span():
     assert_frame_equal(result, expected)
 
 
-def test_get_session_state_empty():
-    model = Model(StubDataStore.empty())
+def test_get_session_state_empty(mocker):
+    model = Model(empty_data_store(mocker))
     assert model.get_session_state() == INACTIVE
 
 
-def test_get_desk_state_empty():
-    model = Model(StubDataStore.empty())
+def test_get_desk_state_empty(mocker):
+    model = Model(empty_data_store(mocker))
     assert model.get_desk_state() == DOWN
 
 
-def test_get_active_time_empty():
-    model = Model(StubDataStore.empty())
+def test_get_active_time_empty(mocker):
+    model = Model(empty_data_store(mocker))
     assert model.get_active_time(Timestamp.min, Timestamp.max) == Timedelta(0)
 
 
-def test_get_active_time_active_zero():
+def test_get_active_time_active_zero(mocker):
     t = Timestamp(2018, 1, 1)
-    model = Model(StubDataStore(session_events=[(t, ACTIVE)], desk_events=[]))
+    model = Model(fake_data_store(mocker, session_events=[(t, ACTIVE)], desk_events=[]))
     assert model.get_active_time(Timestamp.min, t) == Timedelta(0)
 
 
-def test_get_active_time_active_for_10_minutes():
+def test_get_active_time_active_for_10_minutes(mocker):
     t1 = Timestamp(2018, 1, 1, 0, 0, 0)
     t2 = Timestamp(2018, 1, 1, 0, 10, 0)
-    model = Model(StubDataStore(session_events=[(t1, ACTIVE)], desk_events=[]))
+    model = Model(
+        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[])
+    )
     assert model.get_active_time(Timestamp.min, t2) == Timedelta(minutes=10)
 
 
-def test_get_active_time_just_after_desk_change():
+def test_get_active_time_just_after_desk_change(mocker):
     t1 = Timestamp(2018, 1, 1, 0, 0, 0)
     t2 = Timestamp(2018, 1, 1, 0, 10, 0)
-    model = Model(StubDataStore(session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)]))
+    model = Model(
+        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)])
+    )
     assert model.get_active_time(Timestamp.min, t2) == Timedelta(0)
 
 
-def test_get_active_time_active_20_minutes_with_changed_desk_state():
+def test_get_active_time_active_20_minutes_with_changed_desk_state(mocker):
     t1 = Timestamp(2018, 1, 1, 0, 0, 0)
     t2 = Timestamp(2018, 1, 1, 0, 10, 0)
     t3 = Timestamp(2018, 1, 1, 0, 20, 0)
-    model = Model(StubDataStore(session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)]))
+    model = Model(
+        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)])
+    )
     assert model.get_active_time(Timestamp.min, t3) == Timedelta(minutes=10)
 
 
-def test_compute_hourly_count_active_30_minutes():
+def test_compute_hourly_count_active_30_minutes(mocker):
     t1 = Timestamp(2017, 4, 12, 10, 0, 0)
     t2 = Timestamp(2017, 4, 12, 10, 30, 0)
     model = Model(
-        StubDataStore(session_events=[(t1, ACTIVE), (t2, INACTIVE)], desk_events=[])
+        fake_data_store(
+            mocker, session_events=[(t1, ACTIVE), (t2, INACTIVE)], desk_events=[]
+        )
     )
     result = model.compute_hourly_count(t1, t2)
     specific_hour = result[(result.weekday == "Wednesday") & (result.hour == 10)]
     assert specific_hour.counts.iloc[0] == 1
 
 
-def test_compute_hourly_count_active_0_minutes():
+def test_compute_hourly_count_active_0_minutes(mocker):
     t1 = Timestamp(2017, 4, 12, 10, 0, 0)
     t2 = Timestamp(2017, 4, 12, 10, 30, 0)
-    model = Model(StubDataStore(session_events=[(t1, INACTIVE)], desk_events=[]))
+    model = Model(
+        fake_data_store(mocker, session_events=[(t1, INACTIVE)], desk_events=[])
+    )
     result = model.compute_hourly_count(t1, t2)
     assert result.counts.sum() == 0
 

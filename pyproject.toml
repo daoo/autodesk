@@ -15,9 +15,11 @@ dependencies = [
     "aiohttp>=3.10.6",
     "matplotlib>=3.9.2",
     "numpy>=2.1.1",
+    "pandas-stubs>=2.2.3.241009",
     "pandas>=2.2.3",
     "pyftdi>=0.55.4",
     "pyyaml>=6.0.2",
+    "types-pyyaml>=6.0.12.20240917",
 ]
 requires-python = ">=3.12"
 

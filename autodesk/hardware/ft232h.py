@@ -20,6 +20,7 @@ class DeviceWrapper:
         self.input_pins = 0
 
     def _setup(self):
+        assert self.controller is not None
         try:
             self.controller.configure(
                 "ftdi://ftdi:ft232h/1",
@@ -28,7 +29,7 @@ class DeviceWrapper:
                 initial=0x0000,
             )
             self.gpio = self.controller.get_gpio()
-            valid_pins = self.gpio.all_pins
+            valid_pins = self.gpio.all_pins  # type: ignore
             used_pins = self.output_pins | self.input_pins
             invalid_pins = ((valid_pins | used_pins) & ~valid_pins) & used_pins
             if invalid_pins != 0:
@@ -37,7 +38,7 @@ class DeviceWrapper:
             # A low bit (equal to 0) indicates an input pin.
             # A high bit (equal to 1) indicates an output pin.
             new_direction = self.output_pins & ~self.input_pins
-            self.gpio.set_direction(used_pins, new_direction)
+            self.gpio.set_direction(used_pins, new_direction)  # type: ignore
         except UsbToolsError as error:
             self.gpio = None
             raise HardwareError(error) from None
@@ -51,6 +52,7 @@ class DeviceWrapper:
         if self.controller is not None:
             # Finicky way to get pyftdi to clean up and reconnect properly
             # after a hardware disconnect. Not necessary on first connect.
+            assert self.controller._ftdi._usb_dev is not None
             UsbTools.release_device(self.controller._ftdi._usb_dev)
             self.controller.close()
             UsbTools.flush_cache()
@@ -61,6 +63,7 @@ class DeviceWrapper:
     def disconnect(self):
         if self.gpio:
             self.gpio = None
+        if self.controller:
             self.controller.close()
 
     def add_output(self, pin):
@@ -70,13 +73,13 @@ class DeviceWrapper:
         self.input_pins = self.input_pins | 1 << pin
 
     def _read_no_error_handling(self, pin):
-        current = self.gpio.read()[0]
+        current = self.gpio.read()[0]  # type: ignore
         return (current >> pin) & 1
 
     def _write_no_error_handling(self, pin, value):
-        current = self.gpio.read()[0]
+        current = self.gpio.read()[0]  # type: ignore
         new = set_bit(current, pin, value)
-        self.gpio.write(new & self.gpio.direction)
+        self.gpio.write(new & self.gpio.direction)  # type: ignore
 
     def _reconnect_and_try_again(self, action):
         self._connect()

@@ -45,11 +45,11 @@ def test_deserialize_desk_int():
     assert deserialize_desk_int(b"0") == DOWN
     assert deserialize_desk_int(b"1") == UP
     with pytest.raises(ValueError):
-        assert deserialize_desk_int("1")
+        assert deserialize_desk_int(b"2")
 
 
 def test_deserialize_session_int():
     assert deserialize_session_int(b"0") == INACTIVE
     assert deserialize_session_int(b"1") == ACTIVE
     with pytest.raises(ValueError):
-        assert deserialize_session_int("1")
+        assert deserialize_session_int(b"2")

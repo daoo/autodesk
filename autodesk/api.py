@@ -90,7 +90,7 @@ async def cleanup(app: web.Application):
     app["poll_button_task"].cancel()
 
 
-def setup_app(button_pin, factory, button_polling_delay=0.1, hardware_error_delay=5):
+def setup_app(button_pin, factory, button_polling_delay=0.1, hardware_error_delay=5.0):
     app = web.Application()
 
     app["button_polling_delay"] = button_polling_delay

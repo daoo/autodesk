@@ -1,28 +1,18 @@
 import pandas as pd
 
 
-class StubDataStore:
-    def __init__(self, session_events, desk_events):
-        self.session_events = pd.DataFrame(
-            session_events, columns=["timestamp", "state"]
-        )
-        self.desk_events = pd.DataFrame(desk_events, columns=["timestamp", "state"])
+def empty_data_store(mocker):
+    return fake_data_store(mocker, [], [])
 
-    def close(self):
-        pass
 
-    def get_session_events(self):
-        return self.session_events
-
-    def get_desk_events(self):
-        return self.desk_events
-
-    def set_session(self, timestamp, state):
-        raise RuntimeError("Not modifiable.")
-
-    def set_desk(self, timestamp, state):
-        raise RuntimeError("Not modifiable.")
-
-    @staticmethod
-    def empty():
-        return StubDataStore([], [])
+def fake_data_store(mocker, session_events, desk_events):
+    datastore_fake = mocker.patch(
+        "autodesk.sqlitedatastore.SqliteDataStore", autospec=True
+    )
+    session_events_df = pd.DataFrame(session_events, columns=["timestamp", "state"])
+    desk_events_df = pd.DataFrame(desk_events, columns=["timestamp", "state"])
+    datastore_fake.get_session_events.return_value = session_events_df
+    datastore_fake.get_desk_events.return_value = desk_events_df
+    datastore_fake.set_session.side_effect = RuntimeError("Not modifiable.")
+    datastore_fake.set_desk.side_effect = RuntimeError("Not modifiable.")
+    return datastore_fake

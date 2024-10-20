@@ -1,11 +1,24 @@
-from autodesk.hardware.error import HardwareError
-from autodesk.states import Desk, Session
 import logging
+
+from autodesk.application.deskservice import DeskService
+from autodesk.application.sessionservice import SessionService
+from autodesk.application.timeservice import TimeService
+from autodesk.hardware.error import HardwareError
+from autodesk.operation import Operation
+from autodesk.scheduler import Scheduler
+from autodesk.states import Desk, Session
+from autodesk.timer import Timer
 
 
 class AutoDeskService:
     def __init__(
-        self, operation, scheduler, timer, time_service, session_service, desk_service
+        self,
+        operation: Operation,
+        scheduler: Scheduler,
+        timer: Timer,
+        time_service: TimeService,
+        session_service: SessionService,
+        desk_service: DeskService,
     ):
         self.logger = logging.getLogger("autodeskservice")
         self.operation = operation

@@ -16,6 +16,9 @@ def process():
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8", env=env
     )
 
+    assert process.stdout is not None
+    assert process.stderr is not None
+
     while True:
         line = process.stdout.readline()
         if not line:
@@ -31,5 +34,6 @@ def process():
     process.wait()
 
 
-def test_get_index(process):
+def test_get_index(process: subprocess.Popen):
+    assert process is not None
     assert requests.get("http://localhost:8081").ok

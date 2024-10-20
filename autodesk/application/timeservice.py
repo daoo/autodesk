@@ -6,8 +6,8 @@ class TimeService:
         self.__min = Timestamp.min
 
     @property
-    def min(self):
+    def min(self) -> Timestamp:
         return self.__min
 
-    def now(self):
+    def now(self) -> Timestamp:
         return Timestamp.now()

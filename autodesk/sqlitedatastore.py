@@ -1,11 +1,13 @@
-import autodesk.states as states
 import datetime
 import logging
-import pandas as pd
 import sqlite3
 
+import pandas as pd
 
-def adapt_datetime_epoch(val):
+import autodesk.states as states
+
+
+def adapt_datetime_epoch(val: datetime.datetime):
     return int(val.timestamp())
 
 
@@ -29,7 +31,13 @@ sqlite3.register_converter("desk_int", states.deserialize_desk_int)
 sqlite3.register_converter("session_int", states.deserialize_session_int)
 
 
-def _migrate(logger, connection, old_table, new_table, order_by):
+def _migrate(
+    logger: logging.Logger,
+    connection: sqlite3.Connection,
+    old_table: str,
+    new_table: str,
+    order_by: str,
+):
     tables = connection.execute(
         f"SELECT name FROM sqlite_master WHERE type='table' AND name='{old_table}'"
     )
@@ -47,7 +55,7 @@ def _migrate(logger, connection, old_table, new_table, order_by):
 
 
 class SqliteDataStore:
-    def __init__(self, logger, connection):
+    def __init__(self, logger: logging.Logger, connection: sqlite3.Connection):
         self.logger = logger
         self.connection = connection
         self.connection.execute(
@@ -76,7 +84,7 @@ class SqliteDataStore:
     def close(self):
         self.connection.close()
 
-    def _get(self, query):
+    def _get(self, query: str):
         return pd.read_sql_query(query, self.connection)
 
     def get_desk_events(self):
@@ -85,13 +93,13 @@ class SqliteDataStore:
     def get_session_events(self):
         return self._get("SELECT * FROM session3 ORDER BY timestamp ASC")
 
-    def set_desk(self, at, state):
+    def set_desk(self, at: pd.Timestamp, state: states.Desk):
         self.logger.debug("set desk %s %s", at, state.test("down", "up"))
         values = (at.to_pydatetime(), state)
         self.connection.execute("INSERT INTO desk3 values(?, ?)", values)
         self.connection.commit()
 
-    def set_session(self, at, state):
+    def set_session(self, at: pd.Timestamp, state: states.Session):
         self.logger.debug("set session %s %s", at, state.test("inactive", "active"))
         values = (at.to_pydatetime(), state)
         self.connection.execute("INSERT INTO session3 values(?, ?)", values)
