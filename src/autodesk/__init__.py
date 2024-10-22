@@ -52,6 +52,3 @@ def main():
         )
         app = setup_app(button_pin, factory)
         web.run_app(app, host=address, port=port)
-
-
-main()

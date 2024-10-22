@@ -24,13 +24,13 @@ def gpio_fake(controller_fake):
 
 
 @pytest.fixture
-def factory(controller_fake, gpio_fake):
+def factory():
     factory_instance = Ft232hPinFactory()
     yield factory_instance
     factory_instance.close()
 
 
-def test_factory_constructor(controller_fake):
+def test_factory_constructor():
     factory = Ft232hPinFactory()
     factory.close()
 
@@ -186,7 +186,7 @@ def test_pin_read_two_failures_raises(mocker, gpio_fake, factory):
 
 
 def test_pin_write_failure_recovery(mocker, gpio_fake, factory):
-    def fail_once(value):
+    def fail_once(_):
         gpio_fake.write.side_effect = None
         raise FtdiError("Stubbed error for unit testing.")
 

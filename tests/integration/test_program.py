@@ -7,8 +7,9 @@ import requests
 
 @pytest.fixture
 def process():
-    cmd = ["python3", "-u", "-m", "autodesk"]
+    cmd = ["autodesk"]
     env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "x"
     env["AUTODESK_ADDRESS"] = "127.0.0.1"
     env["AUTODESK_CONFIG"] = "config/testing.yml"
     env["AUTODESK_DATABASE"] = ":memory:"
@@ -16,6 +17,8 @@ def process():
     process = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8", env=env
     )
+    assert process.stdout
+    assert process.stderr
 
     assert process.stdout is not None
     assert process.stderr is not None

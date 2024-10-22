@@ -26,6 +26,13 @@ requires-python = ">=3.12"
 [project.urls]
 homepage = "https://github.com/daoo/autodesk"
 
+[project.scripts]
+autodesk = "autodesk:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.uv]
 dev-dependencies = [
     "mock>=5.1.0",

@@ -53,8 +53,7 @@ class DeviceWrapper:
         if self.controller is not None:
             # Finicky way to get pyftdi to clean up and reconnect properly
             # after a hardware disconnect. Not necessary on first connect.
-            assert self.controller._ftdi._usb_dev is not None
-            UsbTools.release_device(self.controller._ftdi._usb_dev)
+            UsbTools.release_device(self.controller._ftdi._usb_dev)  # type: ignore
             self.controller.close()
             UsbTools.flush_cache()
         else:
