@@ -1,12 +1,12 @@
 hardware: "ft232h"
-delay: 16
+delay: 12
 limits:
   down: 1800
   up: 1800
 button_pin: 4
 motor_pins:
-  down: 8
-  up: 14
+  down: 14
+  up: 8
 light_pins:
   desk: 6
   session: 7
