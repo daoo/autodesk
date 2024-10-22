@@ -4,4 +4,4 @@ curl \
   --data active \
   --header 'Content-Type: text/plain' \
   --request PUT \
-  http://localhost:8080/api/session
+  http://localhost:7380/api/session

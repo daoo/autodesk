@@ -26,7 +26,7 @@ def main():
     config_path = os.getenv("AUTODESK_CONFIG", "config/testing.yml")
     database = os.getenv("AUTODESK_DATABASE", ":memory:")
     address = os.getenv("AUTODESK_ADDRESS", "127.0.0.1")
-    port = int(os.getenv("AUTODESK_PORT", "8080"))
+    port = int(os.getenv("AUTODESK_PORT", "7380"))
 
     logger.info('Reading config "%s"', config_path)
     config = read_yaml(config_path)
