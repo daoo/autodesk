@@ -21,6 +21,7 @@ def plot_weekday_hourly_count(full_week, dpi=80):
     counts = filtered["counts"]
     relative = (counts - counts.min()) / (counts.max() - counts.min())
 
+    plt.switch_backend("Agg")
     figure = plt.figure(figsize=(800 / dpi, 400 / dpi), dpi=dpi)
     figure.suptitle("Weekday Hourly Relative Presence")
     ax = figure.add_subplot()
