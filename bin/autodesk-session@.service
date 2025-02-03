@@ -1,0 +1,10 @@
+[Unit]
+Description=Monitor session lock/unlock for desk automation
+
+[Service]
+ExecStart=/usr/bin/uv run bin/logger.py http://127.0.0.1:7380/api/session
+KillMode=mixed
+WorkingDirectory=%f
+
+[Install]
+WantedBy=default.target

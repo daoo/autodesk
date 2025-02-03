@@ -16,19 +16,19 @@ from gi.repository import GLib
 from pydbus import SystemBus
 
 
-def notify(url, active):
+def notify(url: str, active: bool):
     state = b"active" if active else b"inactive"
-    requests.put(url, data=state)
+    requests.put(url, data=state, headers={"Content-Type": "text/plain"})
 
 
-def properties_handler(hostname, interface, changed, invalidated):
+def properties_handler(url: str, interface, changed, invalidated):
     print(datetime.now(), interface, changed, invalidated)
     if interface == "org.freedesktop.login1.Session":
         if "Active" in changed:
-            notify(hostname, changed["Active"])
+            notify(url, changed["Active"])
 
 
-def program(hostname):
+def program(url: str):
     bus = SystemBus()
     login = bus.get("org.freedesktop.login1")
     for _, _, _, _, path in login.ListSessions():
@@ -36,7 +36,7 @@ def program(hostname):
         sessionbus = bus.get("org.freedesktop.login1", path)
         sessionbus.PropertiesChanged.connect(
             lambda interface, changed, invalidated: properties_handler(
-                hostname, interface, changed, invalidated
+                url, interface, changed, invalidated
             )
         )
     GLib.MainLoop().run()

@@ -1,0 +1,16 @@
+[Unit]
+Description=Autodesk desk automation service
+
+[Service]
+ExecStart=/usr/bin/uv run autodesk
+KillMode=mixed
+WorkingDirectory=%f
+Environment=AUTODESK_ADDRSESS=127.0.0.1
+Environment=AUTODESK_PORT=7380
+Environment=AUTODESK_CONFIG=./config/ft232h.yml
+Environment=AUTODESK_DATABASE=%S/autodesk.db
+StateDirectory=autodesk
+StateDirectoryMode=0700
+
+[Install]
+WantedBy=default.target
