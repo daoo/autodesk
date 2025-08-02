@@ -11,7 +11,8 @@ from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 @pytest.fixture
 def service_mock(mocker):
     return mocker.patch(
-        "autodesk.application.autodeskservice.AutoDeskService", autospec=True
+        "autodesk.application.autodeskservice.AutoDeskService",
+        autospec=True,
     )
 
 
@@ -33,7 +34,7 @@ async def client(mocker, button_pin_stub, service_mock, aiohttp_client):
             factory,
             button_polling_delay=0.1,
             hardware_error_delay=0.1,
-        )
+        ),
     )
 
 

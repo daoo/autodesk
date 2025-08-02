@@ -36,8 +36,11 @@ def program(url: str):
         sessionbus = bus.get("org.freedesktop.login1", path)
         sessionbus.PropertiesChanged.connect(
             lambda interface, changed, invalidated: properties_handler(
-                url, interface, changed, invalidated
-            )
+                url,
+                interface,
+                changed,
+                invalidated,
+            ),
         )
     GLib.MainLoop().run()
 

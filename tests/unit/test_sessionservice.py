@@ -11,12 +11,14 @@ def create_service(mocker, session_state, now=Timestamp.min):
     model_fake.get_session_state.return_value = session_state
 
     time_service_fake = mocker.patch(
-        "autodesk.application.timeservice.TimeService", autospec=True
+        "autodesk.application.timeservice.TimeService",
+        autospec=True,
     )
     time_service_fake.now.return_value = now
 
     light_controller_fake = mocker.patch(
-        "autodesk.lightcontroller.LightController", autospec=True
+        "autodesk.lightcontroller.LightController",
+        autospec=True,
     )
     service = SessionService(model_fake, light_controller_fake, time_service_fake)
     return (model_fake, light_controller_fake, service)

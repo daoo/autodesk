@@ -127,5 +127,5 @@ class Model:
                 "weekday": np.repeat(weekdays, 24),
                 "hour": np.tile(np.arange(24), 7),
                 "counts": rows,
-            }
+            },
         )

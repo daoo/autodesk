@@ -11,7 +11,8 @@ def pin_stub(mocker):
 @pytest.fixture
 def autodeskservice_mock(mocker):
     return mocker.patch(
-        "autodesk.application.autodeskservice.AutoDeskService", autospec=True
+        "autodesk.application.autodeskservice.AutoDeskService",
+        autospec=True,
     )
 
 
@@ -37,7 +38,9 @@ def test_poll_read1_toggle_session_called(pin_stub, autodeskservice_mock, button
 
 
 def test_poll_read1_twice_toggle_session_called_only_once(
-    pin_stub, autodeskservice_mock, button
+    pin_stub,
+    autodeskservice_mock,
+    button,
 ):
     pin_stub.read.return_value = 1
 

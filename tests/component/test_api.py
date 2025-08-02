@@ -43,13 +43,14 @@ DESK_EVENTS = [
 @pytest_asyncio.fixture
 async def client(mocker, aiohttp_client):
     time_service = mocker.patch(
-        "autodesk.application.timeservice.TimeService", autospec=True
+        "autodesk.application.timeservice.TimeService",
+        autospec=True,
     )
     time_service.min = Timestamp.min
     time_service.now.return_value = Timestamp(2019, 4, 25, 12, 0)
 
     model = Model(
-        fake_data_store(mocker, session_events=SESSION_EVENTS, desk_events=DESK_EVENTS)
+        fake_data_store(mocker, session_events=SESSION_EVENTS, desk_events=DESK_EVENTS),
     )
 
     button_pin = NoopPin(4)
@@ -62,7 +63,12 @@ async def client(mocker, aiohttp_client):
     session_service = SessionService(model, light_controller, time_service)
     desk_service = DeskService(operation, model, desk_controller, time_service)
     service = AutoDeskService(
-        operation, scheduler, timer, time_service, session_service, desk_service
+        operation,
+        scheduler,
+        timer,
+        time_service,
+        session_service,
+        desk_service,
     )
 
     factory = mocker.patch(

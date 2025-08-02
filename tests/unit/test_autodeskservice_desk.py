@@ -48,7 +48,11 @@ def test_set_desk_up_allowed_timer_scheduled_right_time(mocker):
 @pytest.mark.parametrize("desk", [DOWN, UP])
 def test_set_desk_hardware_error_timer_cancelled(mocker, desk):
     (timer_mock, _, desk_service_stub, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), desk.next()
+        mocker,
+        TIME_ALLOWED,
+        ACTIVE,
+        Timedelta(0),
+        desk.next(),
     )
     desk_service_stub.set.side_effect = HardwareError(RuntimeError())
 

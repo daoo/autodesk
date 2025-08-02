@@ -21,12 +21,14 @@ def create_service(
     timer_fake = mocker.patch("autodesk.timer.Timer", autospec=True)
 
     time_service_fake = mocker.patch(
-        "autodesk.application.timeservice.TimeService", autospec=True
+        "autodesk.application.timeservice.TimeService",
+        autospec=True,
     )
     time_service_fake.now.return_value = now
 
     session_service_fake = mocker.patch(
-        "autodesk.application.sessionservice.SessionService", autospec=True
+        "autodesk.application.sessionservice.SessionService",
+        autospec=True,
     )
     session_service_fake.get.return_value = session_state
     session_service_fake.get_active_time.return_value = active_time
@@ -37,7 +39,8 @@ def create_service(
     session_service_fake.set.side_effect = set_session_get_return
 
     desk_service_fake = mocker.patch(
-        "autodesk.application.deskservice.DeskService", autospec=True
+        "autodesk.application.deskservice.DeskService",
+        autospec=True,
     )
     desk_service_fake.get.return_value = desk_state
 

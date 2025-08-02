@@ -57,7 +57,8 @@ def test_factory_create_input_followed_by_read(gpio_fake, factory):
     expected_pin_mask = 0b0010
     expected_direction = 0b0000
     gpio_fake.set_direction.assert_called_once_with(
-        expected_pin_mask, expected_direction
+        expected_pin_mask,
+        expected_direction,
     )
 
 
@@ -71,7 +72,8 @@ def test_factory_create_output_followed_by_write(gpio_fake, factory):
     expected_pin_mask = 0b0010
     expected_direction = 0b0010
     gpio_fake.set_direction.assert_called_once_with(
-        expected_pin_mask, expected_direction
+        expected_pin_mask,
+        expected_direction,
     )
 
 
@@ -162,7 +164,7 @@ def test_pin_read_failure_recovery(mocker, gpio_fake, factory):
         [
             mocker.call(),  # failed attempt
             mocker.call(),
-        ]
+        ],
     )
     assert actual == 0
 
@@ -181,7 +183,7 @@ def test_pin_read_two_failures_raises(mocker, gpio_fake, factory):
         [
             mocker.call(),  # failed attempt
             mocker.call(),  # failed attempt
-        ]
+        ],
     )
 
 
@@ -202,7 +204,7 @@ def test_pin_write_failure_recovery(mocker, gpio_fake, factory):
         [
             mocker.call(0b0010),  # failed attempt
             mocker.call(0b0010),
-        ]
+        ],
     )
 
 
@@ -220,7 +222,7 @@ def test_pin_write_two_failures_raises(mocker, gpio_fake, factory):
         [
             mocker.call(0b0010),  # failed attempt
             mocker.call(0b0010),  # failed attempt
-        ]
+        ],
     )
 
 
@@ -250,7 +252,7 @@ def test_two_writes_connects_once(controller_fake, gpio_fake, factory):
 
 def test_input_connect_usb_tools_error(controller_fake, gpio_fake, factory):
     controller_fake.configure.side_effect = UsbToolsError(
-        "Stubbed error for unit testing."
+        "Stubbed error for unit testing.",
     )
     pin_number = 1
     gpio_fake.all_pins = 0b0110
@@ -274,7 +276,7 @@ def test_input_connect_usb_error(controller_fake, gpio_fake, factory):
 
 def test_output_connect_usb_tools_error(controller_fake, gpio_fake, factory):
     controller_fake.configure.side_effect = UsbToolsError(
-        "Stubbed error for unit testing."
+        "Stubbed error for unit testing.",
     )
     pin_number = 1
     gpio_fake.all_pins = 0b0110

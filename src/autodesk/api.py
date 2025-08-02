@@ -64,7 +64,9 @@ async def route_index(request: web.Request):
 
 
 async def poll_button(
-    button: Button, polling_delay: float, hardware_error_delay: float
+    button: Button,
+    polling_delay: float,
+    hardware_error_delay: float,
 ):
     while True:
         try:
@@ -81,7 +83,7 @@ async def init(app: web.Application):
     service.init()
     button = Button(app["button_pin"], service)
     app["poll_button_task"] = loop.create_task(
-        poll_button(button, app["button_polling_delay"], app["hardware_error_delay"])
+        poll_button(button, app["button_polling_delay"], app["hardware_error_delay"]),
     )
     del app["button_pin"]
     del app["factory"]

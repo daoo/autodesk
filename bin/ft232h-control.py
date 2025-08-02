@@ -17,7 +17,10 @@ delay = 1
 controller = GpioMpsseController()
 try:
     controller.configure(
-        "ftdi://ftdi:ft232h/1", frequency=100, direction=0xFFFF, initial=0x0000
+        "ftdi://ftdi:ft232h/1",
+        frequency=100,
+        direction=0xFFFF,
+        initial=0x0000,
     )
     gpio = controller.get_gpio()
     while True:

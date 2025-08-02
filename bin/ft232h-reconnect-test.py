@@ -7,7 +7,10 @@ from pyftdi.usbtools import UsbTools
 print("Creating, configuring, writing and closing a GpioMpsseController...")
 controller = GpioMpsseController()
 controller.configure(
-    "ftdi://ftdi:ft232h/1", frequency=100, direction=0xFFFF, initial=0x0000
+    "ftdi://ftdi:ft232h/1",
+    frequency=100,
+    direction=0xFFFF,
+    initial=0x0000,
 )
 gpio = controller.get_gpio()
 gpio.write(0xFFFF & gpio.direction)  # type: ignore
@@ -21,7 +24,10 @@ try:
     controller.close()
     UsbTools.flush_cache()
     controller.configure(
-        "ftdi://ftdi:ft232h/1", frequency=100, direction=0xFFFF, initial=0x0000
+        "ftdi://ftdi:ft232h/1",
+        frequency=100,
+        direction=0xFFFF,
+        initial=0x0000,
     )
     gpio = controller.get_gpio()
     gpio.write(0xFFFF & gpio.direction)  # type: ignore

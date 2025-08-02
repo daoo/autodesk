@@ -7,7 +7,8 @@ def empty_data_store(mocker):
 
 def fake_data_store(mocker, session_events, desk_events):
     datastore_fake = mocker.patch(
-        "autodesk.sqlitedatastore.SqliteDataStore", autospec=True
+        "autodesk.sqlitedatastore.SqliteDataStore",
+        autospec=True,
     )
     session_events_df = pd.DataFrame(session_events, columns=["timestamp", "state"])
     desk_events_df = pd.DataFrame(desk_events, columns=["timestamp", "state"])

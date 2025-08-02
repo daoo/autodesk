@@ -27,7 +27,10 @@ def plot_weekday_hourly_count(full_week, dpi=80):
     ax = figure.add_subplot()
     ax.set_xlabel("Hour")
     ax.scatter(
-        x=filtered.hour, y=filtered.weekday.index, s=relative * 500, color="grey"
+        x=filtered.hour,
+        y=filtered.weekday.index,
+        s=relative * 500,
+        color="grey",
     )
     ax.set_yticks(range(len(working_days)), working_days)
     return figure

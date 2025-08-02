@@ -42,11 +42,16 @@ class AutoDeskServiceFactory:
             self.pin_factory.create_output(self.light_pins[0]),
         )
         light_controller = LightController(
-            self.pin_factory.create_output(self.light_pins[1])
+            self.pin_factory.create_output(self.light_pins[1]),
         )
         timer_service = TimeService()
         session_service = SessionService(model, light_controller, timer_service)
         desk_service = DeskService(operation, model, desk_controller, timer_service)
         return AutoDeskService(
-            operation, scheduler, timer, timer_service, session_service, desk_service
+            operation,
+            scheduler,
+            timer,
+            timer_service,
+            session_service,
+            desk_service,
         )

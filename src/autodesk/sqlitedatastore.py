@@ -39,14 +39,17 @@ def _migrate(
     order_by: str,
 ):
     tables = connection.execute(
-        f"SELECT name FROM sqlite_master WHERE type='table' AND name='{old_table}'"
+        f"SELECT name FROM sqlite_master WHERE type='table' AND name='{old_table}'",
     )
     name = tables.fetchone()
     if name:
         rows = connection.execute(f"SELECT * FROM {old_table} ORDER BY {order_by} ASC")
         data = rows.fetchall()
         logger.info(
-            "migrating table %s with %d row(s) to %s", old_table, len(data), new_table
+            "migrating table %s with %d row(s) to %s",
+            old_table,
+            len(data),
+            new_table,
         )
         connection.executemany(f"INSERT INTO {new_table} VALUES(?, ?)", data)
         connection.execute(f"DROP TABLE {old_table}")
@@ -61,12 +64,12 @@ class SqliteDataStore:
         self.connection.execute(
             "CREATE TABLE IF NOT EXISTS session3("
             "timestamp UNIX_TIMESTAMP NOT NULL,"
-            "state SESSION_INT NOT NULL)"
+            "state SESSION_INT NOT NULL)",
         )
         self.connection.execute(
             "CREATE TABLE IF NOT EXISTS desk3("
             "timestamp UNIX_TIMESTAMP NOT NULL,"
-            "state DESK_INT NOT NULL)"
+            "state DESK_INT NOT NULL)",
         )
 
         _migrate(self.logger, self.connection, "desk", "desk3", "date")

@@ -37,7 +37,11 @@ def test_set_session_active_desk_up_timer_scheduled_right_time(mocker):
 
 def test_set_session_inactive_timer_cancelled(mocker):
     (timer_mock, _, _, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), UP
+        mocker,
+        TIME_ALLOWED,
+        ACTIVE,
+        Timedelta(0),
+        UP,
     )
 
     service.set_session(INACTIVE)
@@ -47,7 +51,11 @@ def test_set_session_inactive_timer_cancelled(mocker):
 
 def test_set_session_timer_lambda_called_desk_service_called(mocker):
     (timer_stub, _, desk_service_mock, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), DOWN
+        mocker,
+        TIME_ALLOWED,
+        ACTIVE,
+        Timedelta(0),
+        DOWN,
     )
 
     service.set_session(ACTIVE)
@@ -58,7 +66,11 @@ def test_set_session_timer_lambda_called_desk_service_called(mocker):
 
 def test_set_session_timer_lambda_called_model_updated(mocker):
     (timer_stub, _, desk_service_mock, service) = create_service(
-        mocker, TIME_ALLOWED, ACTIVE, Timedelta(0), UP
+        mocker,
+        TIME_ALLOWED,
+        ACTIVE,
+        Timedelta(0),
+        UP,
     )
 
     service.set_session(ACTIVE)
@@ -69,7 +81,11 @@ def test_set_session_timer_lambda_called_model_updated(mocker):
 
 def test_set_session_hardware_error_timer_cancelled(mocker):
     (timer_mock, session_service_stub, _, service) = create_service(
-        mocker, TIME_ALLOWED, INACTIVE, Timedelta(0), DOWN
+        mocker,
+        TIME_ALLOWED,
+        INACTIVE,
+        Timedelta(0),
+        DOWN,
     )
     session_service_stub.set.side_effect = HardwareError(RuntimeError())
 

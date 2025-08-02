@@ -59,7 +59,7 @@ def test_get_session_spans_one_active_span(mocker):
     t2 = Timestamp(2018, 1, 2)
     t3 = Timestamp(2018, 1, 3)
     model = Model(
-        fake_data_store(mocker, session_events=[(t2, ACTIVE)], desk_events=[])
+        fake_data_store(mocker, session_events=[(t2, ACTIVE)], desk_events=[]),
     )
 
     result = model.get_session_spans(t1, t3)
@@ -93,7 +93,7 @@ def test_get_active_time_active_for_10_minutes(mocker):
     t1 = Timestamp(2018, 1, 1, 0, 0, 0)
     t2 = Timestamp(2018, 1, 1, 0, 10, 0)
     model = Model(
-        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[])
+        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[]),
     )
     assert model.get_active_time(Timestamp.min, t2) == Timedelta(minutes=10)
 
@@ -102,7 +102,7 @@ def test_get_active_time_just_after_desk_change(mocker):
     t1 = Timestamp(2018, 1, 1, 0, 0, 0)
     t2 = Timestamp(2018, 1, 1, 0, 10, 0)
     model = Model(
-        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)])
+        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)]),
     )
     assert model.get_active_time(Timestamp.min, t2) == Timedelta(0)
 
@@ -112,7 +112,7 @@ def test_get_active_time_active_20_minutes_with_changed_desk_state(mocker):
     t2 = Timestamp(2018, 1, 1, 0, 10, 0)
     t3 = Timestamp(2018, 1, 1, 0, 20, 0)
     model = Model(
-        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)])
+        fake_data_store(mocker, session_events=[(t1, ACTIVE)], desk_events=[(t2, UP)]),
     )
     assert model.get_active_time(Timestamp.min, t3) == Timedelta(minutes=10)
 
@@ -122,8 +122,10 @@ def test_compute_hourly_count_active_30_minutes(mocker):
     t2 = Timestamp(2017, 4, 12, 10, 30, 0)
     model = Model(
         fake_data_store(
-            mocker, session_events=[(t1, ACTIVE), (t2, INACTIVE)], desk_events=[]
-        )
+            mocker,
+            session_events=[(t1, ACTIVE), (t2, INACTIVE)],
+            desk_events=[],
+        ),
     )
     result = model.compute_hourly_count(t1, t2)
     specific_hour = result[(result.weekday == "Wednesday") & (result.hour == 10)]
@@ -134,7 +136,7 @@ def test_compute_hourly_count_active_0_minutes(mocker):
     t1 = Timestamp(2017, 4, 12, 10, 0, 0)
     t2 = Timestamp(2017, 4, 12, 10, 30, 0)
     model = Model(
-        fake_data_store(mocker, session_events=[(t1, INACTIVE)], desk_events=[])
+        fake_data_store(mocker, session_events=[(t1, INACTIVE)], desk_events=[]),
     )
     result = model.compute_hourly_count(t1, t2)
     assert result.counts.sum() == 0

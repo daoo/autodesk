@@ -9,7 +9,10 @@ from autodesk.states import Session
 
 class SessionService:
     def __init__(
-        self, model: Model, light_controller: LightController, time_service: TimeService
+        self,
+        model: Model,
+        light_controller: LightController,
+        time_service: TimeService,
     ):
         self.logger = logging.getLogger("sessionservice")
         self.model = model
@@ -25,12 +28,14 @@ class SessionService:
 
     def get_active_time(self):
         return self.model.get_active_time(
-            self.time_service.min, self.time_service.now()
+            self.time_service.min,
+            self.time_service.now(),
         )
 
     def compute_hourly_count(self):
         return self.model.compute_hourly_count(
-            self.time_service.min, self.time_service.now()
+            self.time_service.min,
+            self.time_service.now(),
         )
 
     def set(self, state: Session):

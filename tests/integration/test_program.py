@@ -15,7 +15,11 @@ def process():
     env["AUTODESK_DATABASE"] = ":memory:"
     env["AUTODESK_PORT"] = "7381"
     process = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8", env=env
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+        env=env,
     )
     assert process.stdout
     assert process.stderr
