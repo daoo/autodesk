@@ -47,7 +47,7 @@ dev-dependencies = [
 ]
 
 [tool.ruff.lint]
-select = ["F", "E", "W", "N", "UP", "ASYNC", "A", "C4"]
+select = ["F", "E", "W", "N", "UP", "ASYNC", "A", "C4", "PT"]
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"

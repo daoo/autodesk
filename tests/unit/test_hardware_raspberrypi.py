@@ -120,5 +120,5 @@ def test_pin_write_invalid_value(factory):
     pin_number = 0
     pin = factory.create_output(pin_number)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Pin value must be 0 or 1 but got 2"):
         pin.write(2)

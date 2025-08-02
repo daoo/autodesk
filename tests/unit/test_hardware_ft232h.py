@@ -78,18 +78,18 @@ def test_factory_create_output_followed_by_write(gpio_fake, factory):
 def test_factory_create_input_invalid_pin(gpio_fake, factory):
     pin_number = 0
     gpio_fake.all_pins = 0b0110
+    pin = factory.create_input(pin_number)
 
     with pytest.raises(HardwareError):
-        pin = factory.create_input(pin_number)
         pin.read()  # Must do a write to trigger connection
 
 
 def test_factory_create_output_invalid_pin(gpio_fake, factory):
     pin_number = 0
     gpio_fake.all_pins = 0b0110
+    pin = factory.create_output(pin_number)
 
     with pytest.raises(HardwareError):
-        pin = factory.create_output(pin_number)
         pin.write(0)  # Must do a write to trigger connection
 
 
@@ -141,7 +141,7 @@ def test_pin_write_invalid_value(factory):
     pin_number = 0
     pin = factory.create_output(pin_number)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Pin value must be 0 or 1 but got 2"):
         pin.write(2)
 
 

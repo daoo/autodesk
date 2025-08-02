@@ -31,7 +31,7 @@ def create_service(mocker, now, session_state, active_time, desk_state):
     return (model_fake, desk_controller_fake, service)
 
 
-@pytest.mark.parametrize("session,now", DESK_DENIED)
+@pytest.mark.parametrize(("session", "now"), DESK_DENIED)
 def test_set_denied_desk_controller_not_called(mocker, session, now):
     (_, desk_controller_mock, service) = create_service(
         mocker, now, session, Timedelta(0), DOWN
@@ -42,7 +42,7 @@ def test_set_denied_desk_controller_not_called(mocker, session, now):
     desk_controller_mock.move.assert_not_called()
 
 
-@pytest.mark.parametrize("session,now", DESK_DENIED)
+@pytest.mark.parametrize(("session", "now"), DESK_DENIED)
 def test_set_denied_desk_model_not_updated(mocker, session, now):
     (model_mock, _, service) = create_service(mocker, now, session, Timedelta(0), DOWN)
 

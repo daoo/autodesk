@@ -13,7 +13,7 @@ def make_spans(records):
     return pd.DataFrame(records, columns=["start", "end", "state"])
 
 
-@pytest.fixture()
+@pytest.fixture
 def inmemory_model():
     model = Model(SqliteDataStore.open(":memory:"))
     yield model

@@ -6,7 +6,7 @@ from autodesk.states import ACTIVE, DOWN, UP
 from tests.autodeskservice import DESK_DENIED, TIME_ALLOWED, create_service
 
 
-@pytest.mark.parametrize("session,now", DESK_DENIED)
+@pytest.mark.parametrize(("session", "now"), DESK_DENIED)
 def test_set_desk_down_denied_timer_not_scheduled(mocker, session, now):
     (timer_mock, _, _, service) = create_service(mocker, now, session, Timedelta(0), UP)
 
