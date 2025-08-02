@@ -101,7 +101,7 @@ async def test_index(client, expected_figure):
     )
     expected_figure_string = base64.b64encode(expected_figure).decode("utf-8")
 
-    assert 200 == response.status
+    assert response.status == 200
     assert expected_state_string in text
     assert expected_figure_string in text
 
@@ -109,10 +109,10 @@ async def test_index(client, expected_figure):
 @pytest.mark.asyncio
 async def test_set_desk_invalid(client):
     response = await client.put("/api/desk", data=b"invalid state string")
-    assert 400 == response.status
+    assert response.status == 400
 
 
 @pytest.mark.asyncio
 async def test_set_session_invalid(client):
     response = await client.put("/api/session", data=b"invalid state string")
-    assert 400 == response.status
+    assert response.status == 400

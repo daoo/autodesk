@@ -1,3 +1,5 @@
+import contextlib
+
 import pytest
 from pandas import Timestamp
 
@@ -87,9 +89,7 @@ def test_set_hardware_error_model_still_called(mocker):
     (model_mock, light_controller_stub, service) = create_service(mocker, INACTIVE, now)
     light_controller_stub.set.side_effect = HardwareError(RuntimeError())
 
-    try:
+    with contextlib.suppress(HardwareError):
         service.set(ACTIVE)
-    except HardwareError:
-        pass
 
     model_mock.set_session.assert_called_with(now, ACTIVE)

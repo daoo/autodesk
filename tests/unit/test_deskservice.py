@@ -1,3 +1,5 @@
+import contextlib
+
 import pytest
 from pandas import Timedelta, Timestamp
 
@@ -113,9 +115,7 @@ def test_set_hardware_error_model_not_updated(mocker):
     )
     desk_controller_stub.move.side_effect = HardwareError(RuntimeError())
 
-    try:
+    with contextlib.suppress(HardwareError):
         service.set(UP)
-    except HardwareError:
-        pass
 
     model_mock.set_desk.assert_not_called()

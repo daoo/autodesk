@@ -23,9 +23,8 @@ def notify(url: str, active: bool):
 
 def properties_handler(url: str, interface, changed, invalidated):
     print(datetime.now(), interface, changed, invalidated)
-    if interface == "org.freedesktop.login1.Session":
-        if "Active" in changed:
-            notify(url, changed["Active"])
+    if interface == "org.freedesktop.login1.Session" and "Active" in changed:
+        notify(url, changed["Active"])
 
 
 def program(url: str):
