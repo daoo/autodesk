@@ -2,6 +2,7 @@ import base64
 import os
 
 import pytest
+import pytest_asyncio
 from pandas import Timedelta, Timestamp
 
 import autodesk.api as api
@@ -39,8 +40,8 @@ DESK_EVENTS = [
 ]
 
 
-@pytest.fixture
-def client(mocker, event_loop, aiohttp_client):
+@pytest_asyncio.fixture
+async def client(mocker, aiohttp_client):
     time_service = mocker.patch(
         "autodesk.application.timeservice.TimeService", autospec=True
     )
@@ -70,9 +71,7 @@ def client(mocker, event_loop, aiohttp_client):
     )
     factory.create.return_value = service
 
-    return event_loop.run_until_complete(
-        aiohttp_client(api.setup_app(button_pin, factory))
-    )
+    return await aiohttp_client(api.setup_app(button_pin, factory))
 
 
 @pytest.fixture

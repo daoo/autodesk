@@ -1,6 +1,7 @@
 import asyncio
 
 import pytest
+import pytest_asyncio
 
 import autodesk.api as api
 from autodesk.hardware.error import HardwareError
@@ -19,21 +20,19 @@ def button_pin_stub(mocker):
     return mocker.patch("autodesk.hardware.noop.NoopPin")
 
 
-@pytest.fixture
-def client(event_loop, mocker, button_pin_stub, service_mock, aiohttp_client):
+@pytest_asyncio.fixture
+async def client(mocker, button_pin_stub, service_mock, aiohttp_client):
     factory = mocker.patch(
         "autodesk.application.autodeskservicefactory.AutoDeskServiceFactory",
         autospec=True,
     )
     factory.create.return_value = service_mock
-    return event_loop.run_until_complete(
-        aiohttp_client(
-            api.setup_app(
-                button_pin_stub,
-                factory,
-                button_polling_delay=0.1,
-                hardware_error_delay=0.1,
-            )
+    return await aiohttp_client(
+        api.setup_app(
+            button_pin_stub,
+            factory,
+            button_polling_delay=0.1,
+            hardware_error_delay=0.1,
         )
     )
 
