@@ -1,0 +1,11 @@
+[Unit]
+Description=Monitor session lock/unlock for desk automation
+
+[Service]
+ExecStart=/usr/bin/env uv run bin/logger.py http://127.0.0.1:7380/api/session
+KillMode=mixed
+Environment="PATH=%h/.local/share/mise/shims:/usr/local/bin:/usr/bin"
+WorkingDirectory=%h/code/autodesk
+
+[Install]
+WantedBy=default.target
