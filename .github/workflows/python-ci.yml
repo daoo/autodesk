@@ -20,11 +20,11 @@ jobs:
     - name: Install the project
       run: uv sync --all-extras --dev
     - name: Run ruff check
-      run: uv run ruff check bin src tests
+      run: ./ci-check.sh
     - name: Run tests
-      run: uv run pytest --cov=src --cov-branch --cov-report=term --cov-report=json tests
+      run: ./ci-tests.sh
     - name: Run coverage JSON report
-      run: uv run coverage json
+      run: ./ci-coverage.sh
     - name: Upload to codecov
       uses: codecov/codecov-action@v4
       with:
