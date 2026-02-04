@@ -35,7 +35,8 @@ def db_with_old_tables():
     connection.execute(
         "INSERT INTO session values(?, ?)", ("2023-01-09 20:12:00", "inactive")
     )
-    return connection
+    yield connection
+    connection.close()
 
 
 def test_constructor(logger_stub, db_with_old_tables):
