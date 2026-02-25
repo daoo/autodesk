@@ -15,8 +15,8 @@ dependencies = [
     "aiohttp>=3.10.9",
     "matplotlib>=3.10.5",
     "numpy>=2.3.2",
-    "pandas-stubs>=2.3.0",
-    "pandas>=2.3.1",
+    "pandas-stubs>=3.0.0.260204",
+    "pandas>=3.0.1",
     "pyftdi>=0.56.0",
     "pyyaml>=6.0.2",
     "types-pyyaml>=6.0.12.20250516",
@@ -43,8 +43,8 @@ dev = [
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
     "requests>=2.32.4",
-    "ruff>=0.12.7",
-    "ty>=0.0.14",
+    "ruff>=0.15.2",
+    "ty>=0.0.16",
 ]
 
 [tool.ruff.lint]
