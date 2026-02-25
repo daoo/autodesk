@@ -7,7 +7,7 @@ import requests
 
 @pytest.fixture
 def process():
-    cmd = ["autodesk"]
+    cmd = ["uv", "run", "autodesk"]
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "x"
     env["AUTODESK_ADDRESS"] = "127.0.0.1"

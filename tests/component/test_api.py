@@ -81,13 +81,13 @@ async def client(mocker, aiohttp_client):
 
 
 @pytest.fixture
-def testdir(request):
+def datadir(request):
     return os.path.splitext(request.module.__file__)[0]
 
 
 @pytest.fixture
-def expected_figure(testdir):
-    with open(os.path.join(testdir, "expected_figure.png"), "rb") as file:
+def expected_figure(datadir):
+    with open(os.path.join(datadir, "expected_figure.png"), "rb") as file:
         return file.read()
 
 
