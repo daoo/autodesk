@@ -1,8 +1,8 @@
 import os
 import subprocess
+from urllib import error, request
 
 import pytest
-import requests
 
 
 @pytest.fixture
@@ -44,4 +44,8 @@ def process():
 
 def test_get_index(process: subprocess.Popen):
     assert process is not None
-    assert requests.get("http://localhost:7381").ok
+    try:
+        with request.urlopen("http://localhost:7381") as response:
+            assert 200 <= response.status < 400
+    except error.HTTPError as exc:
+        pytest.fail(f"GET / failed with status {exc.code}")

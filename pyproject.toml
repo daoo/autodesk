@@ -42,7 +42,6 @@ dev = [
     "pytest-asyncio>=1.1.0",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
-    "requests>=2.32.4",
     "ruff>=0.15.2",
     "ty>=0.0.16",
 ]

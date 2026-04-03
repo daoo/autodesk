@@ -4,14 +4,14 @@
 # dependencies = [
 #     "pydbus",
 #     "pygobject",
-#     "requests",
 # ]
 # ///
 
 import logging
 import sys
+from urllib import error as urlerror
+from urllib import request as urlrequest
 
-import requests
 from gi.repository import GLib
 from pydbus import SystemBus
 
@@ -25,10 +25,22 @@ def notify(url: str, active: bool):
     logging.info(f"notify {url} {active}")
     state = b"active" if active else b"inactive"
     try:
-        result = requests.put(url, data=state, headers={"Content-Type": "text/plain"})
-        logging.info(f"result {result}")
-    except Exception as error:
-        logging.error(error)
+        req = urlrequest.Request(
+            url,
+            data=state,
+            headers={"Content-Type": "text/plain"},
+            method="PUT",
+        )
+        with urlrequest.urlopen(req) as response:
+            logging.info(f"result status={response.status}")
+    except urlerror.HTTPError as http_error:
+        logging.error(
+            "http error status=%s reason=%s",
+            http_error.code,
+            http_error.reason,
+        )
+    except Exception as exc:
+        logging.error(exc)
 
 
 def properties_handler(url: str, interface, changed, invalidated):
