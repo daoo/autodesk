@@ -4,12 +4,18 @@ from pyftdi.usbtools import UsbToolsError
 from usb.core import USBError
 
 from autodesk.hardware.error import HardwareError
-from autodesk.hardware.ft232h import Ft232hPinFactory
+from autodesk.hardware.ft232h import Ft232hPinFactory, GpioMpsseController
 
 
 @pytest.fixture
 def controller_fake(mocker):
-    return mocker.patch("autodesk.hardware.ft232h.GpioMpsseController").return_value
+    controller_instance = mocker.create_autospec(GpioMpsseController, instance=True)
+    controller_instance._ftdi = mocker.Mock(_usb_dev=object())
+    mocker.patch(
+        "autodesk.hardware.ft232h.GpioMpsseController",
+        return_value=controller_instance,
+    )
+    return controller_instance
 
 
 @pytest.fixture

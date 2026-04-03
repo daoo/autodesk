@@ -1,18 +1,23 @@
 import pytest
 
 from autodesk.hardware.logging import LoggingPinFactory
+from autodesk.hardware.noop import NoopPin, NoopPinFactory
 
 
 @pytest.fixture
 def mock_pin(mocker):
-    return mocker.patch("autodesk.hardware.noop.NoopPin")
+    return mocker.create_autospec(NoopPin, instance=True)
 
 
 @pytest.fixture
 def mock_factory(mocker, mock_pin):
-    factory = mocker.patch("autodesk.hardware.noop.NoopPinFactory", autospec=True)
-    factory.create_output.return_value = mock_pin
-    factory.create_input.return_value = mock_pin
+    factory = mocker.create_autospec(NoopPinFactory, instance=True)
+    def assign_pin(pin_number):
+        mock_pin.pin = pin_number
+        return mock_pin
+
+    factory.create_output.side_effect = assign_pin
+    factory.create_input.side_effect = assign_pin
     return factory
 
 

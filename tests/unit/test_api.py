@@ -4,29 +4,26 @@ import pytest
 import pytest_asyncio
 
 import autodesk.api as api
+from autodesk.application.autodeskservice import AutoDeskService
+from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.hardware.error import HardwareError
+from autodesk.hardware.noop import NoopPin
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 
 
 @pytest.fixture
 def service_mock(mocker):
-    return mocker.patch(
-        "autodesk.application.autodeskservice.AutoDeskService",
-        autospec=True,
-    )
+    return mocker.create_autospec(AutoDeskService, instance=True)
 
 
 @pytest.fixture
 def button_pin_stub(mocker):
-    return mocker.patch("autodesk.hardware.noop.NoopPin")
+    return mocker.create_autospec(NoopPin, instance=True)
 
 
 @pytest_asyncio.fixture
 async def client(mocker, button_pin_stub, service_mock, aiohttp_client):
-    factory = mocker.patch(
-        "autodesk.application.autodeskservicefactory.AutoDeskServiceFactory",
-        autospec=True,
-    )
+    factory = mocker.create_autospec(AutoDeskServiceFactory, instance=True)
     factory.create.return_value = service_mock
     return await aiohttp_client(
         api.setup_app(

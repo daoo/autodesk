@@ -1,12 +1,13 @@
 import pytest
 
+from autodesk.hardware.noop import NoopPin
 from autodesk.lightcontroller import LightController
 from autodesk.states import ACTIVE, INACTIVE
 
 
 @pytest.fixture
 def pin_mock(mocker):
-    return mocker.patch("autodesk.hardware.noop.NoopPin", autospec=True)
+    return mocker.create_autospec(NoopPin, instance=True)
 
 
 def test_set_inactive(pin_mock):

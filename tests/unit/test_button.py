@@ -1,19 +1,18 @@
 import pytest
 
+from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.button import Button
+from autodesk.hardware.noop import NoopPin
 
 
 @pytest.fixture
 def pin_stub(mocker):
-    return mocker.patch("autodesk.hardware.noop.NoopPin", autospec=True)
+    return mocker.create_autospec(NoopPin, instance=True)
 
 
 @pytest.fixture
 def autodeskservice_mock(mocker):
-    return mocker.patch(
-        "autodesk.application.autodeskservice.AutoDeskService",
-        autospec=True,
-    )
+    return mocker.create_autospec(AutoDeskService, instance=True)
 
 
 @pytest.fixture

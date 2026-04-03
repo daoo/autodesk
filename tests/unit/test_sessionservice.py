@@ -4,24 +4,21 @@ import pytest
 from pandas import Timestamp
 
 from autodesk.application.sessionservice import SessionService
+from autodesk.application.timeservice import TimeService
 from autodesk.hardware.error import HardwareError
+from autodesk.lightcontroller import LightController
+from autodesk.model import Model
 from autodesk.states import ACTIVE, INACTIVE
 
 
 def create_service(mocker, session_state, now=Timestamp.min):
-    model_fake = mocker.patch("autodesk.model.Model", autospec=True)
+    model_fake = mocker.create_autospec(Model, instance=True)
     model_fake.get_session_state.return_value = session_state
 
-    time_service_fake = mocker.patch(
-        "autodesk.application.timeservice.TimeService",
-        autospec=True,
-    )
+    time_service_fake = mocker.create_autospec(TimeService, instance=True)
     time_service_fake.now.return_value = now
 
-    light_controller_fake = mocker.patch(
-        "autodesk.lightcontroller.LightController",
-        autospec=True,
-    )
+    light_controller_fake = mocker.create_autospec(LightController, instance=True)
     service = SessionService(model_fake, light_controller_fake, time_service_fake)
     return (model_fake, light_controller_fake, service)
 

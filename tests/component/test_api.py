@@ -7,8 +7,10 @@ from pandas import Timedelta, Timestamp
 
 import autodesk.api as api
 from autodesk.application.autodeskservice import AutoDeskService
+from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
+from autodesk.application.timeservice import TimeService
 from autodesk.deskcontroller import DeskController
 from autodesk.hardware.noop import NoopPin
 from autodesk.lightcontroller import LightController
@@ -16,6 +18,7 @@ from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
+from autodesk.timer import Timer
 from tests.stubdatastore import fake_data_store
 
 SESSION_EVENTS = [
@@ -42,10 +45,7 @@ DESK_EVENTS = [
 
 @pytest_asyncio.fixture
 async def client(mocker, aiohttp_client):
-    time_service = mocker.patch(
-        "autodesk.application.timeservice.TimeService",
-        autospec=True,
-    )
+    time_service = mocker.create_autospec(TimeService, instance=True)
     time_service.min = Timestamp.min
     time_service.now.return_value = Timestamp(2019, 4, 25, 12, 0)
 
@@ -54,7 +54,7 @@ async def client(mocker, aiohttp_client):
     )
 
     button_pin = NoopPin(4)
-    timer = mocker.patch("autodesk.timer.Timer", autospec=True)
+    timer = mocker.create_autospec(Timer, instance=True)
     desk_controller = DeskController(0, NoopPin(0), NoopPin(1), NoopPin(3))
     light_controller = LightController(NoopPin(2))
     operation = Operation()
@@ -71,10 +71,7 @@ async def client(mocker, aiohttp_client):
         desk_service,
     )
 
-    factory = mocker.patch(
-        "autodesk.application.autodeskservicefactory.AutoDeskServiceFactory",
-        autospec=True,
-    )
+    factory = mocker.create_autospec(AutoDeskServiceFactory, instance=True)
     factory.create.return_value = service
 
     return await aiohttp_client(api.setup_app(button_pin, factory))

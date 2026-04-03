@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from pandas import Timedelta
 
@@ -6,7 +8,7 @@ from autodesk.timer import Timer
 
 @pytest.fixture
 def loop(mocker):
-    return mocker.patch("asyncio.AbstractEventLoop", autospec=True)
+    return mocker.create_autospec(asyncio.AbstractEventLoop, instance=True)
 
 
 @pytest.fixture

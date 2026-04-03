@@ -10,7 +10,7 @@ def sleep_fake(mocker):
 
 
 def create_pin_fake(mocker):
-    return mocker.patch("autodesk.hardware.noop.NoopPin")
+    return mocker.Mock(spec=["write"])
 
 
 def create_controller(mocker, delay):

@@ -4,7 +4,9 @@ import pytest
 from pandas import Timedelta, Timestamp
 
 from autodesk.application.deskservice import DeskService
+from autodesk.application.timeservice import TimeService
 from autodesk.hardware.error import HardwareError
+from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 
@@ -14,21 +16,15 @@ DESK_DENIED = [(ACTIVE, TIME_DENIED), (INACTIVE, TIME_ALLOWED), (INACTIVE, TIME_
 
 
 def create_service(mocker, now, session_state, active_time, desk_state):
-    model_fake = mocker.patch("autodesk.model.Model", autospec=True)
+    model_fake = mocker.create_autospec(Model, instance=True)
     model_fake.get_active_time.return_value = active_time
     model_fake.get_session_state.return_value = session_state
     model_fake.get_desk_state.return_value = desk_state
 
-    time_service_fake = mocker.patch(
-        "autodesk.application.timeservice.TimeService",
-        autospec=True,
-    )
+    time_service_fake = mocker.create_autospec(TimeService, instance=True)
     time_service_fake.now.return_value = now
 
-    desk_controller_fake = mocker.patch(
-        "autodesk.deskcontroller.DeskController",
-        autospec=True,
-    )
+    desk_controller_fake = mocker.Mock(spec=["move"])
     service = DeskService(
         Operation(),
         model_fake,
