@@ -1,8 +1,7 @@
 import sqlite3
 
-import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
+from pandas import Timestamp
 
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
@@ -47,29 +46,19 @@ def test_constructor(logger_stub, db_with_old_tables):
 def test_get_desk_events(logger_stub, db_with_old_tables):
     data_store = SqliteDataStore(logger_stub, db_with_old_tables)
 
-    expected_events = pd.DataFrame(
-        {
-            "timestamp": [
-                pd.Timestamp(2023, 1, 9, 20, 9, 0),
-                pd.Timestamp(2023, 1, 9, 20, 11, 0),
-            ],
-            "state": [UP, DOWN],
-        }
-    )
-    assert_frame_equal(data_store.get_desk_events(), expected_events)
+    expected_events = [
+        (Timestamp(2023, 1, 9, 20, 9, 0), UP),
+        (Timestamp(2023, 1, 9, 20, 11, 0), DOWN),
+    ]
+    assert data_store.get_desk_events() == expected_events
 
 
 def test_get_session_events(logger_stub, db_with_old_tables):
     data_store = SqliteDataStore(logger_stub, db_with_old_tables)
 
-    expected_events = pd.DataFrame(
-        {
-            "timestamp": [
-                pd.Timestamp(2023, 1, 9, 20, 7, 0),
-                pd.Timestamp(2023, 1, 9, 20, 8, 0),
-                pd.Timestamp(2023, 1, 9, 20, 12, 0),
-            ],
-            "state": [INACTIVE, ACTIVE, INACTIVE],
-        }
-    )
-    assert_frame_equal(data_store.get_session_events(), expected_events)
+    expected_events = [
+        (Timestamp(2023, 1, 9, 20, 7, 0), INACTIVE),
+        (Timestamp(2023, 1, 9, 20, 8, 0), ACTIVE),
+        (Timestamp(2023, 1, 9, 20, 12, 0), INACTIVE),
+    ]
+    assert data_store.get_session_events() == expected_events

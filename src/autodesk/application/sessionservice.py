@@ -1,12 +1,11 @@
 import logging
 
-import pandas as pd
 from pandas import Timedelta
 
 from autodesk.application.timeservice import TimeService
 from autodesk.hardware.error import HardwareError
 from autodesk.lightcontroller import LightController
-from autodesk.model import Model
+from autodesk.model import HourlyCount, Model
 from autodesk.states import Session
 
 
@@ -35,7 +34,7 @@ class SessionService:
             self.time_service.now(),
         )
 
-    def compute_hourly_count(self) -> pd.DataFrame:
+    def compute_hourly_count(self) -> list[HourlyCount]:
         return self.model.compute_hourly_count(
             self.time_service.min,
             self.time_service.now(),

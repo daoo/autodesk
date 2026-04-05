@@ -2,7 +2,7 @@ import datetime
 import logging
 import sqlite3
 
-import pandas as pd
+from pandas import Timestamp
 
 import autodesk.states as states
 
@@ -87,22 +87,25 @@ class SqliteDataStore:
     def close(self):
         self.connection.close()
 
-    def _get(self, query: str):
-        return pd.read_sql_query(query, self.connection)
-
     def get_desk_events(self):
-        return self._get("SELECT * FROM desk3 ORDER BY timestamp ASC")
+        rows = self.connection.execute(
+            "SELECT timestamp, state FROM desk3 ORDER BY timestamp ASC",
+        ).fetchall()
+        return [(Timestamp(at), state) for at, state in rows]
 
     def get_session_events(self):
-        return self._get("SELECT * FROM session3 ORDER BY timestamp ASC")
+        rows = self.connection.execute(
+            "SELECT timestamp, state FROM session3 ORDER BY timestamp ASC",
+        ).fetchall()
+        return [(Timestamp(at), state) for at, state in rows]
 
-    def set_desk(self, at: pd.Timestamp, state: states.Desk):
+    def set_desk(self, at: Timestamp, state: states.Desk):
         self.logger.debug("set desk %s %s", at, state.test("down", "up"))
         values = (at.to_pydatetime(), state)
         self.connection.execute("INSERT INTO desk3 values(?, ?)", values)
         self.connection.commit()
 
-    def set_session(self, at: pd.Timestamp, state: states.Session):
+    def set_session(self, at: Timestamp, state: states.Session):
         self.logger.debug("set session %s %s", at, state.test("inactive", "active"))
         values = (at.to_pydatetime(), state)
         self.connection.execute("INSERT INTO session3 values(?, ?)", values)

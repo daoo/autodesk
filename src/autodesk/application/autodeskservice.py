@@ -1,11 +1,11 @@
 import logging
 
-import pandas as pd
 from pandas import Timedelta
 
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
 from autodesk.hardware.error import HardwareError
+from autodesk.model import HourlyCount
 from autodesk.scheduler import Scheduler
 from autodesk.states import Desk, Session
 from autodesk.timer import Timer
@@ -68,7 +68,7 @@ class AutoDeskService:
     def get_active_time(self) -> Timedelta:
         return self.session_service.get_active_time()
 
-    def compute_hourly_count(self) -> pd.DataFrame:
+    def compute_hourly_count(self) -> list[HourlyCount]:
         return self.session_service.compute_hourly_count()
 
     def _update_timer(self) -> None:

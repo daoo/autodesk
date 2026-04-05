@@ -1,16 +1,10 @@
-import pandas as pd
 import pytest
 from pandas import Timedelta, Timestamp
-from pandas.testing import assert_frame_equal
 
 from autodesk.model import Model
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 from tests.stubdatastore import empty_data_store, fake_data_store
-
-
-def make_spans(records):
-    return pd.DataFrame(records, columns=["start", "end", "state"])
 
 
 @pytest.fixture
@@ -27,8 +21,8 @@ def test_get_desk_spans_empty(mocker):
 
     result = model.get_desk_spans(t1, t2)
 
-    expected = make_spans([(t1, t2, DOWN)])
-    assert_frame_equal(result, expected)
+    expected = [(t1, t2, DOWN)]
+    assert result == expected
 
 
 def test_get_session_spans_empty(mocker):
@@ -38,8 +32,8 @@ def test_get_session_spans_empty(mocker):
 
     result = model.get_session_spans(t1, t2)
 
-    expected = make_spans([(t1, t2, INACTIVE)])
-    assert_frame_equal(result, expected)
+    expected = [(t1, t2, INACTIVE)]
+    assert result == expected
 
 
 def test_get_desk_spans_one_up_span(mocker):
@@ -50,8 +44,8 @@ def test_get_desk_spans_one_up_span(mocker):
 
     result = model.get_desk_spans(t1, t3)
 
-    expected = make_spans([(t1, t2, DOWN), (t2, t3, UP)])
-    assert_frame_equal(result, expected)
+    expected = [(t1, t2, DOWN), (t2, t3, UP)]
+    assert result == expected
 
 
 def test_get_session_spans_one_active_span(mocker):
@@ -64,8 +58,8 @@ def test_get_session_spans_one_active_span(mocker):
 
     result = model.get_session_spans(t1, t3)
 
-    expected = make_spans([(t1, t2, INACTIVE), (t2, t3, ACTIVE)])
-    assert_frame_equal(result, expected)
+    expected = [(t1, t2, INACTIVE), (t2, t3, ACTIVE)]
+    assert result == expected
 
 
 def test_get_session_state_empty(mocker):
@@ -128,8 +122,12 @@ def test_compute_hourly_count_active_30_minutes(mocker):
         ),
     )
     result = model.compute_hourly_count(t1, t2)
-    specific_hour = result[(result.weekday == "Wednesday") & (result.hour == 10)]
-    assert specific_hour.counts.iloc[0] == 1
+    specific_hour = [
+        counts
+        for weekday, hour, counts in result
+        if weekday == "Wednesday" and hour == 10
+    ]
+    assert specific_hour[0] == 1
 
 
 def test_compute_hourly_count_active_0_minutes(mocker):
@@ -139,7 +137,7 @@ def test_compute_hourly_count_active_0_minutes(mocker):
         fake_data_store(mocker, session_events=[(t1, INACTIVE)], desk_events=[]),
     )
     result = model.compute_hourly_count(t1, t2)
-    assert result.counts.sum() == 0
+    assert sum(counts for _, _, counts in result) == 0
 
 
 def test_set_session_state_active(inmemory_model):
@@ -148,9 +146,9 @@ def test_set_session_state_active(inmemory_model):
 
     inmemory_model.set_session(t1, ACTIVE)
 
-    expected = make_spans([(t1, t2, ACTIVE)])
+    expected = [(t1, t2, ACTIVE)]
     assert inmemory_model.get_session_state() == ACTIVE
-    assert_frame_equal(inmemory_model.get_session_spans(t1, t2), expected)
+    assert inmemory_model.get_session_spans(t1, t2) == expected
 
 
 def test_set_session_state_inactive(inmemory_model):
@@ -159,9 +157,9 @@ def test_set_session_state_inactive(inmemory_model):
 
     inmemory_model.set_session(t1, INACTIVE)
 
-    expected = make_spans([(t1, t2, INACTIVE)])
+    expected = [(t1, t2, INACTIVE)]
     assert inmemory_model.get_session_state() == INACTIVE
-    assert_frame_equal(inmemory_model.get_session_spans(t1, t2), expected)
+    assert inmemory_model.get_session_spans(t1, t2) == expected
 
 
 def test_set_desk_state_up(inmemory_model):
@@ -170,9 +168,9 @@ def test_set_desk_state_up(inmemory_model):
 
     inmemory_model.set_desk(t1, UP)
 
-    expected = make_spans([(t1, t2, UP)])
+    expected = [(t1, t2, UP)]
     assert inmemory_model.get_desk_state() == UP
-    assert_frame_equal(inmemory_model.get_desk_spans(t1, t2), expected)
+    assert inmemory_model.get_desk_spans(t1, t2) == expected
 
 
 def test_set_desk_state_down(inmemory_model):
@@ -181,6 +179,6 @@ def test_set_desk_state_down(inmemory_model):
 
     inmemory_model.set_desk(t1, DOWN)
 
-    expected = make_spans([(t1, t2, DOWN)])
+    expected = [(t1, t2, DOWN)]
     assert inmemory_model.get_desk_state() == DOWN
-    assert_frame_equal(inmemory_model.get_desk_spans(t1, t2), expected)
+    assert inmemory_model.get_desk_spans(t1, t2) == expected
