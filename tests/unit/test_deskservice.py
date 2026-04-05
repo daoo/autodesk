@@ -1,7 +1,7 @@
 import contextlib
+from datetime import datetime, timedelta
 
 import pytest
-from pandas import Timedelta, Timestamp
 
 from autodesk.application.deskservice import DeskService
 from autodesk.application.timeservice import TimeService
@@ -10,8 +10,8 @@ from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
 
-TIME_ALLOWED = Timestamp(2018, 4, 23, 13, 0)
-TIME_DENIED = Timestamp(2018, 4, 23, 21, 0)
+TIME_ALLOWED = datetime(2018, 4, 23, 13, 0)
+TIME_DENIED = datetime(2018, 4, 23, 21, 0)
 DESK_DENIED = [(ACTIVE, TIME_DENIED), (INACTIVE, TIME_ALLOWED), (INACTIVE, TIME_DENIED)]
 
 
@@ -40,7 +40,7 @@ def test_set_denied_desk_controller_not_called(mocker, session, now):
         mocker,
         now,
         session,
-        Timedelta(0),
+        timedelta(0),
         DOWN,
     )
 
@@ -52,7 +52,7 @@ def test_set_denied_desk_controller_not_called(mocker, session, now):
 
 @pytest.mark.parametrize(("session", "now"), DESK_DENIED)
 def test_set_denied_desk_model_not_updated(mocker, session, now):
-    (model_mock, _, service) = create_service(mocker, now, session, Timedelta(0), DOWN)
+    (model_mock, _, service) = create_service(mocker, now, session, timedelta(0), DOWN)
 
     service.set(UP)
 
@@ -65,7 +65,7 @@ def test_set_allowed_model_updated(mocker, direction):
         mocker,
         TIME_ALLOWED,
         ACTIVE,
-        Timedelta(0),
+        timedelta(0),
         DOWN,
     )
 
@@ -80,7 +80,7 @@ def test_set_allowed_desk_controller_called(mocker):
         mocker,
         TIME_ALLOWED,
         ACTIVE,
-        Timedelta(0),
+        timedelta(0),
         DOWN,
     )
 
@@ -94,7 +94,7 @@ def test_set_hardware_error_is_passed_up(mocker):
         mocker,
         TIME_ALLOWED,
         ACTIVE,
-        Timedelta(0),
+        timedelta(0),
         DOWN,
     )
     desk_controller_stub.move.side_effect = HardwareError(RuntimeError())
@@ -108,7 +108,7 @@ def test_set_hardware_error_model_not_updated(mocker):
         mocker,
         TIME_ALLOWED,
         ACTIVE,
-        Timedelta(0),
+        timedelta(0),
         DOWN,
     )
     desk_controller_stub.move.side_effect = HardwareError(RuntimeError())

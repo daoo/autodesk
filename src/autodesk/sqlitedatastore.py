@@ -2,8 +2,6 @@ import datetime
 import logging
 import sqlite3
 
-from pandas import Timestamp
-
 import autodesk.states as states
 
 
@@ -84,29 +82,29 @@ class SqliteDataStore:
         connection = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         return SqliteDataStore(logger, connection)
 
-    def close(self):
+    def close(self) -> None:
         self.connection.close()
 
-    def get_desk_events(self):
+    def get_desk_events(self) -> list[tuple[datetime.datetime, states.Desk]]:
         rows = self.connection.execute(
             "SELECT timestamp, state FROM desk3 ORDER BY timestamp ASC",
         ).fetchall()
-        return [(Timestamp(at), state) for at, state in rows]
+        return [(at, state) for at, state in rows]
 
-    def get_session_events(self):
+    def get_session_events(self) -> list[tuple[datetime.datetime, states.Session]]:
         rows = self.connection.execute(
             "SELECT timestamp, state FROM session3 ORDER BY timestamp ASC",
         ).fetchall()
-        return [(Timestamp(at), state) for at, state in rows]
+        return [(at, state) for at, state in rows]
 
-    def set_desk(self, at: Timestamp, state: states.Desk):
+    def set_desk(self, at: datetime.datetime, state: states.Desk) -> None:
         self.logger.debug("set desk %s %s", at, state.test("down", "up"))
-        values = (at.to_pydatetime(), state)
+        values = (at, state)
         self.connection.execute("INSERT INTO desk3 values(?, ?)", values)
         self.connection.commit()
 
-    def set_session(self, at: Timestamp, state: states.Session):
+    def set_session(self, at: datetime.datetime, state: states.Session) -> None:
         self.logger.debug("set session %s %s", at, state.test("inactive", "active"))
-        values = (at.to_pydatetime(), state)
+        values = (at, state)
         self.connection.execute("INSERT INTO session3 values(?, ?)", values)
         self.connection.commit()

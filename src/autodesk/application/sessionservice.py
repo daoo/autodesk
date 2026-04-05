@@ -1,6 +1,5 @@
 import logging
-
-from pandas import Timedelta
+from datetime import timedelta
 
 from autodesk.application.timeservice import TimeService
 from autodesk.hardware.error import HardwareError
@@ -28,7 +27,7 @@ class SessionService:
     def get(self) -> Session:
         return self.model.get_session_state()
 
-    def get_active_time(self) -> Timedelta:
+    def get_active_time(self) -> timedelta:
         return self.model.get_active_time(
             self.time_service.min,
             self.time_service.now(),

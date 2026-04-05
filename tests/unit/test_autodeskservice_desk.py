@@ -1,5 +1,6 @@
+from datetime import timedelta
+
 import pytest
-from pandas import Timedelta
 
 from autodesk.hardware.error import HardwareError
 from autodesk.states import DOWN, UP
@@ -20,14 +21,14 @@ def test_set_desk_operation_not_allowed_does_not_schedule_timer(mocker):
 
 @pytest.mark.parametrize(
     ("target", "expected_delay"),
-    [(DOWN, Timedelta(10)), (UP, Timedelta(20))],
+    [(DOWN, timedelta(seconds=10)), (UP, timedelta(seconds=20))],
 )
 def test_set_desk_allowed_timer_scheduled_right_time(mocker, target, expected_delay):
     (timer_mock, _, _, service) = create_allowed_service(
         mocker,
-        active_time=Timedelta(10),
+        active_time=timedelta(seconds=10),
         desk_state=UP,
-        limits=(Timedelta(20), Timedelta(30)),
+        limits=(timedelta(seconds=20), timedelta(seconds=30)),
     )
 
     allowed = service.set_desk(target)

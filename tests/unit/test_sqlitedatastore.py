@@ -1,7 +1,7 @@
 import sqlite3
+from datetime import datetime
 
 import pytest
-from pandas import Timestamp
 
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
@@ -47,8 +47,8 @@ def test_get_desk_events(logger_stub, db_with_old_tables):
     data_store = SqliteDataStore(logger_stub, db_with_old_tables)
 
     expected_events = [
-        (Timestamp(2023, 1, 9, 20, 9, 0), UP),
-        (Timestamp(2023, 1, 9, 20, 11, 0), DOWN),
+        (datetime(2023, 1, 9, 20, 9, 0), UP),
+        (datetime(2023, 1, 9, 20, 11, 0), DOWN),
     ]
     assert data_store.get_desk_events() == expected_events
 
@@ -57,8 +57,8 @@ def test_get_session_events(logger_stub, db_with_old_tables):
     data_store = SqliteDataStore(logger_stub, db_with_old_tables)
 
     expected_events = [
-        (Timestamp(2023, 1, 9, 20, 7, 0), INACTIVE),
-        (Timestamp(2023, 1, 9, 20, 8, 0), ACTIVE),
-        (Timestamp(2023, 1, 9, 20, 12, 0), INACTIVE),
+        (datetime(2023, 1, 9, 20, 7, 0), INACTIVE),
+        (datetime(2023, 1, 9, 20, 8, 0), ACTIVE),
+        (datetime(2023, 1, 9, 20, 12, 0), INACTIVE),
     ]
     assert data_store.get_session_events() == expected_events

@@ -1,6 +1,5 @@
 import asyncio
-
-from pandas import Timedelta
+from datetime import timedelta
 
 from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.deskservice import DeskService
@@ -21,7 +20,7 @@ class AutoDeskServiceFactory:
         self,
         database_path: str,
         pin_factory: PinFactory,
-        limits: tuple[Timedelta, Timedelta],
+        limits: tuple[timedelta, timedelta],
         delay: float,
         motor_pins: tuple[int, int],
         light_pins: tuple[int, int],

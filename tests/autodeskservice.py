@@ -1,6 +1,6 @@
+from datetime import timedelta
 from typing import Any
 
-from pandas import Timedelta
 from pytest_mock import MockerFixture
 
 from autodesk.application.autodeskservice import AutoDeskService
@@ -13,18 +13,18 @@ from autodesk.timer import Timer
 OPERATION_ALLOWED = True
 OPERATION_DENIED = False
 DEFAULT_SESSION_STATE = ACTIVE
-DEFAULT_ACTIVE_TIME = Timedelta(0)
+DEFAULT_ACTIVE_TIME = timedelta(0)
 DEFAULT_DESK_STATE = DOWN
-DEFAULT_LIMITS = (Timedelta(0), Timedelta(0))
+DEFAULT_LIMITS = (timedelta(0), timedelta(0))
 
 
 def _create_service(
     mocker: MockerFixture,
     operation_allowed: bool,
     session_state: Session = DEFAULT_SESSION_STATE,
-    active_time: Timedelta = DEFAULT_ACTIVE_TIME,
+    active_time: timedelta = DEFAULT_ACTIVE_TIME,
     desk_state: Desk = DEFAULT_DESK_STATE,
-    limits: tuple[Timedelta, Timedelta] = DEFAULT_LIMITS,
+    limits: tuple[timedelta, timedelta] = DEFAULT_LIMITS,
 ) -> tuple[Any, Any, Any, AutoDeskService]:
     timer_fake = mocker.create_autospec(Timer, instance=True)
 
@@ -59,9 +59,9 @@ def _create_service(
 def create_allowed_service(
     mocker: MockerFixture,
     session_state: Session = DEFAULT_SESSION_STATE,
-    active_time: Timedelta = DEFAULT_ACTIVE_TIME,
+    active_time: timedelta = DEFAULT_ACTIVE_TIME,
     desk_state: Desk = DEFAULT_DESK_STATE,
-    limits: tuple[Timedelta, Timedelta] = DEFAULT_LIMITS,
+    limits: tuple[timedelta, timedelta] = DEFAULT_LIMITS,
 ) -> tuple[Any, Any, Any, AutoDeskService]:
     return _create_service(
         mocker,
@@ -76,9 +76,9 @@ def create_allowed_service(
 def create_denied_service(
     mocker: MockerFixture,
     session_state: Session = DEFAULT_SESSION_STATE,
-    active_time: Timedelta = DEFAULT_ACTIVE_TIME,
+    active_time: timedelta = DEFAULT_ACTIVE_TIME,
     desk_state: Desk = DEFAULT_DESK_STATE,
-    limits: tuple[Timedelta, Timedelta] = DEFAULT_LIMITS,
+    limits: tuple[timedelta, timedelta] = DEFAULT_LIMITS,
 ) -> tuple[Any, Any, Any, AutoDeskService]:
     return _create_service(
         mocker,

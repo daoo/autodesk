@@ -1,4 +1,4 @@
-from pandas import Timedelta
+from datetime import timedelta
 
 from autodesk.hardware.error import HardwareError
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
@@ -9,28 +9,28 @@ def test_set_session_active_desk_down_timer_scheduled_right_time(mocker):
     (timer_mock, _, _, service) = create_allowed_service(
         mocker,
         session_state=INACTIVE,
-        active_time=Timedelta(10),
+        active_time=timedelta(seconds=10),
         desk_state=DOWN,
-        limits=(Timedelta(20), Timedelta(30)),
+        limits=(timedelta(seconds=20), timedelta(seconds=30)),
     )
 
     service.set_session(ACTIVE)
 
-    timer_mock.schedule.assert_called_with(Timedelta(10), mocker.ANY)
+    timer_mock.schedule.assert_called_with(timedelta(seconds=10), mocker.ANY)
 
 
 def test_set_session_active_desk_up_timer_scheduled_right_time(mocker):
     (timer_mock, _, _, service) = create_allowed_service(
         mocker,
         session_state=INACTIVE,
-        active_time=Timedelta(10),
+        active_time=timedelta(seconds=10),
         desk_state=UP,
-        limits=(Timedelta(20), Timedelta(30)),
+        limits=(timedelta(seconds=20), timedelta(seconds=30)),
     )
 
     service.set_session(ACTIVE)
 
-    timer_mock.schedule.assert_called_with(Timedelta(20), mocker.ANY)
+    timer_mock.schedule.assert_called_with(timedelta(seconds=20), mocker.ANY)
 
 
 def test_set_session_inactive_timer_cancelled(mocker):
@@ -85,8 +85,8 @@ def test_toggle_session_from_inactive(mocker):
     (_, session_service_mock, _, service) = create_allowed_service(
         mocker,
         session_state=INACTIVE,
-        active_time=Timedelta(10),
-        limits=(Timedelta(20), Timedelta(30)),
+        active_time=timedelta(seconds=10),
+        limits=(timedelta(seconds=20), timedelta(seconds=30)),
     )
 
     service.toggle_session()
@@ -98,8 +98,8 @@ def test_toggle_session_from_active(mocker):
     (_, session_service_mock, _, service) = create_allowed_service(
         mocker,
         session_state=ACTIVE,
-        active_time=Timedelta(10),
-        limits=(Timedelta(20), Timedelta(30)),
+        active_time=timedelta(seconds=10),
+        limits=(timedelta(seconds=20), timedelta(seconds=30)),
     )
 
     service.toggle_session()

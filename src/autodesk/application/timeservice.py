@@ -1,13 +1,10 @@
-from pandas import Timestamp
+from datetime import datetime
 
 
 class TimeService:
-    def __init__(self):
-        self.__min = Timestamp.min
-
     @property
-    def min(self) -> Timestamp:
-        return self.__min
+    def min(self) -> datetime:
+        return datetime.min
 
-    def now(self) -> Timestamp:
-        return Timestamp.now()
+    def now(self) -> datetime:
+        return datetime.now()

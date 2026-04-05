@@ -1,9 +1,9 @@
 import base64
 import os
+from datetime import datetime, timedelta
 
 import pytest
 import pytest_asyncio
-from pandas import Timedelta, Timestamp
 
 import autodesk.api as api
 from autodesk.application.autodeskservice import AutoDeskService
@@ -23,31 +23,31 @@ from tests.stubdatastore import fake_data_store
 
 SESSION_EVENTS = [
     # Tuesdays
-    (Timestamp(2019, 4, 16, 14, 0), ACTIVE),
-    (Timestamp(2019, 4, 16, 18, 0), INACTIVE),
-    (Timestamp(2019, 4, 23, 14, 0), ACTIVE),
-    (Timestamp(2019, 4, 23, 18, 0), INACTIVE),
+    (datetime(2019, 4, 16, 14, 0), ACTIVE),
+    (datetime(2019, 4, 16, 18, 0), INACTIVE),
+    (datetime(2019, 4, 23, 14, 0), ACTIVE),
+    (datetime(2019, 4, 23, 18, 0), INACTIVE),
     # Wednesdays
-    (Timestamp(2019, 4, 24, 13, 0), ACTIVE),
-    (Timestamp(2019, 4, 24, 14, 0), INACTIVE),
+    (datetime(2019, 4, 24, 13, 0), ACTIVE),
+    (datetime(2019, 4, 24, 14, 0), INACTIVE),
     # Thursdays
-    (Timestamp(2019, 4, 25, 8, 0), ACTIVE),
-    (Timestamp(2019, 4, 25, 9, 0), INACTIVE),
-    (Timestamp(2019, 4, 25, 10, 0), ACTIVE),
+    (datetime(2019, 4, 25, 8, 0), ACTIVE),
+    (datetime(2019, 4, 25, 9, 0), INACTIVE),
+    (datetime(2019, 4, 25, 10, 0), ACTIVE),
 ]
 
 DESK_EVENTS = [
-    (Timestamp(2019, 4, 25, 8, 30), UP),
-    (Timestamp(2019, 4, 25, 10, 30), DOWN),
-    (Timestamp(2019, 4, 25, 11, 30), UP),
+    (datetime(2019, 4, 25, 8, 30), UP),
+    (datetime(2019, 4, 25, 10, 30), DOWN),
+    (datetime(2019, 4, 25, 11, 30), UP),
 ]
 
 
 @pytest_asyncio.fixture
 async def client(mocker, aiohttp_client):
     time_service = mocker.create_autospec(TimeService, instance=True)
-    time_service.min = Timestamp.min
-    time_service.now.return_value = Timestamp(2019, 4, 25, 12, 0)
+    time_service.min = datetime.min
+    time_service.now.return_value = datetime(2019, 4, 25, 12, 0)
 
     model = Model(
         fake_data_store(mocker, session_events=SESSION_EVENTS, desk_events=DESK_EVENTS),
@@ -58,7 +58,7 @@ async def client(mocker, aiohttp_client):
     desk_controller = DeskController(0, NoopPin(0), NoopPin(1), NoopPin(3))
     light_controller = LightController(NoopPin(2))
     operation = Operation()
-    limits = (Timedelta(minutes=30), Timedelta(minutes=30))
+    limits = (timedelta(minutes=30), timedelta(minutes=30))
     scheduler = Scheduler(limits)
     session_service = SessionService(model, light_controller, time_service)
     desk_service = DeskService(operation, model, desk_controller, time_service)
@@ -92,7 +92,7 @@ async def test_index(client, expected_figure):
     text = await response.text()
 
     expected_state_string = (
-        "Currently <b>active</b> with " + "desk <b>up</b> for <b>0 days 00:30:00</b>."
+        "Currently <b>active</b> with " + "desk <b>up</b> for <b>0:30:00</b>."
     )
     expected_figure_string = base64.b64encode(expected_figure).decode("utf-8")
 

@@ -1,19 +1,19 @@
 import logging
-from datetime import time
+from datetime import datetime, time
 
-from autodesk.states import ACTIVE
+from autodesk.states import ACTIVE, Session
 
 
 class Operation:
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger("operation")
         self.allowance_start = time(7, 0, 0)
         self.allowance_end = time(20, 0, 0)
 
-    def allowed(self, session_state, at):
+    def allowed(self, session_state: Session, at: datetime) -> bool:
         return session_state == ACTIVE and self._check_time(at)
 
-    def _check_time(self, at):
+    def _check_time(self, at: datetime) -> bool:
         monday = 0
         friday = 4
         time_at = time(at.hour, at.minute, at.second)

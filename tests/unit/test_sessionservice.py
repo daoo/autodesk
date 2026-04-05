@@ -1,7 +1,7 @@
 import contextlib
+from datetime import datetime
 
 import pytest
-from pandas import Timestamp
 
 from autodesk.application.sessionservice import SessionService
 from autodesk.application.timeservice import TimeService
@@ -11,7 +11,7 @@ from autodesk.model import Model
 from autodesk.states import ACTIVE, INACTIVE
 
 
-def create_service(mocker, session_state, now=Timestamp.min):
+def create_service(mocker, session_state, now=datetime.min):
     model_fake = mocker.create_autospec(Model, instance=True)
     model_fake.get_session_state.return_value = session_state
 
@@ -56,7 +56,7 @@ def test_set_active_light_on(mocker):
 
 
 def test_set_active_model_set_active(mocker):
-    now = Timestamp(2019, 8, 1, 13, 0)
+    now = datetime(2019, 8, 1, 13, 0)
     (model_mock, _, service) = create_service(mocker, INACTIVE, now)
 
     service.set(ACTIVE)
@@ -65,7 +65,7 @@ def test_set_active_model_set_active(mocker):
 
 
 def test_set_inactive_model_set_inactive(mocker):
-    now = Timestamp(2019, 8, 1, 13, 0)
+    now = datetime(2019, 8, 1, 13, 0)
     (model_mock, _, service) = create_service(mocker, ACTIVE, now)
 
     service.set(INACTIVE)
@@ -82,7 +82,7 @@ def test_set_hardware_error_is_passed_up(mocker):
 
 
 def test_set_hardware_error_model_still_called(mocker):
-    now = Timestamp(2019, 8, 1, 13, 0)
+    now = datetime(2019, 8, 1, 13, 0)
     (model_mock, light_controller_stub, service) = create_service(mocker, INACTIVE, now)
     light_controller_stub.set.side_effect = HardwareError(RuntimeError())
 

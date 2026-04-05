@@ -1,12 +1,11 @@
 from collections.abc import Generator, Sequence
-
-from pandas import Timedelta, Timestamp
+from datetime import datetime, timedelta
 
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import ACTIVE, DOWN, INACTIVE, Desk, Session
 
-type EventRow[S] = tuple[Timestamp, S]
-type SpanRow[S] = tuple[Timestamp, Timestamp, S]
+type EventRow[S] = tuple[datetime, S]
+type SpanRow[S] = tuple[datetime, datetime, S]
 type HourlyCount = tuple[str, int, int]
 
 WEEKDAYS: tuple[str, ...] = (
@@ -21,19 +20,19 @@ WEEKDAYS: tuple[str, ...] = (
 
 
 def enumerate_hours(
-    start: Timestamp,
-    end: Timestamp,
+    start: datetime,
+    end: datetime,
 ) -> Generator[tuple[int, int], None, None]:
     time = start
     while time < end:
         yield (time.weekday(), time.hour)
-        time = time + Timedelta(hours=1)
+        time = time + timedelta(hours=1)
 
 
 def collect[S: Desk | Session](
     default_state: S,
-    initial: Timestamp,
-    final: Timestamp,
+    initial: datetime,
+    final: datetime,
     events: Sequence[EventRow[S]],
 ) -> Generator[SpanRow[S], None, None]:
     assert initial < final
@@ -53,8 +52,8 @@ def collect[S: Desk | Session](
 
 
 def cut[S: Desk | Session](
-    start: Timestamp,
-    end: Timestamp,
+    start: datetime,
+    end: datetime,
     spans: Sequence[SpanRow[S]],
 ) -> Generator[SpanRow[S], None, None]:
     for span_start, span_end, span_state in spans:
@@ -73,16 +72,16 @@ class Model:
     def close(self) -> None:
         self.datastore.close()
 
-    def set_desk(self, timestamp: Timestamp, state: Desk) -> None:
+    def set_desk(self, timestamp: datetime, state: Desk) -> None:
         self.datastore.set_desk(timestamp, state)
 
-    def set_session(self, timestamp: Timestamp, state: Session) -> None:
+    def set_session(self, timestamp: datetime, state: Session) -> None:
         self.datastore.set_session(timestamp, state)
 
     def get_desk_spans(
         self,
-        initial: Timestamp,
-        final: Timestamp,
+        initial: datetime,
+        final: datetime,
     ) -> list[SpanRow[Desk]]:
         return list(
             collect(
@@ -95,8 +94,8 @@ class Model:
 
     def get_session_spans(
         self,
-        initial: Timestamp,
-        final: Timestamp,
+        initial: datetime,
+        final: datetime,
     ) -> list[SpanRow[Session]]:
         return list(
             collect(
@@ -115,11 +114,11 @@ class Model:
         events = self.datastore.get_desk_events()
         return events[-1][1] if events else DOWN
 
-    def get_active_time(self, initial: Timestamp, final: Timestamp) -> Timedelta:
+    def get_active_time(self, initial: datetime, final: datetime) -> timedelta:
         session_spans = self.get_session_spans(initial, final)
         if session_spans[-1][2] == INACTIVE:
             # TODO: Should return active time for current desk span
-            return Timedelta(0)
+            return timedelta(0)
 
         desk_spans = self.get_desk_spans(initial, final)
         current_spans = list(
@@ -130,7 +129,7 @@ class Model:
             ),
         )
 
-        active_time = Timedelta(0)
+        active_time = timedelta(0)
         for start, end, session_state in current_spans:
             if session_state == ACTIVE:
                 active_time = active_time + (end - start)
@@ -138,8 +137,8 @@ class Model:
 
     def compute_hourly_count(
         self,
-        initial: Timestamp,
-        final: Timestamp,
+        initial: datetime,
+        final: datetime,
     ) -> list[HourlyCount]:
         spans = self.get_session_spans(initial, final)
 

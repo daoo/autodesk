@@ -1,6 +1,5 @@
 import logging
-
-from pandas import Timedelta
+from datetime import timedelta
 
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
@@ -65,7 +64,7 @@ class AutoDeskService:
             self.timer.cancel()
             return False
 
-    def get_active_time(self) -> Timedelta:
+    def get_active_time(self) -> timedelta:
         return self.session_service.get_active_time()
 
     def compute_hourly_count(self) -> list[HourlyCount]:
@@ -75,9 +74,13 @@ class AutoDeskService:
         desk_state: Desk = self.desk_service.get()
         if self.desk_service.operation_allowed():
             active_time = self.session_service.get_active_time()
+
+            def switch_desk() -> None:
+                self.set_desk(desk_state.next())
+
             self.timer.schedule(
                 self.scheduler.compute_delay(active_time, desk_state),
-                lambda: self.set_desk(desk_state.next()),
+                switch_desk,
             )
         else:
             self.timer.cancel()
