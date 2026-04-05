@@ -3,7 +3,7 @@ import logging
 from autodesk.hardware.types import InputPin, OutputPin, PinFactory, PinValue
 
 
-class LoggingInputPin(InputPin):
+class TracingInputPin(InputPin):
     def __init__(self, inner: InputPin):
         self.logger = logging.getLogger("hardware")
         self.inner = inner
@@ -15,7 +15,7 @@ class LoggingInputPin(InputPin):
         return value
 
 
-class LoggingOutputPin(OutputPin):
+class TracingOutputPin(OutputPin):
     def __init__(self, inner: OutputPin):
         self.logger = logging.getLogger("hardware")
         self.inner = inner
@@ -26,7 +26,7 @@ class LoggingOutputPin(OutputPin):
         self.inner.write(value)
 
 
-class LoggingPinFactory(PinFactory):
+class TracingPinFactory(PinFactory):
     def __init__(self, inner: PinFactory):
         self.logger = logging.getLogger("hardware")
         self.inner = inner
@@ -35,10 +35,10 @@ class LoggingPinFactory(PinFactory):
         self.logger.info("close")
         self.inner.close()
 
-    def create_input(self, pin: int) -> LoggingInputPin:
+    def create_input(self, pin: int) -> TracingInputPin:
         self.logger.info("create %d", pin)
-        return LoggingInputPin(self.inner.create_input(pin))
+        return TracingInputPin(self.inner.create_input(pin))
 
-    def create_output(self, pin: int) -> LoggingOutputPin:
+    def create_output(self, pin: int) -> TracingOutputPin:
         self.logger.info("create %d", pin)
-        return LoggingOutputPin(self.inner.create_output(pin))
+        return TracingOutputPin(self.inner.create_output(pin))

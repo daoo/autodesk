@@ -1,7 +1,7 @@
 import pytest
 
-from autodesk.hardware.logging import LoggingPinFactory
 from autodesk.hardware.noop import NoopPin, NoopPinFactory
+from autodesk.hardware.tracing import TracingPinFactory
 
 
 @pytest.fixture
@@ -12,6 +12,7 @@ def mock_pin(mocker):
 @pytest.fixture
 def mock_factory(mocker, mock_pin):
     factory = mocker.create_autospec(NoopPinFactory, instance=True)
+
     def assign_pin(pin_number):
         mock_pin.pin = pin_number
         return mock_pin
@@ -23,13 +24,13 @@ def mock_factory(mocker, mock_pin):
 
 @pytest.fixture
 def factory(mock_factory):
-    pin_factory = LoggingPinFactory(mock_factory)
+    pin_factory = TracingPinFactory(mock_factory)
     yield pin_factory
     pin_factory.close()
 
 
 def test_factory_close(mock_factory):
-    pin_factory = LoggingPinFactory(mock_factory)
+    pin_factory = TracingPinFactory(mock_factory)
 
     pin_factory.close()
 

@@ -1,10 +1,8 @@
+import logging
 from collections.abc import Callable
 from typing import cast
 
-from autodesk.hardware.logging import LoggingPinFactory
-
-import logging
-
+from autodesk.hardware.tracing import TracingPinFactory
 from autodesk.hardware.types import HardwareKind, PinFactory
 
 
@@ -22,7 +20,7 @@ def create_pin_factory(kind: str) -> PinFactory:
     kind_key = cast(HardwareKind, kind)
     message, builder = builders[kind_key]
     logger.info(message)
-    return LoggingPinFactory(builder())
+    return TracingPinFactory(builder())
 
 
 def create_raspberry_pi() -> PinFactory:
