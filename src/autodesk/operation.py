@@ -16,7 +16,7 @@ class Operation:
     def _check_time(self, at: datetime) -> bool:
         monday = 0
         friday = 4
-        time_at = time(at.hour, at.minute, at.second)
+        time_at = at.time()
         weekday = at.weekday()
         return (
             time_at >= self.allowance_start
