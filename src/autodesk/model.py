@@ -7,6 +7,7 @@ from autodesk.states import ACTIVE, DOWN, INACTIVE, Desk, Session
 type EventRow[S] = tuple[datetime, S]
 type SpanRow[S] = tuple[datetime, datetime, S]
 type HourlyCount = tuple[str, int, int]
+ONE_HOUR = timedelta(hours=1)
 
 WEEKDAYS: tuple[str, ...] = (
     "Monday",
@@ -26,20 +27,24 @@ def enumerate_hours(
     time = start
     while time < end:
         yield (time.weekday(), time.hour)
-        time = time + timedelta(hours=1)
+        time = time + ONE_HOUR
 
 
-def collect[S: Desk | Session](
+def build_spans[S: Desk | Session](
     default_state: S,
     initial: datetime,
     final: datetime,
     events: Sequence[EventRow[S]],
 ) -> Generator[SpanRow[S], None, None]:
-    assert initial < final
+    if initial >= final:
+        raise ValueError("expected initial < final")
     start = initial
     state = default_state
     for event_timestamp, event_state in events:
-        assert start <= event_timestamp
+        if event_timestamp < start:
+            raise ValueError("events must be monotonic and >= initial")
+        if event_timestamp > final:
+            raise ValueError("events must be <= final")
         if state == event_state:
             # aggregate consecutive events with same state
             continue
@@ -48,21 +53,8 @@ def collect[S: Desk | Session](
             yield (start, event_timestamp, state)
         start = event_timestamp
         state = event_state
-    yield (start, final, state)
-
-
-def cut[S: Desk | Session](
-    start: datetime,
-    end: datetime,
-    spans: Sequence[SpanRow[S]],
-) -> Generator[SpanRow[S], None, None]:
-    for span_start, span_end, span_state in spans:
-        if span_end >= start and span_start <= end:
-            yield (
-                start if span_start < start else span_start,
-                end if span_end > end else span_end,
-                span_state,
-            )
+    if start != final:
+        yield (start, final, state)
 
 
 class Model:
@@ -78,61 +70,54 @@ class Model:
     def set_session(self, timestamp: datetime, state: Session) -> None:
         self.datastore.set_session(timestamp, state)
 
-    def get_desk_spans(
-        self,
-        initial: datetime,
-        final: datetime,
-    ) -> list[SpanRow[Desk]]:
-        return list(
-            collect(
-                default_state=DOWN,
-                initial=initial,
-                final=final,
-                events=self.datastore.get_desk_events(),
-            ),
-        )
-
-    def get_session_spans(
-        self,
-        initial: datetime,
-        final: datetime,
-    ) -> list[SpanRow[Session]]:
-        return list(
-            collect(
-                default_state=INACTIVE,
-                initial=initial,
-                final=final,
-                events=self.datastore.get_session_events(),
-            ),
-        )
-
     def get_session_state(self) -> Session:
-        events = self.datastore.get_session_events()
-        return events[-1][1] if events else INACTIVE
+        event = self.datastore.get_last_session_event()
+        return event[1] if event else INACTIVE
 
     def get_desk_state(self) -> Desk:
-        events = self.datastore.get_desk_events()
-        return events[-1][1] if events else DOWN
+        event = self.datastore.get_last_desk_event()
+        return event[1] if event else DOWN
+
+    def _session_state_at(self, at: datetime) -> Session:
+        event = self.datastore.get_last_session_event_before(at)
+        return event[1] if event else INACTIVE
+
+    def _desk_state_at(self, at: datetime) -> Desk:
+        event = self.datastore.get_last_desk_event_before(at)
+        return event[1] if event else DOWN
 
     def get_active_time(self, initial: datetime, final: datetime) -> timedelta:
-        session_spans = self.get_session_spans(initial, final)
-        if session_spans[-1][2] == INACTIVE:
-            # TODO: Should return active time for current desk span
+        # Active time is measured only within the current desk span at `final`.
+        if self._session_state_at(final) == INACTIVE:
             return timedelta(0)
 
-        desk_spans = self.get_desk_spans(initial, final)
-        current_spans = list(
-            cut(
-                desk_spans[-1][0],
-                desk_spans[-1][1],
-                session_spans,
-            ),
-        )
+        current_desk_span_start = initial
+        desk_state = self._desk_state_at(initial)
+        for event_timestamp, event_state in self.datastore.get_desk_events_between(
+            initial,
+            final,
+        ):
+            if desk_state == event_state:
+                continue
+            current_desk_span_start = event_timestamp
+            desk_state = event_state
 
         active_time = timedelta(0)
-        for start, end, session_state in current_spans:
+        for start, end, session_state in build_spans(
+            default_state=self._session_state_at(initial),
+            initial=initial,
+            final=final,
+            events=self.datastore.get_session_events_between(initial, final),
+        ):
             if session_state == ACTIVE:
-                active_time = active_time + (end - start)
+                overlap_start = (
+                    start
+                    if start > current_desk_span_start
+                    else current_desk_span_start
+                )
+                overlap_end = end if end < final else final
+                if overlap_start < overlap_end:
+                    active_time = active_time + (overlap_end - overlap_start)
         return active_time
 
     def compute_hourly_count(
@@ -140,10 +125,13 @@ class Model:
         initial: datetime,
         final: datetime,
     ) -> list[HourlyCount]:
-        spans = self.get_session_spans(initial, final)
-
         counts = [0] * (7 * 24)
-        for span_start, span_end, session_state in spans:
+        for span_start, span_end, session_state in build_spans(
+            default_state=self._session_state_at(initial),
+            initial=initial,
+            final=final,
+            events=self.datastore.get_session_events_between(initial, final),
+        ):
             if session_state != ACTIVE:
                 continue
             for day, hour in enumerate_hours(span_start, span_end):

@@ -85,15 +85,67 @@ class SqliteDataStore:
     def close(self) -> None:
         self.connection.close()
 
-    def get_desk_events(self) -> list[tuple[datetime.datetime, states.Desk]]:
+    def get_last_desk_event(self) -> tuple[datetime.datetime, states.Desk] | None:
+        row = self.connection.execute(
+            "SELECT timestamp, state FROM desk3 ORDER BY timestamp DESC LIMIT 1",
+        ).fetchone()
+        return (row[0], row[1]) if row else None
+
+    def get_last_session_event(
+        self,
+    ) -> tuple[datetime.datetime, states.Session] | None:
+        row = self.connection.execute(
+            "SELECT timestamp, state FROM session3 ORDER BY timestamp DESC LIMIT 1",
+        ).fetchone()
+        return (row[0], row[1]) if row else None
+
+    def get_last_desk_event_before(
+        self,
+        at: datetime.datetime,
+    ) -> tuple[datetime.datetime, states.Desk] | None:
+        row = self.connection.execute(
+            "SELECT timestamp, state FROM desk3 "
+            "WHERE timestamp <= ? "
+            "ORDER BY timestamp DESC LIMIT 1",
+            (at,),
+        ).fetchone()
+        return (row[0], row[1]) if row else None
+
+    def get_last_session_event_before(
+        self,
+        at: datetime.datetime,
+    ) -> tuple[datetime.datetime, states.Session] | None:
+        row = self.connection.execute(
+            "SELECT timestamp, state FROM session3 "
+            "WHERE timestamp <= ? "
+            "ORDER BY timestamp DESC LIMIT 1",
+            (at,),
+        ).fetchone()
+        return (row[0], row[1]) if row else None
+
+    def get_desk_events_between(
+        self,
+        initial: datetime.datetime,
+        final: datetime.datetime,
+    ) -> list[tuple[datetime.datetime, states.Desk]]:
         rows = self.connection.execute(
-            "SELECT timestamp, state FROM desk3 ORDER BY timestamp ASC",
+            "SELECT timestamp, state FROM desk3 "
+            "WHERE timestamp >= ? AND timestamp <= ? "
+            "ORDER BY timestamp ASC",
+            (initial, final),
         ).fetchall()
         return [(at, state) for at, state in rows]
 
-    def get_session_events(self) -> list[tuple[datetime.datetime, states.Session]]:
+    def get_session_events_between(
+        self,
+        initial: datetime.datetime,
+        final: datetime.datetime,
+    ) -> list[tuple[datetime.datetime, states.Session]]:
         rows = self.connection.execute(
-            "SELECT timestamp, state FROM session3 ORDER BY timestamp ASC",
+            "SELECT timestamp, state FROM session3 "
+            "WHERE timestamp >= ? AND timestamp <= ? "
+            "ORDER BY timestamp ASC",
+            (initial, final),
         ).fetchall()
         return [(at, state) for at, state in rows]
 
