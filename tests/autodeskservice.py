@@ -42,6 +42,7 @@ def create_service(
 
     def set_desk_get_return(state):
         desk_service_fake.get.return_value = state
+        return True
 
     desk_service_fake.set.side_effect = set_desk_get_return
 

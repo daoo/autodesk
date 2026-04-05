@@ -44,8 +44,9 @@ def test_set_denied_desk_controller_not_called(mocker, session, now):
         DOWN,
     )
 
-    service.set(UP)
+    allowed = service.set(UP)
 
+    assert allowed is False
     desk_controller_mock.move.assert_not_called()
 
 
@@ -68,8 +69,9 @@ def test_set_allowed_model_updated(mocker, direction):
         DOWN,
     )
 
-    service.set(direction)
+    allowed = service.set(direction)
 
+    assert allowed is True
     model_mock.set_desk.assert_called_with(TIME_ALLOWED, direction)
 
 

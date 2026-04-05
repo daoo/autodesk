@@ -28,7 +28,7 @@ class AutoDeskService:
         self.session_service = session_service
         self.desk_service = desk_service
 
-    def init(self):
+    def init(self) -> None:
         try:
             self.session_service.init()
             self._update_timer()
@@ -40,7 +40,7 @@ class AutoDeskService:
     def get_session_state(self) -> Session:
         return self.session_service.get()
 
-    def set_session(self, state: Session):
+    def set_session(self, state: Session) -> None:
         try:
             self.session_service.set(state)
             self._update_timer()
@@ -49,21 +49,24 @@ class AutoDeskService:
             self.logger.debug(error)
             self.timer.cancel()
 
-    def toggle_session(self):
+    def toggle_session(self) -> None:
         session_state = self.session_service.get()
         self.set_session(session_state.next())
 
     def get_desk_state(self) -> Desk:
         return self.desk_service.get()
 
-    def set_desk(self, state: Desk):
+    def set_desk(self, state: Desk) -> bool:
         try:
-            self.desk_service.set(state)
-            self._update_timer()
+            allowed = self.desk_service.set(state)
+            if allowed:
+                self._update_timer()
+            return allowed
         except HardwareError as error:
             self.logger.warning("hardware failure, timer cancelled")
             self.logger.debug(error)
             self.timer.cancel()
+            return False
 
     def get_active_time(self):
         return self.session_service.get_active_time()
@@ -71,7 +74,7 @@ class AutoDeskService:
     def compute_hourly_count(self):
         return self.session_service.compute_hourly_count()
 
-    def _update_timer(self):
+    def _update_timer(self) -> None:
         session_state: Session = self.session_service.get()
         desk_state: Desk = self.desk_service.get()
         now = self.time_service.now()
