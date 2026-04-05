@@ -1,7 +1,9 @@
+from collections.abc import Callable
 from pyftdi.ftdi import FtdiError
 from pyftdi.gpio import GpioMpsseController
 from pyftdi.usbtools import UsbTools, UsbToolsError
 from usb.core import USBError
+from typing import Any, Protocol, TypeVar, cast
 
 from autodesk.hardware.error import HardwareError
 from autodesk.hardware.types import (
@@ -13,6 +15,20 @@ from autodesk.hardware.types import (
 )
 
 
+class _GpioPort(Protocol):
+    all_pins: int
+    direction: int
+
+    def read(self) -> tuple[int, ...]: ...
+
+    def write(self, value: int) -> None: ...
+
+    def set_direction(self, pins: int, direction: int) -> None: ...
+
+
+T = TypeVar("T")
+
+
 def set_bit(mask: int, bit: int, value: PinValue) -> int:
     if value == 0:
         return mask & ~(1 << bit)
@@ -22,13 +38,14 @@ def set_bit(mask: int, bit: int, value: PinValue) -> int:
 
 class DeviceWrapper:
     def __init__(self):
-        self.controller = None
-        self.gpio = None
+        self.controller: GpioMpsseController | None = None
+        self.gpio: _GpioPort | None = None
         self.output_pins = 0
         self.input_pins = 0
 
-    def _setup(self):
-        assert self.controller is not None
+    def _setup(self) -> None:
+        if self.controller is None:
+            raise RuntimeError("FT232H controller is not initialized")
         try:
             self.controller.configure(
                 "ftdi://ftdi:ft232h/1",
@@ -36,17 +53,17 @@ class DeviceWrapper:
                 direction=0xFFFF,
                 initial=0x0000,
             )
-            self.gpio = self.controller.get_gpio()
-            valid_pins = self.gpio.all_pins  # type: ignore
+            self.gpio = cast(_GpioPort, self.controller.get_gpio())
+            valid_pins = self.gpio.all_pins
             used_pins = self.output_pins | self.input_pins
-            invalid_pins = ((valid_pins | used_pins) & ~valid_pins) & used_pins
+            invalid_pins = used_pins & ~valid_pins
             if invalid_pins != 0:
                 formatted = [i for i in range(0, 16) if invalid_pins & 1 << i != 0]
                 raise HardwareError(f"Cannot use pin(s) {formatted} as GPIO.")
             # A low bit (equal to 0) indicates an input pin.
             # A high bit (equal to 1) indicates an output pin.
             new_direction = self.output_pins & ~self.input_pins
-            self.gpio.set_direction(used_pins, new_direction)  # type: ignore
+            self.gpio.set_direction(used_pins, new_direction)
         except UsbToolsError as error:
             self.gpio = None
             raise HardwareError(error) from None
@@ -54,13 +71,21 @@ class DeviceWrapper:
             self.gpio = None
             raise HardwareError(error) from None
 
-    def _connect(self):
-        if self.gpio:
+    def _release_controller_device(self) -> None:
+        if self.controller is None:
+            return
+        ftdi = getattr(self.controller, "_ftdi", None)
+        usb_dev = getattr(ftdi, "_usb_dev", None)
+        if usb_dev is not None:
+            UsbTools.release_device(cast(Any, usb_dev))
+
+    def _connect(self) -> None:
+        if self.gpio is not None:
             return
         if self.controller is not None:
             # Finicky way to get pyftdi to clean up and reconnect properly
             # after a hardware disconnect. Not necessary on first connect.
-            UsbTools.release_device(self.controller._ftdi._usb_dev)  # type: ignore
+            self._release_controller_device()
             self.controller.close()
             UsbTools.flush_cache()
         else:
@@ -68,9 +93,8 @@ class DeviceWrapper:
         self._setup()
 
     def disconnect(self) -> None:
-        if self.gpio:
-            self.gpio = None
-        if self.controller:
+        self.gpio = None
+        if self.controller is not None:
             self.controller.close()
 
     def add_output(self, pin: int) -> None:
@@ -79,16 +103,23 @@ class DeviceWrapper:
     def add_input(self, pin: int) -> None:
         self.input_pins = self.input_pins | 1 << pin
 
+    def _require_gpio(self) -> _GpioPort:
+        if self.gpio is None:
+            raise RuntimeError("FT232H GPIO is not connected")
+        return self.gpio
+
     def _read_no_error_handling(self, pin: int) -> PinValue:
-        current = self.gpio.read()[0]  # type: ignore
-        return (current >> pin) & 1
+        gpio = self._require_gpio()
+        current = gpio.read()[0]
+        return cast(PinValue, (current >> pin) & 1)
 
     def _write_no_error_handling(self, pin: int, value: PinValue) -> None:
-        current = self.gpio.read()[0]  # type: ignore
+        gpio = self._require_gpio()
+        current = gpio.read()[0]
         new = set_bit(current, pin, value)
-        self.gpio.write(new & self.gpio.direction)  # type: ignore
+        gpio.write(new & gpio.direction)
 
-    def _reconnect_and_try_again(self, action):
+    def _reconnect_and_try_again(self, action: Callable[[], T]) -> T:
         self._connect()
         try:
             return action()
