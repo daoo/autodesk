@@ -6,7 +6,8 @@ import autodesk.states as states
 
 
 def adapt_datetime_epoch(val: datetime.datetime):
-    return int(val.timestamp())
+    utc = val.replace(tzinfo=datetime.UTC)
+    return int(utc.timestamp())
 
 
 def convert_datetime(val):
@@ -14,7 +15,8 @@ def convert_datetime(val):
 
 
 def convert_timestamp(val):
-    return datetime.datetime.fromtimestamp(int(val))
+    utc = datetime.datetime.fromtimestamp(int(val), tz=datetime.UTC)
+    return utc.replace(tzinfo=None)
 
 
 sqlite3.register_adapter(datetime.datetime, adapt_datetime_epoch)
