@@ -4,9 +4,10 @@ from pyftdi.usbtools import UsbTools, UsbToolsError
 from usb.core import USBError
 
 from autodesk.hardware.error import HardwareError
+from autodesk.hardware.types import InputPin, OutputPin, PinFactory, PinValue
 
 
-def set_bit(mask, bit, value):
+def set_bit(mask: int, bit: int, value: PinValue) -> int:
     if value == 0:
         return mask & ~(1 << bit)
     else:
@@ -60,23 +61,23 @@ class DeviceWrapper:
             self.controller = GpioMpsseController()
         self._setup()
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         if self.gpio:
             self.gpio = None
         if self.controller:
             self.controller.close()
 
-    def add_output(self, pin):
+    def add_output(self, pin: int) -> None:
         self.output_pins = self.output_pins | 1 << pin
 
-    def add_input(self, pin):
+    def add_input(self, pin: int) -> None:
         self.input_pins = self.input_pins | 1 << pin
 
-    def _read_no_error_handling(self, pin):
+    def _read_no_error_handling(self, pin: int) -> PinValue:
         current = self.gpio.read()[0]  # type: ignore
         return (current >> pin) & 1
 
-    def _write_no_error_handling(self, pin, value):
+    def _write_no_error_handling(self, pin: int, value: PinValue) -> None:
         current = self.gpio.read()[0]  # type: ignore
         new = set_bit(current, pin, value)
         self.gpio.write(new & self.gpio.direction)  # type: ignore
@@ -93,44 +94,44 @@ class DeviceWrapper:
             except FtdiError as err:
                 raise HardwareError(error1) from err
 
-    def read(self, pin):
+    def read(self, pin: int) -> PinValue:
         return self._reconnect_and_try_again(lambda: self._read_no_error_handling(pin))
 
-    def write(self, pin, value):
+    def write(self, pin: int, value: PinValue) -> None:
         self._reconnect_and_try_again(lambda: self._write_no_error_handling(pin, value))
 
 
-class Ft232hOutputPin:
-    def __init__(self, wrapper, pin):
+class Ft232hOutputPin(OutputPin):
+    def __init__(self, wrapper: DeviceWrapper, pin: int):
         self.wrapper = wrapper
         self.pin = pin
 
-    def write(self, value):
+    def write(self, value: PinValue) -> None:
         if value != 0 and value != 1:
             raise ValueError(f"Pin value must be 0 or 1 but got {value}")
         self.wrapper.write(self.pin, value)
 
 
-class Ft232hInputPin:
-    def __init__(self, wrapper, pin):
+class Ft232hInputPin(InputPin):
+    def __init__(self, wrapper: DeviceWrapper, pin: int):
         self.wrapper = wrapper
         self.pin = pin
 
-    def read(self):
+    def read(self) -> PinValue:
         return self.wrapper.read(self.pin)
 
 
-class Ft232hPinFactory:
+class Ft232hPinFactory(PinFactory):
     def __init__(self):
         self.wrapper = DeviceWrapper()
 
-    def close(self):
+    def close(self) -> None:
         self.wrapper.disconnect()
 
-    def create_input(self, pin):
+    def create_input(self, pin: int) -> Ft232hInputPin:
         self.wrapper.add_input(pin)
         return Ft232hInputPin(self.wrapper, pin)
 
-    def create_output(self, pin):
+    def create_output(self, pin: int) -> Ft232hOutputPin:
         self.wrapper.add_output(pin)
         return Ft232hOutputPin(self.wrapper, pin)

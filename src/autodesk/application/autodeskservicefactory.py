@@ -9,6 +9,7 @@ from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
+from autodesk.hardware.types import PinFactory
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.timer import Timer
 
@@ -17,7 +18,7 @@ class AutoDeskServiceFactory:
     def __init__(
         self,
         database_path: str,
-        pin_factory,
+        pin_factory: PinFactory,
         limits: tuple[Timedelta, Timedelta],
         delay: float,
         motor_pins: tuple[int, int],
@@ -30,7 +31,7 @@ class AutoDeskServiceFactory:
         self.motor_pins = motor_pins
         self.light_pins = light_pins
 
-    def create(self, loop):
+    def create(self, loop) -> AutoDeskService:
         operation = Operation()
         timer = Timer(loop)
         model = Model(SqliteDataStore.open(self.database_path))
