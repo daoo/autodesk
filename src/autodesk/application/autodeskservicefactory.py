@@ -5,11 +5,11 @@ from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
 from autodesk.application.timeservice import TimeService
 from autodesk.deskcontroller import DeskController
+from autodesk.hardware.types import PinFactory
 from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
-from autodesk.hardware.types import PinFactory
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.timer import Timer
 

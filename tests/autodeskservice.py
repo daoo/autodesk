@@ -12,6 +12,7 @@ from autodesk.timer import Timer
 TIME_ALLOWED = Timestamp(2018, 4, 23, 13, 0)
 TIME_DENIED = Timestamp(2018, 4, 23, 21, 0)
 DESK_DENIED = [(ACTIVE, TIME_DENIED), (INACTIVE, TIME_ALLOWED), (INACTIVE, TIME_DENIED)]
+DEFAULT_LIMITS = (Timedelta(0), Timedelta(0))
 
 
 def create_service(
@@ -20,7 +21,7 @@ def create_service(
     session_state,
     active_time,
     desk_state,
-    limits=(Timedelta(0), Timedelta(0)),
+    limits=DEFAULT_LIMITS,
 ):
     timer_fake = mocker.create_autospec(Timer, instance=True)
 

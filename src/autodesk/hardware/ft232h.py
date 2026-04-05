@@ -1,9 +1,10 @@
 from collections.abc import Callable
+from typing import Any, Protocol, TypeVar, cast
+
 from pyftdi.ftdi import FtdiError
 from pyftdi.gpio import GpioMpsseController
 from pyftdi.usbtools import UsbTools, UsbToolsError
 from usb.core import USBError
-from typing import Any, Protocol, TypeVar, cast
 
 from autodesk.hardware.error import HardwareError
 from autodesk.hardware.types import (
@@ -32,8 +33,7 @@ T = TypeVar("T")
 def set_bit(mask: int, bit: int, value: PinValue) -> int:
     if value == 0:
         return mask & ~(1 << bit)
-    else:
-        return mask | (1 << bit)
+    return mask | (1 << bit)
 
 
 class DeviceWrapper:

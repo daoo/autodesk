@@ -1,5 +1,4 @@
-from autodesk.hardware.types import OutputPin
-from autodesk.hardware.types import PinValue
+from autodesk.hardware.types import OutputPin, PinValue
 from autodesk.states import Desk, Session
 
 

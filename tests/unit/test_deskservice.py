@@ -88,7 +88,7 @@ def test_set_allowed_desk_controller_called(mocker):
 
 
 def test_set_hardware_error_is_passed_up(mocker):
-    (model_mock, desk_controller_stub, service) = create_service(
+    (_, desk_controller_stub, service) = create_service(
         mocker,
         TIME_ALLOWED,
         ACTIVE,

@@ -16,8 +16,7 @@ class RaspberryPiInputPin(InputPin):
 
     def read(self) -> PinValue:
         gpio_value = GPIO.input(self.pin)
-        value = 1 if gpio_value == GPIO.HIGH else 0
-        return value
+        return 1 if gpio_value == GPIO.HIGH else 0
 
 
 class RaspberryPiOutputPin(OutputPin):

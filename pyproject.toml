@@ -47,7 +47,22 @@ dev = [
 ]
 
 [tool.ruff.lint]
-select = ["F", "E", "W", "N", "UP", "ASYNC", "A", "C4", "PT", "SIM"]
+select = [
+    "F",
+    "E",
+    "W",
+    "N",
+    "UP",
+    "ASYNC",
+    "A",
+    "C4",
+    "PT",
+    "SIM",
+    "I",
+    "B",
+    "RUF",
+    "RET",
+]
 ignore = ["COM812"]
 
 [tool.pytest.ini_options]
