@@ -54,12 +54,13 @@ async def route_index(request: web.Request):
     session_state = service.get_session_state().test("inactive", "active")
     desk_state = service.get_desk_state().test("down", "up")
     active_time = service.get_active_time()
-    counts_figure = plots.plot_weekday_hourly_count(service.compute_hourly_count())
     return {
         "session": session_state,
         "desk": desk_state,
         "active_time": active_time,
-        "statistics": plots.figure_to_base64(counts_figure),
+        "statistics": plots.plot_weekday_hourly_count_base64(
+            service.compute_hourly_count(),
+        ),
     }
 
 
