@@ -1,5 +1,8 @@
 import logging
 
+import pandas as pd
+from pandas import Timedelta
+
 from autodesk.application.timeservice import TimeService
 from autodesk.hardware.error import HardwareError
 from autodesk.lightcontroller import LightController
@@ -19,26 +22,26 @@ class SessionService:
         self.light_controller = light_controller
         self.time_service = time_service
 
-    def init(self):
+    def init(self) -> None:
         state = self.model.get_session_state()
         self.light_controller.set(state)
 
-    def get(self):
+    def get(self) -> Session:
         return self.model.get_session_state()
 
-    def get_active_time(self):
+    def get_active_time(self) -> Timedelta:
         return self.model.get_active_time(
             self.time_service.min,
             self.time_service.now(),
         )
 
-    def compute_hourly_count(self):
+    def compute_hourly_count(self) -> pd.DataFrame:
         return self.model.compute_hourly_count(
             self.time_service.min,
             self.time_service.now(),
         )
 
-    def set(self, state: Session):
+    def set(self, state: Session) -> None:
         now = self.time_service.now()
         self.model.set_session(now, state)
         try:
