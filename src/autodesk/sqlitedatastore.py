@@ -1,64 +1,34 @@
 import datetime
 import logging
 import sqlite3
+from typing import Any, cast
 
 import autodesk.states as states
 
+type DeskEvent = tuple[datetime.datetime, states.Desk]
+type SessionEvent = tuple[datetime.datetime, states.Session]
 
-def adapt_datetime_epoch(val: datetime.datetime):
+def adapt_datetime_epoch(val: datetime.datetime) -> int:
     utc = val.replace(tzinfo=datetime.UTC)
     return int(utc.timestamp())
 
 
-def convert_datetime(val):
-    return datetime.datetime.fromisoformat(val.decode())
-
-
-def convert_timestamp(val):
+def convert_timestamp(val: bytes) -> datetime.datetime:
     utc = datetime.datetime.fromtimestamp(int(val), tz=datetime.UTC)
     return utc.replace(tzinfo=None)
 
 
 sqlite3.register_adapter(datetime.datetime, adapt_datetime_epoch)
-sqlite3.register_converter("timestamp", convert_datetime)
 sqlite3.register_converter("unix_timestamp", convert_timestamp)
 
 sqlite3.register_adapter(states.Desk, lambda desk: desk.value)
 sqlite3.register_adapter(states.Session, lambda session: session.value)
-sqlite3.register_converter("desk", states.deserialize_desk)
-sqlite3.register_converter("session", states.deserialize_session)
 sqlite3.register_converter("desk_int", states.deserialize_desk_int)
 sqlite3.register_converter("session_int", states.deserialize_session_int)
 
 
-def _migrate(
-    logger: logging.Logger,
-    connection: sqlite3.Connection,
-    old_table: str,
-    new_table: str,
-    order_by: str,
-):
-    tables = connection.execute(
-        f"SELECT name FROM sqlite_master WHERE type='table' AND name='{old_table}'",
-    )
-    name = tables.fetchone()
-    if name:
-        rows = connection.execute(f"SELECT * FROM {old_table} ORDER BY {order_by} ASC")
-        data = rows.fetchall()
-        logger.info(
-            "migrating table %s with %d row(s) to %s",
-            old_table,
-            len(data),
-            new_table,
-        )
-        connection.executemany(f"INSERT INTO {new_table} VALUES(?, ?)", data)
-        connection.execute(f"DROP TABLE {old_table}")
-        connection.commit()
-        connection.execute("VACUUM")
-
-
 class SqliteDataStore:
-    def __init__(self, logger: logging.Logger, connection: sqlite3.Connection):
+    def __init__(self, logger: logging.Logger, connection: sqlite3.Connection) -> None:
         self.logger = logger
         self.connection = connection
         self.connection.execute(
@@ -72,13 +42,8 @@ class SqliteDataStore:
             "state DESK_INT NOT NULL)",
         )
 
-        _migrate(self.logger, self.connection, "desk", "desk3", "date")
-        _migrate(self.logger, self.connection, "session", "session3", "date")
-        _migrate(self.logger, self.connection, "desk2", "desk3", "timestamp")
-        _migrate(self.logger, self.connection, "session2", "session3", "timestamp")
-
     @staticmethod
-    def open(path: str):
+    def open(path: str) -> "SqliteDataStore":
         logger = logging.getLogger("sqlite3")
         logger.info("Opening database %s", path)
         connection = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -87,69 +52,78 @@ class SqliteDataStore:
     def close(self) -> None:
         self.connection.close()
 
-    def get_last_desk_event(self) -> tuple[datetime.datetime, states.Desk] | None:
+    def _get_last_event(self, table: str) -> tuple[datetime.datetime, Any] | None:
         row = self.connection.execute(
-            "SELECT timestamp, state FROM desk3 ORDER BY timestamp DESC LIMIT 1",
+            f"SELECT timestamp, state FROM {table} ORDER BY timestamp DESC LIMIT 1",
         ).fetchone()
         return (row[0], row[1]) if row else None
 
-    def get_last_session_event(
+    def _get_last_event_before(
         self,
-    ) -> tuple[datetime.datetime, states.Session] | None:
-        row = self.connection.execute(
-            "SELECT timestamp, state FROM session3 ORDER BY timestamp DESC LIMIT 1",
-        ).fetchone()
-        return (row[0], row[1]) if row else None
-
-    def get_last_desk_event_before(
-        self,
+        table: str,
         at: datetime.datetime,
-    ) -> tuple[datetime.datetime, states.Desk] | None:
+    ) -> tuple[datetime.datetime, Any] | None:
         row = self.connection.execute(
-            "SELECT timestamp, state FROM desk3 "
+            f"SELECT timestamp, state FROM {table} "
             "WHERE timestamp <= ? "
             "ORDER BY timestamp DESC LIMIT 1",
             (at,),
         ).fetchone()
         return (row[0], row[1]) if row else None
+
+    def _get_events_between(
+        self,
+        table: str,
+        initial: datetime.datetime,
+        final: datetime.datetime,
+    ) -> list[tuple[datetime.datetime, Any]]:
+        rows = self.connection.execute(
+            f"SELECT timestamp, state FROM {table} "
+            "WHERE timestamp >= ? AND timestamp <= ? "
+            "ORDER BY timestamp ASC",
+            (initial, final),
+        ).fetchall()
+        return [(at, state) for at, state in rows]
+
+    def get_last_desk_event(self) -> DeskEvent | None:
+        row = self._get_last_event("desk3")
+        return cast(DeskEvent | None, row)
+
+    def get_last_session_event(
+        self,
+    ) -> SessionEvent | None:
+        row = self._get_last_event("session3")
+        return cast(SessionEvent | None, row)
 
     def get_last_session_event_before(
         self,
         at: datetime.datetime,
-    ) -> tuple[datetime.datetime, states.Session] | None:
-        row = self.connection.execute(
-            "SELECT timestamp, state FROM session3 "
-            "WHERE timestamp <= ? "
-            "ORDER BY timestamp DESC LIMIT 1",
-            (at,),
-        ).fetchone()
-        return (row[0], row[1]) if row else None
+    ) -> SessionEvent | None:
+        row = self._get_last_event_before("session3", at)
+        return cast(SessionEvent | None, row)
+
+    def get_last_desk_event_before(
+        self,
+        at: datetime.datetime,
+    ) -> DeskEvent | None:
+        row = self._get_last_event_before("desk3", at)
+        return cast(DeskEvent | None, row)
 
     def get_desk_events_between(
         self,
         initial: datetime.datetime,
         final: datetime.datetime,
-    ) -> list[tuple[datetime.datetime, states.Desk]]:
-        rows = self.connection.execute(
-            "SELECT timestamp, state FROM desk3 "
-            "WHERE timestamp >= ? AND timestamp <= ? "
-            "ORDER BY timestamp ASC",
-            (initial, final),
-        ).fetchall()
-        return [(at, state) for at, state in rows]
+    ) -> list[DeskEvent]:
+        rows = self._get_events_between("desk3", initial, final)
+        return cast(list[DeskEvent], rows)
 
     def get_session_events_between(
         self,
         initial: datetime.datetime,
         final: datetime.datetime,
-    ) -> list[tuple[datetime.datetime, states.Session]]:
-        rows = self.connection.execute(
-            "SELECT timestamp, state FROM session3 "
-            "WHERE timestamp >= ? AND timestamp <= ? "
-            "ORDER BY timestamp ASC",
-            (initial, final),
-        ).fetchall()
-        return [(at, state) for at, state in rows]
+    ) -> list[SessionEvent]:
+        rows = self._get_events_between("session3", initial, final)
+        return cast(list[SessionEvent], rows)
 
     def set_desk(self, at: datetime.datetime, state: states.Desk) -> None:
         self.logger.debug("set desk %s %s", at, state.label())
