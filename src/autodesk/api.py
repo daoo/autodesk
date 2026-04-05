@@ -1,56 +1,63 @@
 import asyncio
 import logging
-import traceback
+from typing import Any, cast
 
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
 import autodesk.plots as plots
+from autodesk.application.autodeskservice import AutoDeskService
+from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.button import Button
 from autodesk.hardware.error import HardwareError
+from autodesk.hardware.types import InputPin
 from autodesk.states import Desk, Session, deserialize_desk, deserialize_session
 
 logger = logging.getLogger("api")
 
 
-async def route_set_session(request: web.Request):
+def _service(app: web.Application) -> AutoDeskService:
+    return cast(AutoDeskService, app["service"])
+
+
+async def route_set_session(request: web.Request) -> web.Response:
     body = await request.text()
     try:
         state = deserialize_session(body)
-        request.app["service"].set_session(state)
+        _service(request.app).set_session(state)
         return web.Response()
     except ValueError:
-        logger.error(traceback.format_exc())
+        logger.exception("invalid session state body")
         return web.Response(text="Invalid session state", status=400)
 
 
-async def route_get_session(request: web.Request):
-    state = request.app["service"].get_session_state()
+async def route_get_session(request: web.Request) -> web.Response:
+    state = _service(request.app).get_session_state()
     assert type(state) is Session
     return web.Response(text=state.test("inactive", "active"))
 
 
-async def route_set_desk(request: web.Request):
+async def route_set_desk(request: web.Request) -> web.Response:
     body = await request.text()
     try:
         state = deserialize_desk(body)
-        okay = request.app["service"].set_desk(state)
+        okay = _service(request.app).set_desk(state)
         return web.Response(status=200 if okay else 403)
     except ValueError:
-        logger.error(traceback.format_exc())
+        logger.exception("invalid desk state body")
         return web.Response(text="Invalid desk state", status=400)
 
 
-async def route_get_desk(request: web.Request):
-    state = request.app["service"].get_desk_state()
+async def route_get_desk(request: web.Request) -> web.Response:
+    state = _service(request.app).get_desk_state()
     assert type(state) is Desk
     return web.Response(text=state.test("down", "up"))
 
 
 @aiohttp_jinja2.template("index.html")
-async def route_index(request: web.Request):
-    service = request.app["service"]
+async def route_index(request: web.Request) -> dict[str, Any]:
+    service = _service(request.app)
     session_state = service.get_session_state().test("inactive", "active")
     desk_state = service.get_desk_state().test("down", "up")
     active_time = service.get_active_time()
@@ -68,7 +75,7 @@ async def poll_button(
     button: Button,
     polling_delay: float,
     hardware_error_delay: float,
-):
+) -> None:
     while True:
         try:
             button.poll()
@@ -78,11 +85,13 @@ async def poll_button(
             await asyncio.sleep(hardware_error_delay)
 
 
-async def init(app: web.Application):
+async def init(app: web.Application) -> None:
     loop = asyncio.get_running_loop()
-    service = app["factory"].create(loop)
+    factory = cast(AutoDeskServiceFactory, app["factory"])
+    service = factory.create(loop)
     service.init()
-    button = Button(app["button_pin"], service)
+    button_pin = cast(InputPin, app["button_pin"])
+    button = Button(button_pin, service)
     app["poll_button_task"] = loop.create_task(
         poll_button(button, app["button_polling_delay"], app["hardware_error_delay"]),
     )
@@ -91,11 +100,16 @@ async def init(app: web.Application):
     app["service"] = service
 
 
-async def cleanup(app: web.Application):
-    app["poll_button_task"].cancel()
+async def cleanup(app: web.Application) -> None:
+    cast(asyncio.Task[None], app["poll_button_task"]).cancel()
 
 
-def setup_app(button_pin, factory, button_polling_delay=0.1, hardware_error_delay=5.0):
+def setup_app(
+    button_pin: InputPin,
+    factory: AutoDeskServiceFactory,
+    button_polling_delay: float = 0.1,
+    hardware_error_delay: float = 5.0,
+) -> web.Application:
     app = web.Application()
 
     app["button_polling_delay"] = button_polling_delay
