@@ -12,7 +12,7 @@ from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.button import Button
 from autodesk.hardware.error import HardwareError
 from autodesk.hardware.types import InputPin
-from autodesk.states import Desk, Session, deserialize_desk, deserialize_session
+from autodesk.states import deserialize_desk, deserialize_session
 
 logger = logging.getLogger("api")
 
@@ -34,7 +34,6 @@ async def route_set_session(request: web.Request) -> web.Response:
 
 async def route_get_session(request: web.Request) -> web.Response:
     state = _service(request.app).get_session_state()
-    assert type(state) is Session
     return web.Response(text=state.label())
 
 
@@ -51,7 +50,6 @@ async def route_set_desk(request: web.Request) -> web.Response:
 
 async def route_get_desk(request: web.Request) -> web.Response:
     state = _service(request.app).get_desk_state()
-    assert type(state) is Desk
     return web.Response(text=state.label())
 
 
