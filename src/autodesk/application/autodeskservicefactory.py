@@ -1,3 +1,5 @@
+import asyncio
+
 from pandas import Timedelta
 
 from autodesk.application.autodeskservice import AutoDeskService
@@ -31,7 +33,7 @@ class AutoDeskServiceFactory:
         self.motor_pins = motor_pins
         self.light_pins = light_pins
 
-    def create(self, loop) -> AutoDeskService:
+    def create(self, loop: asyncio.AbstractEventLoop) -> AutoDeskService:
         operation = Operation()
         timer = Timer(loop)
         model = Model(SqliteDataStore.open(self.database_path))

@@ -1,6 +1,7 @@
 import logging
 import os
 from contextlib import closing
+from typing import TypedDict, cast
 
 import yaml
 from aiohttp import web
@@ -11,12 +12,37 @@ from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.hardware import create_pin_factory
 
 
-def read_yaml(path):
+class LimitsConfig(TypedDict):
+    down: int | float
+    up: int | float
+
+
+class MotorPinsConfig(TypedDict):
+    down: int
+    up: int
+
+
+class LightPinsConfig(TypedDict):
+    desk: int
+    session: int
+
+
+class ProgramConfig(TypedDict):
+    hardware: str
+    button_pin: int
+    delay: float
+    limits: LimitsConfig
+    motor_pins: MotorPinsConfig
+    light_pins: LightPinsConfig
+
+
+def read_yaml(path: str) -> ProgramConfig:
     with open(path) as file:
-        return yaml.load(file, Loader=yaml.SafeLoader)
+        loaded = yaml.load(file, Loader=yaml.SafeLoader)
+    return cast(ProgramConfig, loaded)
 
 
-def main():
+def main() -> None:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
@@ -30,7 +56,7 @@ def main():
     port = int(os.getenv("AUTODESK_PORT", "7380"))
 
     logger.info('Reading config "%s"', config_path)
-    config = read_yaml(config_path)
+    config: ProgramConfig = read_yaml(config_path)
 
     limit_down = Timedelta(seconds=config["limits"]["down"])
     limit_up = Timedelta(seconds=config["limits"]["up"])
@@ -41,7 +67,7 @@ def main():
             database,
             pin_factory,
             (limit_down, limit_up),
-            config["delay"],
+            float(config["delay"]),
             (
                 config["motor_pins"]["down"],
                 config["motor_pins"]["up"],
