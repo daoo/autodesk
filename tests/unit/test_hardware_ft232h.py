@@ -302,3 +302,49 @@ def test_output_connect_usb_error(controller_fake, gpio_fake, factory):
 
     with pytest.raises(HardwareError):
         pin.write(1)  # Must do a write to trigger connection
+
+
+def test_reconnect_path_flushes_cache(controller_fake, gpio_fake, factory, mocker):
+    flush_cache = mocker.patch("autodesk.hardware.ft232h.UsbTools.flush_cache")
+    release_device = mocker.patch("autodesk.hardware.ft232h.UsbTools.release_device")
+    gpio_fake.all_pins = 0b0110
+    gpio_fake.read.return_value = (0b0100,)
+    pin = factory.create_input(1)
+
+    pin.read()
+    factory.wrapper.gpio = None
+
+    pin.read()
+
+    flush_cache.assert_called_once()
+    release_device.assert_called_once()
+
+
+def test_release_without_usb_dev(factory, mocker):
+    wrapper = factory.wrapper
+    wrapper.controller = mocker.Mock()
+    wrapper.controller._ftdi = mocker.Mock(_usb_dev=None)
+
+    # Should not raise even though _usb_dev is None
+    wrapper._release_controller_device()
+
+
+def test_setup_without_controller_raises(factory):
+    wrapper = factory.wrapper
+    with pytest.raises(RuntimeError, match="FT232H controller is not initialized"):
+        wrapper._setup()
+
+
+def test_release_without_controller_noop(factory):
+    wrapper = factory.wrapper
+    wrapper.controller = None
+
+    wrapper._release_controller_device()
+
+
+def test_require_gpio_raises(factory):
+    wrapper = factory.wrapper
+    wrapper.gpio = None
+
+    with pytest.raises(RuntimeError, match="FT232H GPIO is not connected"):
+        wrapper._require_gpio()
