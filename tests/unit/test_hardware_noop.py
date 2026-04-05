@@ -1,3 +1,5 @@
+import pytest
+
 from autodesk.hardware.noop import NoopPinFactory
 
 
@@ -31,3 +33,9 @@ def test_pin_write_high():
 def test_pin_write_low():
     pin = 0
     NoopPinFactory().create_output(pin).write(0)
+
+
+def test_pin_write_invalid_value():
+    pin = 0
+    with pytest.raises(ValueError, match="Pin value must be 0 or 1 but got 2"):
+        NoopPinFactory().create_output(pin).write(2)

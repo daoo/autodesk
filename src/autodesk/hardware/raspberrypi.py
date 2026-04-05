@@ -1,6 +1,12 @@
 import RPi.GPIO as GPIO  # type: ignore
 
-from autodesk.hardware.types import InputPin, OutputPin, PinFactory, PinValue
+from autodesk.hardware.types import (
+    InputPin,
+    OutputPin,
+    PinFactory,
+    PinValue,
+    validate_pin_value,
+)
 
 
 class RaspberryPiInputPin(InputPin):
@@ -19,10 +25,9 @@ class RaspberryPiOutputPin(OutputPin):
         self.pin = pin
         GPIO.setup(self.pin, GPIO.OUT)
 
-    def write(self, value: PinValue) -> None:
-        if value != 0 and value != 1:
-            raise ValueError(f"Pin value must be 0 or 1 but got {value}")
-        gpio_value = GPIO.LOW if value == 0 else GPIO.HIGH
+    def write(self, value: int) -> None:
+        validated = validate_pin_value(value)
+        gpio_value = GPIO.LOW if validated == 0 else GPIO.HIGH
         GPIO.output(self.pin, gpio_value)
 
 

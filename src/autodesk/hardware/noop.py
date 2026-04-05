@@ -1,4 +1,10 @@
-from autodesk.hardware.types import InputPin, OutputPin, PinFactory, PinValue
+from autodesk.hardware.types import (
+    InputPin,
+    OutputPin,
+    PinFactory,
+    PinValue,
+    validate_pin_value,
+)
 
 
 class NoopPin(InputPin, OutputPin):
@@ -8,8 +14,8 @@ class NoopPin(InputPin, OutputPin):
     def read(self) -> PinValue:
         return 0
 
-    def write(self, value: PinValue) -> None:
-        pass
+    def write(self, value: int) -> None:
+        validate_pin_value(value)
 
 
 class NoopPinFactory(PinFactory):

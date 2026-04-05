@@ -4,7 +4,13 @@ from pyftdi.usbtools import UsbTools, UsbToolsError
 from usb.core import USBError
 
 from autodesk.hardware.error import HardwareError
-from autodesk.hardware.types import InputPin, OutputPin, PinFactory, PinValue
+from autodesk.hardware.types import (
+    InputPin,
+    OutputPin,
+    PinFactory,
+    PinValue,
+    validate_pin_value,
+)
 
 
 def set_bit(mask: int, bit: int, value: PinValue) -> int:
@@ -106,10 +112,8 @@ class Ft232hOutputPin(OutputPin):
         self.wrapper = wrapper
         self.pin = pin
 
-    def write(self, value: PinValue) -> None:
-        if value != 0 and value != 1:
-            raise ValueError(f"Pin value must be 0 or 1 but got {value}")
-        self.wrapper.write(self.pin, value)
+    def write(self, value: int) -> None:
+        self.wrapper.write(self.pin, validate_pin_value(value))
 
 
 class Ft232hInputPin(InputPin):

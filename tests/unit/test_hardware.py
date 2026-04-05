@@ -1,3 +1,5 @@
+import pytest
+
 from autodesk.hardware import create_pin_factory
 
 
@@ -29,3 +31,8 @@ def test_create_pin_factory_noop(mocker):
     create_pin_factory("noop")
 
     noop_mock.NoopPinFactory.assert_called_once()
+
+
+def test_create_pin_factory_unknown_raises():
+    with pytest.raises(ValueError, match="Unknown hardware kind"):
+        create_pin_factory("invalid")
