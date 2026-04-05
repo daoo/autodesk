@@ -2,7 +2,7 @@ from collections.abc import Generator, Sequence
 from datetime import datetime, timedelta
 
 from autodesk.sqlitedatastore import SqliteDataStore
-from autodesk.states import ACTIVE, DOWN, INACTIVE, Desk, Session
+from autodesk.states import Desk, Session
 
 type EventRow[S] = tuple[datetime, S]
 type SpanRow[S] = tuple[datetime, datetime, S]
@@ -72,23 +72,23 @@ class Model:
 
     def get_session_state(self) -> Session:
         event = self.datastore.get_last_session_event()
-        return event[1] if event else INACTIVE
+        return event[1] if event else Session.INACTIVE
 
     def get_desk_state(self) -> Desk:
         event = self.datastore.get_last_desk_event()
-        return event[1] if event else DOWN
+        return event[1] if event else Desk.DOWN
 
     def _session_state_at(self, at: datetime) -> Session:
         event = self.datastore.get_last_session_event_before(at)
-        return event[1] if event else INACTIVE
+        return event[1] if event else Session.INACTIVE
 
     def _desk_state_at(self, at: datetime) -> Desk:
         event = self.datastore.get_last_desk_event_before(at)
-        return event[1] if event else DOWN
+        return event[1] if event else Desk.DOWN
 
     def get_active_time(self, initial: datetime, final: datetime) -> timedelta:
         # Active time is measured only within the current desk span at `final`.
-        if self._session_state_at(final) == INACTIVE:
+        if self._session_state_at(final).is_inactive:
             return timedelta(0)
 
         current_desk_span_start = initial
@@ -109,7 +109,7 @@ class Model:
             final=final,
             events=self.datastore.get_session_events_between(initial, final),
         ):
-            if session_state == ACTIVE:
+            if session_state.is_active:
                 overlap_start = (
                     start
                     if start > current_desk_span_start
@@ -132,7 +132,7 @@ class Model:
             final=final,
             events=self.datastore.get_session_events_between(initial, final),
         ):
-            if session_state != ACTIVE:
+            if session_state.is_inactive:
                 continue
             for day, hour in enumerate_hours(span_start, span_end):
                 counts[day * 24 + hour] += 1

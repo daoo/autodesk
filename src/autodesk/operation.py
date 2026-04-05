@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, time
 
-from autodesk.states import ACTIVE, Session
+from autodesk.states import Session
 
 
 class Operation:
@@ -11,7 +11,7 @@ class Operation:
         self.allowance_end = time(20, 0, 0)
 
     def allowed(self, session_state: Session, at: datetime) -> bool:
-        return session_state == ACTIVE and self._check_time(at)
+        return session_state.is_active and self._check_time(at)
 
     def _check_time(self, at: datetime) -> bool:
         monday = 0

@@ -35,7 +35,7 @@ async def route_set_session(request: web.Request) -> web.Response:
 async def route_get_session(request: web.Request) -> web.Response:
     state = _service(request.app).get_session_state()
     assert type(state) is Session
-    return web.Response(text=state.test("inactive", "active"))
+    return web.Response(text=state.label())
 
 
 async def route_set_desk(request: web.Request) -> web.Response:
@@ -52,14 +52,14 @@ async def route_set_desk(request: web.Request) -> web.Response:
 async def route_get_desk(request: web.Request) -> web.Response:
     state = _service(request.app).get_desk_state()
     assert type(state) is Desk
-    return web.Response(text=state.test("down", "up"))
+    return web.Response(text=state.label())
 
 
 @aiohttp_jinja2.template("index.html")
 async def route_index(request: web.Request) -> dict[str, Any]:
     service = _service(request.app)
-    session_state = service.get_session_state().test("inactive", "active")
-    desk_state = service.get_desk_state().test("down", "up")
+    session_state = service.get_session_state().label()
+    desk_state = service.get_desk_state().label()
     active_time = service.get_active_time()
     return {
         "session": session_state,

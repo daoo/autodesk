@@ -7,14 +7,14 @@ from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
 from autodesk.scheduler import Scheduler
-from autodesk.states import ACTIVE, DOWN, Desk, Session
+from autodesk.states import Desk, Session
 from autodesk.timer import Timer
 
 OPERATION_ALLOWED = True
 OPERATION_DENIED = False
-DEFAULT_SESSION_STATE = ACTIVE
+DEFAULT_SESSION_STATE = Session.ACTIVE
 DEFAULT_ACTIVE_TIME = timedelta(0)
-DEFAULT_DESK_STATE = DOWN
+DEFAULT_DESK_STATE = Desk.DOWN
 DEFAULT_LIMITS = (timedelta(0), timedelta(0))
 
 

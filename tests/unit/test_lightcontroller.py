@@ -2,7 +2,7 @@ import pytest
 
 from autodesk.hardware.noop import NoopPin
 from autodesk.lightcontroller import LightController
-from autodesk.states import ACTIVE, INACTIVE
+from autodesk.states import Session
 
 
 @pytest.fixture
@@ -13,7 +13,7 @@ def pin_mock(mocker):
 def test_set_inactive(pin_mock):
     service = LightController(pin_mock)
 
-    service.set(INACTIVE)
+    service.set(Session.INACTIVE)
 
     pin_mock.write.assert_called_once_with(0)
 
@@ -21,6 +21,6 @@ def test_set_inactive(pin_mock):
 def test_set_active(pin_mock):
     service = LightController(pin_mock)
 
-    service.set(ACTIVE)
+    service.set(Session.ACTIVE)
 
     pin_mock.write.assert_called_once_with(1)

@@ -21,8 +21,8 @@ sqlite3.register_adapter(datetime.datetime, adapt_datetime_epoch)
 sqlite3.register_converter("timestamp", convert_datetime)
 sqlite3.register_converter("unix_timestamp", convert_timestamp)
 
-sqlite3.register_adapter(states.Desk, lambda desk: desk.value())
-sqlite3.register_adapter(states.Session, lambda session: session.value())
+sqlite3.register_adapter(states.Desk, lambda desk: desk.value)
+sqlite3.register_adapter(states.Session, lambda session: session.value)
 sqlite3.register_converter("desk", states.deserialize_desk)
 sqlite3.register_converter("session", states.deserialize_session)
 sqlite3.register_converter("desk_int", states.deserialize_desk_int)
@@ -150,13 +150,13 @@ class SqliteDataStore:
         return [(at, state) for at, state in rows]
 
     def set_desk(self, at: datetime.datetime, state: states.Desk) -> None:
-        self.logger.debug("set desk %s %s", at, state.test("down", "up"))
+        self.logger.debug("set desk %s %s", at, state.label())
         values = (at, state)
         self.connection.execute("INSERT INTO desk3 values(?, ?)", values)
         self.connection.commit()
 
     def set_session(self, at: datetime.datetime, state: states.Session) -> None:
-        self.logger.debug("set session %s %s", at, state.test("inactive", "active"))
+        self.logger.debug("set session %s %s", at, state.label())
         values = (at, state)
         self.connection.execute("INSERT INTO session3 values(?, ?)", values)
         self.connection.commit()

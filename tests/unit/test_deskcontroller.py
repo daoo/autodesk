@@ -1,7 +1,7 @@
 import pytest
 
 from autodesk.deskcontroller import DeskController
-from autodesk.states import DOWN, UP
+from autodesk.states import Desk
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def create_controller(mocker, delay):
     return (pin_down_fake, pin_up_fake, pin_light_fake, controller)
 
 
-@pytest.mark.parametrize("direction", [DOWN, UP])
+@pytest.mark.parametrize("direction", [Desk.DOWN, Desk.UP])
 def test_move_sleeps_for_specified_delay(mocker, sleep_fake, direction):
     sleep_mock = sleep_fake
     (_, _, _, controller) = create_controller(mocker, 1)
@@ -34,7 +34,7 @@ def test_move_sleeps_for_specified_delay(mocker, sleep_fake, direction):
 def test_move_down_correct_pin_pulled_high_and_low(mocker, sleep_fake):
     (pin_down_mock, _, _, controller) = create_controller(mocker, 1)
 
-    controller.move(DOWN)
+    controller.move(Desk.DOWN)
 
     pin_down_mock.write.assert_has_calls([mocker.call(1), mocker.call(0)])
 
@@ -42,12 +42,12 @@ def test_move_down_correct_pin_pulled_high_and_low(mocker, sleep_fake):
 def test_move_up_correct_pin_pulled_high_and_low(mocker, sleep_fake):
     (_, pin_up_mock, _, controller) = create_controller(mocker, 1)
 
-    controller.move(UP)
+    controller.move(Desk.UP)
 
     pin_up_mock.write.assert_has_calls([mocker.call(1), mocker.call(0)])
 
 
-@pytest.mark.parametrize("direction", [DOWN, UP])
+@pytest.mark.parametrize("direction", [Desk.DOWN, Desk.UP])
 def test_move_light_pin_pulled_high_and_low(mocker, sleep_fake, direction):
     (_, _, pin_light_mock, controller) = create_controller(mocker, 1)
 

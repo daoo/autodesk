@@ -1,4 +1,4 @@
-from autodesk.hardware.types import OutputPin, PinValue
+from autodesk.hardware.types import OutputPin, PinValue, validate_pin_value
 from autodesk.states import Desk, Session
 
 
@@ -7,5 +7,5 @@ class LightController:
         self.pin_session = pin_session
 
     def set(self, state: Session | Desk) -> None:
-        value: PinValue = state.test(0, 1)
+        value: PinValue = validate_pin_value(1 if state.value else 0)
         self.pin_session.write(value)

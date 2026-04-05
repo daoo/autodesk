@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from autodesk.scheduler import Scheduler
-from autodesk.states import DOWN, UP
+from autodesk.states import Desk
 
 
 def test_active_for_30minutes_with_60minute_limit_and_desk_down():
@@ -9,7 +9,7 @@ def test_active_for_30minutes_with_60minute_limit_and_desk_down():
     limits = (timedelta(minutes=60), timedelta(minutes=30))
     scheduler = Scheduler(limits)
 
-    delay = scheduler.compute_delay(active_time, DOWN)
+    delay = scheduler.compute_delay(active_time, Desk.DOWN)
 
     assert delay == timedelta(minutes=30)
 
@@ -19,6 +19,6 @@ def test_active_for_30minutes_with_30minute_limit_and_desk_up():
     limits = (timedelta(minutes=60), timedelta(minutes=30))
     scheduler = Scheduler(limits)
 
-    delay = scheduler.compute_delay(active_time, UP)
+    delay = scheduler.compute_delay(active_time, Desk.UP)
 
     assert delay == timedelta(0)

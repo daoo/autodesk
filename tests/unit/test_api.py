@@ -8,7 +8,7 @@ from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.hardware.error import HardwareError
 from autodesk.hardware.noop import NoopPin
-from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
+from autodesk.states import Desk, Session
 
 
 @pytest.fixture
@@ -42,14 +42,14 @@ async def test_setup(client, service_mock):
 
 @pytest.mark.asyncio
 async def test_get_desk_down(client, service_mock):
-    service_mock.get_desk_state.return_value = DOWN
+    service_mock.get_desk_state.return_value = Desk.DOWN
     response = await client.get("/api/desk")
     assert await response.text() == "down"
 
 
 @pytest.mark.asyncio
 async def test_get_desk_up(client, service_mock):
-    service_mock.get_desk_state.return_value = UP
+    service_mock.get_desk_state.return_value = Desk.UP
     response = await client.get("/api/desk")
     assert await response.text() == "up"
 
@@ -58,14 +58,14 @@ async def test_get_desk_up(client, service_mock):
 async def test_set_desk_down(client, service_mock):
     response = await client.put("/api/desk", data=b"down")
     assert response.status == 200
-    service_mock.set_desk.assert_called_with(DOWN)
+    service_mock.set_desk.assert_called_with(Desk.DOWN)
 
 
 @pytest.mark.asyncio
 async def test_set_desk_up(client, service_mock):
     response = await client.put("/api/desk", data=b"up")
     assert response.status == 200
-    service_mock.set_desk.assert_called_with(UP)
+    service_mock.set_desk.assert_called_with(Desk.UP)
 
 
 @pytest.mark.asyncio
@@ -77,14 +77,14 @@ async def test_set_desk_not_allowed(client, service_mock):
 
 @pytest.mark.asyncio
 async def test_get_session_inactive(client, service_mock):
-    service_mock.get_session_state.return_value = INACTIVE
+    service_mock.get_session_state.return_value = Session.INACTIVE
     response = await client.get("/api/session")
     assert await response.text() == "inactive"
 
 
 @pytest.mark.asyncio
 async def test_get_session_active(client, service_mock):
-    service_mock.get_session_state.return_value = ACTIVE
+    service_mock.get_session_state.return_value = Session.ACTIVE
     response = await client.get("/api/session")
     assert await response.text() == "active"
 
@@ -92,14 +92,14 @@ async def test_get_session_active(client, service_mock):
 @pytest.mark.asyncio
 async def test_set_session_inactive(client, service_mock):
     response = await client.put("/api/session", data=b"inactive")
-    service_mock.set_session.assert_called_with(INACTIVE)
+    service_mock.set_session.assert_called_with(Session.INACTIVE)
     assert response.status == 200
 
 
 @pytest.mark.asyncio
 async def test_set_session_active(client, service_mock):
     response = await client.put("/api/session", data=b"active")
-    service_mock.set_session.assert_called_with(ACTIVE)
+    service_mock.set_session.assert_called_with(Session.ACTIVE)
     assert response.status == 200
 
 

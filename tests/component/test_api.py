@@ -17,29 +17,29 @@ from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
-from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
+from autodesk.states import Desk, Session
 from autodesk.timer import Timer
 from tests.stubdatastore import fake_data_store
 
 SESSION_EVENTS = [
     # Tuesdays
-    (datetime(2019, 4, 16, 14, 0), ACTIVE),
-    (datetime(2019, 4, 16, 18, 0), INACTIVE),
-    (datetime(2019, 4, 23, 14, 0), ACTIVE),
-    (datetime(2019, 4, 23, 18, 0), INACTIVE),
+    (datetime(2019, 4, 16, 14, 0), Session.ACTIVE),
+    (datetime(2019, 4, 16, 18, 0), Session.INACTIVE),
+    (datetime(2019, 4, 23, 14, 0), Session.ACTIVE),
+    (datetime(2019, 4, 23, 18, 0), Session.INACTIVE),
     # Wednesdays
-    (datetime(2019, 4, 24, 13, 0), ACTIVE),
-    (datetime(2019, 4, 24, 14, 0), INACTIVE),
+    (datetime(2019, 4, 24, 13, 0), Session.ACTIVE),
+    (datetime(2019, 4, 24, 14, 0), Session.INACTIVE),
     # Thursdays
-    (datetime(2019, 4, 25, 8, 0), ACTIVE),
-    (datetime(2019, 4, 25, 9, 0), INACTIVE),
-    (datetime(2019, 4, 25, 10, 0), ACTIVE),
+    (datetime(2019, 4, 25, 8, 0), Session.ACTIVE),
+    (datetime(2019, 4, 25, 9, 0), Session.INACTIVE),
+    (datetime(2019, 4, 25, 10, 0), Session.ACTIVE),
 ]
 
 DESK_EVENTS = [
-    (datetime(2019, 4, 25, 8, 30), UP),
-    (datetime(2019, 4, 25, 10, 30), DOWN),
-    (datetime(2019, 4, 25, 11, 30), UP),
+    (datetime(2019, 4, 25, 8, 30), Desk.UP),
+    (datetime(2019, 4, 25, 10, 30), Desk.DOWN),
+    (datetime(2019, 4, 25, 11, 30), Desk.UP),
 ]
 
 

@@ -18,7 +18,7 @@ class DeskController:
         self.pin_light = pin_light
 
     def move(self, state: Desk) -> None:
-        pin = state.test(self.pin_down, self.pin_up)
+        pin = self.pin_up if state.is_up else self.pin_down
         self.pin_light.write(1)
         pin.write(1)
         time.sleep(self.delay)

@@ -3,11 +3,11 @@ from datetime import timedelta
 import pytest
 
 from autodesk.hardware.error import HardwareError
-from autodesk.states import ACTIVE, INACTIVE
+from autodesk.states import Session
 from tests.autodeskservice import create_allowed_service, create_denied_service
 
 
-@pytest.mark.parametrize("session_state", [ACTIVE, INACTIVE])
+@pytest.mark.parametrize("session_state", [Session.ACTIVE, Session.INACTIVE])
 def test_init_schedules_when_desk_service_reports_allowed(mocker, session_state):
     (timer_mock, _, _, service) = create_allowed_service(
         mocker,
@@ -20,7 +20,7 @@ def test_init_schedules_when_desk_service_reports_allowed(mocker, session_state)
     timer_mock.schedule.assert_called_with(timedelta(seconds=10), mocker.ANY)
 
 
-@pytest.mark.parametrize("session_state", [ACTIVE, INACTIVE])
+@pytest.mark.parametrize("session_state", [Session.ACTIVE, Session.INACTIVE])
 def test_init_denied_timer_not_scheduled(mocker, session_state):
     (timer_mock, _, _, service) = create_denied_service(
         mocker,

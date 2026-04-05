@@ -8,11 +8,15 @@ from autodesk.application.timeservice import TimeService
 from autodesk.hardware.error import HardwareError
 from autodesk.model import Model
 from autodesk.operation import Operation
-from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
+from autodesk.states import Desk, Session
 
 TIME_ALLOWED = datetime(2018, 4, 23, 13, 0)
 TIME_DENIED = datetime(2018, 4, 23, 21, 0)
-DESK_DENIED = [(ACTIVE, TIME_DENIED), (INACTIVE, TIME_ALLOWED), (INACTIVE, TIME_DENIED)]
+DESK_DENIED = [
+    (Session.ACTIVE, TIME_DENIED),
+    (Session.INACTIVE, TIME_ALLOWED),
+    (Session.INACTIVE, TIME_DENIED),
+]
 
 
 def create_service(mocker, now, session_state, active_time, desk_state):
@@ -41,10 +45,10 @@ def test_set_denied_desk_controller_not_called(mocker, session, now):
         now,
         session,
         timedelta(0),
-        DOWN,
+        Desk.DOWN,
     )
 
-    allowed = service.set(UP)
+    allowed = service.set(Desk.UP)
 
     assert allowed is False
     desk_controller_mock.move.assert_not_called()
@@ -52,21 +56,23 @@ def test_set_denied_desk_controller_not_called(mocker, session, now):
 
 @pytest.mark.parametrize(("session", "now"), DESK_DENIED)
 def test_set_denied_desk_model_not_updated(mocker, session, now):
-    (model_mock, _, service) = create_service(mocker, now, session, timedelta(0), DOWN)
+    (model_mock, _, service) = create_service(
+        mocker, now, session, timedelta(0), Desk.DOWN
+    )
 
-    service.set(UP)
+    service.set(Desk.UP)
 
     model_mock.set_desk.assert_not_called()
 
 
-@pytest.mark.parametrize("direction", [DOWN, UP])
+@pytest.mark.parametrize("direction", [Desk.DOWN, Desk.UP])
 def test_set_allowed_model_updated(mocker, direction):
     (model_mock, _, service) = create_service(
         mocker,
         TIME_ALLOWED,
-        ACTIVE,
+        Session.ACTIVE,
         timedelta(0),
-        DOWN,
+        Desk.DOWN,
     )
 
     allowed = service.set(direction)
@@ -79,41 +85,41 @@ def test_set_allowed_desk_controller_called(mocker):
     (_, desk_controller_mock, service) = create_service(
         mocker,
         TIME_ALLOWED,
-        ACTIVE,
+        Session.ACTIVE,
         timedelta(0),
-        DOWN,
+        Desk.DOWN,
     )
 
-    service.set(DOWN)
+    service.set(Desk.DOWN)
 
-    desk_controller_mock.move.assert_called_with(DOWN)
+    desk_controller_mock.move.assert_called_with(Desk.DOWN)
 
 
 def test_set_hardware_error_is_passed_up(mocker):
     (_, desk_controller_stub, service) = create_service(
         mocker,
         TIME_ALLOWED,
-        ACTIVE,
+        Session.ACTIVE,
         timedelta(0),
-        DOWN,
+        Desk.DOWN,
     )
     desk_controller_stub.move.side_effect = HardwareError(RuntimeError())
 
     with pytest.raises(HardwareError):
-        service.set(UP)
+        service.set(Desk.UP)
 
 
 def test_set_hardware_error_model_not_updated(mocker):
     (model_mock, desk_controller_stub, service) = create_service(
         mocker,
         TIME_ALLOWED,
-        ACTIVE,
+        Session.ACTIVE,
         timedelta(0),
-        DOWN,
+        Desk.DOWN,
     )
     desk_controller_stub.move.side_effect = HardwareError(RuntimeError())
 
     with contextlib.suppress(HardwareError):
-        service.set(UP)
+        service.set(Desk.UP)
 
     model_mock.set_desk.assert_not_called()

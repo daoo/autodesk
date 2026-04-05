@@ -3,7 +3,7 @@ from datetime import date, datetime, time
 import pytest
 
 from autodesk.operation import Operation
-from autodesk.states import ACTIVE, INACTIVE
+from autodesk.states import Session
 
 
 def combine(dates, times):
@@ -49,19 +49,19 @@ offdatetimes = (
 
 @pytest.mark.parametrize("at", ondatetimes)
 def test_session_inactive_at_allowed_time(at):
-    assert not Operation().allowed(INACTIVE, at)
+    assert not Operation().allowed(Session.INACTIVE, at)
 
 
 @pytest.mark.parametrize("at", ondatetimes)
 def test_session_active_at_allowed_time(at):
-    assert Operation().allowed(ACTIVE, at)
+    assert Operation().allowed(Session.ACTIVE, at)
 
 
 @pytest.mark.parametrize("at", offdatetimes)
 def test_session_inactive_at_disallowed_time(at):
-    assert not Operation().allowed(INACTIVE, at)
+    assert not Operation().allowed(Session.INACTIVE, at)
 
 
 @pytest.mark.parametrize("at", offdatetimes)
 def test_session_active_at_disallowed_time(at):
-    assert not Operation().allowed(ACTIVE, at)
+    assert not Operation().allowed(Session.ACTIVE, at)
