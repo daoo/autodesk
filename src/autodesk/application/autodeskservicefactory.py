@@ -49,10 +49,8 @@ class AutoDeskServiceFactory:
         session_service = SessionService(model, light_controller, timer_service)
         desk_service = DeskService(operation, model, desk_controller, timer_service)
         return AutoDeskService(
-            operation,
             scheduler,
             timer,
-            timer_service,
             session_service,
             desk_service,
         )

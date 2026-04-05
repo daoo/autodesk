@@ -2,9 +2,7 @@ import logging
 
 from autodesk.application.deskservice import DeskService
 from autodesk.application.sessionservice import SessionService
-from autodesk.application.timeservice import TimeService
 from autodesk.hardware.error import HardwareError
-from autodesk.operation import Operation
 from autodesk.scheduler import Scheduler
 from autodesk.states import Desk, Session
 from autodesk.timer import Timer
@@ -13,18 +11,14 @@ from autodesk.timer import Timer
 class AutoDeskService:
     def __init__(
         self,
-        operation: Operation,
         scheduler: Scheduler,
         timer: Timer,
-        time_service: TimeService,
         session_service: SessionService,
         desk_service: DeskService,
     ):
         self.logger = logging.getLogger("autodeskservice")
-        self.operation = operation
         self.timer = timer
         self.scheduler = scheduler
-        self.time_service = time_service
         self.session_service = session_service
         self.desk_service = desk_service
 
@@ -75,10 +69,8 @@ class AutoDeskService:
         return self.session_service.compute_hourly_count()
 
     def _update_timer(self) -> None:
-        session_state: Session = self.session_service.get()
         desk_state: Desk = self.desk_service.get()
-        now = self.time_service.now()
-        if self.operation.allowed(session_state, now):
+        if self.desk_service.operation_allowed():
             active_time = self.session_service.get_active_time()
             self.timer.schedule(
                 self.scheduler.compute_delay(active_time, desk_state),

@@ -1,45 +1,16 @@
+import pytest
 from pandas import Timedelta
 
 from autodesk.hardware.error import HardwareError
-from autodesk.states import ACTIVE, DOWN, INACTIVE
-from tests.autodeskservice import TIME_ALLOWED, TIME_DENIED, create_service
+from autodesk.states import ACTIVE, INACTIVE
+from tests.autodeskservice import create_allowed_service, create_denied_service
 
 
-def test_init_active_denied_timer_not_scheduled(mocker):
-    (timer_mock, _, _, service) = create_service(
+@pytest.mark.parametrize("session_state", [ACTIVE, INACTIVE])
+def test_init_schedules_when_desk_service_reports_allowed(mocker, session_state):
+    (timer_mock, _, _, service) = create_allowed_service(
         mocker,
-        TIME_DENIED,
-        ACTIVE,
-        Timedelta(0),
-        DOWN,
-    )
-
-    service.init()
-
-    timer_mock.schedule.assert_not_called()
-
-
-def test_init_inactive_operation_allowed_timer_not_scheduled(mocker):
-    (timer_mock, _, _, service) = create_service(
-        mocker,
-        TIME_ALLOWED,
-        INACTIVE,
-        Timedelta(0),
-        DOWN,
-    )
-
-    service.init()
-
-    timer_mock.schedule.assert_not_called()
-
-
-def test_init_active_operation_allowed_timer_scheduled(mocker):
-    (timer_mock, _, _, service) = create_service(
-        mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(0),
-        DOWN,
+        session_state=session_state,
         limits=(Timedelta(10), Timedelta(20)),
     )
 
@@ -48,14 +19,21 @@ def test_init_active_operation_allowed_timer_scheduled(mocker):
     timer_mock.schedule.assert_called_with(Timedelta(10), mocker.ANY)
 
 
-def test_init_hardware_error_timer_cancelled(mocker):
-    (timer_mock, session_service_stub, _, service) = create_service(
+@pytest.mark.parametrize("session_state", [ACTIVE, INACTIVE])
+def test_init_denied_timer_not_scheduled(mocker, session_state):
+    (timer_mock, _, _, service) = create_denied_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(0),
-        DOWN,
+        session_state=session_state,
+        limits=(Timedelta(10), Timedelta(20)),
     )
+
+    service.init()
+
+    timer_mock.schedule.assert_not_called()
+
+
+def test_init_hardware_error_timer_cancelled(mocker):
+    (timer_mock, session_service_stub, _, service) = create_allowed_service(mocker)
     session_service_stub.init.side_effect = HardwareError(RuntimeError())
 
     service.init()

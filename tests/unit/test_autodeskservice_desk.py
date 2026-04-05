@@ -2,60 +2,65 @@ import pytest
 from pandas import Timedelta
 
 from autodesk.hardware.error import HardwareError
-from autodesk.states import ACTIVE, DOWN, UP
-from tests.autodeskservice import DESK_DENIED, TIME_ALLOWED, create_service
+from autodesk.states import DOWN, UP
+from tests.autodeskservice import (
+    create_allowed_service,
+    create_denied_service,
+)
 
 
-@pytest.mark.parametrize(("session", "now"), DESK_DENIED)
-def test_set_desk_down_denied_timer_not_scheduled(mocker, session, now):
-    (timer_mock, _, _, service) = create_service(mocker, now, session, Timedelta(0), UP)
+def test_set_desk_operation_not_allowed_does_not_schedule_timer(mocker):
+    (timer_mock, _, _, service) = create_denied_service(mocker, desk_state=UP)
 
-    service.set_desk(DOWN)
+    allowed = service.set_desk(DOWN)
 
+    assert allowed is False
     timer_mock.schedule.assert_not_called()
 
 
-def test_set_desk_down_allowed_timer_scheduled_right_time(mocker):
-    (timer_mock, _, _, service) = create_service(
+@pytest.mark.parametrize(
+    ("target", "expected_delay"),
+    [(DOWN, Timedelta(10)), (UP, Timedelta(20))],
+)
+def test_set_desk_allowed_timer_scheduled_right_time(mocker, target, expected_delay):
+    (timer_mock, _, _, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(10),
-        UP,
+        active_time=Timedelta(10),
+        desk_state=UP,
         limits=(Timedelta(20), Timedelta(30)),
     )
 
-    service.set_desk(DOWN)
+    allowed = service.set_desk(target)
 
-    timer_mock.schedule.assert_called_with(Timedelta(10), mocker.ANY)
+    assert allowed is True
+    timer_mock.schedule.assert_called_with(expected_delay, mocker.ANY)
 
 
-def test_set_desk_up_allowed_timer_scheduled_right_time(mocker):
-    (timer_mock, _, _, service) = create_service(
+def test_set_desk_disallowed_by_service_returns_false(
+    mocker,
+):
+    (timer_mock, _, desk_service_stub, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(10),
-        UP,
-        limits=(Timedelta(20), Timedelta(30)),
+        desk_state=UP,
     )
+    desk_service_stub.set.side_effect = None
+    desk_service_stub.set.return_value = False
 
-    service.set_desk(UP)
+    allowed = service.set_desk(DOWN)
 
-    timer_mock.schedule.assert_called_with(Timedelta(20), mocker.ANY)
+    assert allowed is False
+    timer_mock.schedule.assert_not_called()
 
 
 @pytest.mark.parametrize("desk", [DOWN, UP])
 def test_set_desk_hardware_error_timer_cancelled(mocker, desk):
-    (timer_mock, _, desk_service_stub, service) = create_service(
+    (timer_mock, _, desk_service_stub, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(0),
-        desk.next(),
+        desk_state=desk.next(),
     )
     desk_service_stub.set.side_effect = HardwareError(RuntimeError())
 
-    service.set_desk(desk)
+    allowed = service.set_desk(desk)
 
+    assert allowed is False
     timer_mock.cancel.assert_called_once()

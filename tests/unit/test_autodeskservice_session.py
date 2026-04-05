@@ -2,16 +2,15 @@ from pandas import Timedelta
 
 from autodesk.hardware.error import HardwareError
 from autodesk.states import ACTIVE, DOWN, INACTIVE, UP
-from tests.autodeskservice import TIME_ALLOWED, create_service
+from tests.autodeskservice import create_allowed_service, create_denied_service
 
 
 def test_set_session_active_desk_down_timer_scheduled_right_time(mocker):
-    (timer_mock, _, _, service) = create_service(
+    (timer_mock, _, _, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        INACTIVE,
-        Timedelta(10),
-        DOWN,
+        session_state=INACTIVE,
+        active_time=Timedelta(10),
+        desk_state=DOWN,
         limits=(Timedelta(20), Timedelta(30)),
     )
 
@@ -21,12 +20,11 @@ def test_set_session_active_desk_down_timer_scheduled_right_time(mocker):
 
 
 def test_set_session_active_desk_up_timer_scheduled_right_time(mocker):
-    (timer_mock, _, _, service) = create_service(
+    (timer_mock, _, _, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        INACTIVE,
-        Timedelta(10),
-        UP,
+        session_state=INACTIVE,
+        active_time=Timedelta(10),
+        desk_state=UP,
         limits=(Timedelta(20), Timedelta(30)),
     )
 
@@ -36,12 +34,10 @@ def test_set_session_active_desk_up_timer_scheduled_right_time(mocker):
 
 
 def test_set_session_inactive_timer_cancelled(mocker):
-    (timer_mock, _, _, service) = create_service(
+    (timer_mock, _, _, service) = create_denied_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(0),
-        UP,
+        session_state=ACTIVE,
+        desk_state=UP,
     )
 
     service.set_session(INACTIVE)
@@ -50,12 +46,9 @@ def test_set_session_inactive_timer_cancelled(mocker):
 
 
 def test_set_session_timer_lambda_called_desk_service_called(mocker):
-    (timer_stub, _, desk_service_mock, service) = create_service(
+    (timer_stub, _, desk_service_mock, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(0),
-        DOWN,
+        desk_state=DOWN,
     )
 
     service.set_session(ACTIVE)
@@ -64,13 +57,10 @@ def test_set_session_timer_lambda_called_desk_service_called(mocker):
     desk_service_mock.set.assert_called_with(UP)
 
 
-def test_set_session_timer_lambda_called_model_updated(mocker):
-    (timer_stub, _, desk_service_mock, service) = create_service(
+def test_set_session_timer_lambda_calls_desk_service_with_next_state(mocker):
+    (timer_stub, _, desk_service_mock, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(0),
-        UP,
+        desk_state=UP,
     )
 
     service.set_session(ACTIVE)
@@ -80,12 +70,9 @@ def test_set_session_timer_lambda_called_model_updated(mocker):
 
 
 def test_set_session_hardware_error_timer_cancelled(mocker):
-    (timer_mock, session_service_stub, _, service) = create_service(
+    (timer_mock, session_service_stub, _, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        INACTIVE,
-        Timedelta(0),
-        DOWN,
+        session_state=INACTIVE,
     )
     session_service_stub.set.side_effect = HardwareError(RuntimeError())
 
@@ -95,12 +82,10 @@ def test_set_session_hardware_error_timer_cancelled(mocker):
 
 
 def test_toggle_session_from_inactive(mocker):
-    (_, session_service_mock, _, service) = create_service(
+    (_, session_service_mock, _, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        INACTIVE,
-        Timedelta(10),
-        DOWN,
+        session_state=INACTIVE,
+        active_time=Timedelta(10),
         limits=(Timedelta(20), Timedelta(30)),
     )
 
@@ -110,12 +95,10 @@ def test_toggle_session_from_inactive(mocker):
 
 
 def test_toggle_session_from_active(mocker):
-    (_, session_service_mock, _, service) = create_service(
+    (_, session_service_mock, _, service) = create_allowed_service(
         mocker,
-        TIME_ALLOWED,
-        ACTIVE,
-        Timedelta(10),
-        DOWN,
+        session_state=ACTIVE,
+        active_time=Timedelta(10),
         limits=(Timedelta(20), Timedelta(30)),
     )
 

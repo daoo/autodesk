@@ -63,10 +63,8 @@ async def client(mocker, aiohttp_client):
     session_service = SessionService(model, light_controller, time_service)
     desk_service = DeskService(operation, model, desk_controller, time_service)
     service = AutoDeskService(
-        operation,
         scheduler,
         timer,
-        time_service,
         session_service,
         desk_service,
     )

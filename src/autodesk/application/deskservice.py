@@ -25,6 +25,11 @@ class DeskService:
     def get(self) -> Desk:
         return self.model.get_desk_state()
 
+    def operation_allowed(self) -> bool:
+        now = self.time_service.now()
+        session = self.model.get_session_state()
+        return self.operation.allowed(session, now)
+
     def set(self, desk: Desk) -> bool:
         now = self.time_service.now()
         session = self.model.get_session_state()
@@ -34,7 +39,7 @@ class DeskService:
 
         try:
             self.desk_controller.move(desk)
-            self.model.set_desk(self.time_service.now(), desk)
+            self.model.set_desk(now, desk)
             return True
         except HardwareError as error:
             self.logger.error("hardware failure, desk state not updated in model")
