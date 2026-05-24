@@ -1,10 +1,12 @@
 import sqlite3
-from datetime import datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
 from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import Desk, Session
+
+UTC_PLUS_ONE = timezone(timedelta(hours=1))
 
 
 @pytest.fixture
@@ -58,8 +60,8 @@ def test_get_desk_events_between_full_range(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     expected_events = [
-        (datetime(2023, 1, 9, 20, 9, 0), Desk.UP),
-        (datetime(2023, 1, 9, 20, 11, 0), Desk.DOWN),
+        (datetime(2023, 1, 9, 20, 9, 0, tzinfo=UTC), Desk.UP),
+        (datetime(2023, 1, 9, 20, 11, 0, tzinfo=UTC), Desk.DOWN),
     ]
     assert (
         data_store.get_desk_events_between(
@@ -74,9 +76,9 @@ def test_get_session_events_between_full_range(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     expected_events = [
-        (datetime(2023, 1, 9, 20, 7, 0), Session.INACTIVE),
-        (datetime(2023, 1, 9, 20, 8, 0), Session.ACTIVE),
-        (datetime(2023, 1, 9, 20, 12, 0), Session.INACTIVE),
+        (datetime(2023, 1, 9, 20, 7, 0, tzinfo=UTC), Session.INACTIVE),
+        (datetime(2023, 1, 9, 20, 8, 0, tzinfo=UTC), Session.ACTIVE),
+        (datetime(2023, 1, 9, 20, 12, 0, tzinfo=UTC), Session.INACTIVE),
     ]
     assert (
         data_store.get_session_events_between(
@@ -91,7 +93,7 @@ def test_get_last_desk_event(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     assert data_store.get_last_desk_event() == (
-        datetime(2023, 1, 9, 20, 11, 0),
+        datetime(2023, 1, 9, 20, 11, 0, tzinfo=UTC),
         Desk.DOWN,
     )
 
@@ -100,7 +102,7 @@ def test_get_last_session_event(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     assert data_store.get_last_session_event() == (
-        datetime(2023, 1, 9, 20, 12, 0),
+        datetime(2023, 1, 9, 20, 12, 0, tzinfo=UTC),
         Session.INACTIVE,
     )
 
@@ -110,7 +112,7 @@ def test_get_last_desk_event_before(logger_stub, db_with_events):
 
     assert data_store.get_last_desk_event_before(
         datetime(2023, 1, 9, 20, 10, 0),
-    ) == (datetime(2023, 1, 9, 20, 9, 0), Desk.UP)
+    ) == (datetime(2023, 1, 9, 20, 9, 0, tzinfo=UTC), Desk.UP)
 
 
 def test_get_last_session_event_before(logger_stub, db_with_events):
@@ -118,7 +120,7 @@ def test_get_last_session_event_before(logger_stub, db_with_events):
 
     assert data_store.get_last_session_event_before(
         datetime(2023, 1, 9, 20, 8, 0),
-    ) == (datetime(2023, 1, 9, 20, 8, 0), Session.ACTIVE)
+    ) == (datetime(2023, 1, 9, 20, 8, 0, tzinfo=UTC), Session.ACTIVE)
 
 
 def test_get_desk_events_between(logger_stub, db_with_events):
@@ -127,7 +129,7 @@ def test_get_desk_events_between(logger_stub, db_with_events):
     assert data_store.get_desk_events_between(
         datetime(2023, 1, 9, 20, 10, 0),
         datetime(2023, 1, 9, 20, 12, 0),
-    ) == [(datetime(2023, 1, 9, 20, 11, 0), Desk.DOWN)]
+    ) == [(datetime(2023, 1, 9, 20, 11, 0, tzinfo=UTC), Desk.DOWN)]
 
 
 def test_get_session_events_between(logger_stub, db_with_events):
@@ -137,6 +139,22 @@ def test_get_session_events_between(logger_stub, db_with_events):
         datetime(2023, 1, 9, 20, 8, 0),
         datetime(2023, 1, 9, 20, 12, 0),
     ) == [
-        (datetime(2023, 1, 9, 20, 8, 0), Session.ACTIVE),
-        (datetime(2023, 1, 9, 20, 12, 0), Session.INACTIVE),
+        (datetime(2023, 1, 9, 20, 8, 0, tzinfo=UTC), Session.ACTIVE),
+        (datetime(2023, 1, 9, 20, 12, 0, tzinfo=UTC), Session.INACTIVE),
     ]
+
+
+def test_set_session_stores_aware_datetime_as_utc(logger_stub):
+    connection = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES)
+    data_store = SqliteDataStore(logger_stub, connection)
+
+    data_store.set_session(
+        datetime(2023, 1, 9, 21, 8, 0, tzinfo=UTC_PLUS_ONE),
+        Session.ACTIVE,
+    )
+
+    assert data_store.get_last_session_event() == (
+        datetime(2023, 1, 9, 20, 8, 0, tzinfo=UTC),
+        Session.ACTIVE,
+    )
+    connection.close()

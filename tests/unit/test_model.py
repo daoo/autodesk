@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -237,39 +237,47 @@ def test_compute_hourly_count_active_multi_hour_increments_each_hour(mocker):
 
 def test_set_session_state_active(inmemory_model):
     t1 = datetime(2018, 1, 1)
+    expected_t1 = datetime(2018, 1, 1, tzinfo=UTC)
 
     inmemory_model.set_session(t1, Session.ACTIVE)
 
     assert inmemory_model.get_session_state() == Session.ACTIVE
     assert inmemory_model.datastore.get_session_events_between(t1, t1) == [
-        (t1, Session.ACTIVE)
+        (expected_t1, Session.ACTIVE)
     ]
 
 
 def test_set_session_state_inactive(inmemory_model):
     t1 = datetime(2018, 1, 1)
+    expected_t1 = datetime(2018, 1, 1, tzinfo=UTC)
 
     inmemory_model.set_session(t1, Session.INACTIVE)
 
     assert inmemory_model.get_session_state() == Session.INACTIVE
     assert inmemory_model.datastore.get_session_events_between(t1, t1) == [
-        (t1, Session.INACTIVE),
+        (expected_t1, Session.INACTIVE),
     ]
 
 
 def test_set_desk_state_up(inmemory_model):
     t1 = datetime(2018, 1, 1)
+    expected_t1 = datetime(2018, 1, 1, tzinfo=UTC)
 
     inmemory_model.set_desk(t1, Desk.UP)
 
     assert inmemory_model.get_desk_state() == Desk.UP
-    assert inmemory_model.datastore.get_desk_events_between(t1, t1) == [(t1, Desk.UP)]
+    assert inmemory_model.datastore.get_desk_events_between(t1, t1) == [
+        (expected_t1, Desk.UP),
+    ]
 
 
 def test_set_desk_state_down(inmemory_model):
     t1 = datetime(2018, 1, 1)
+    expected_t1 = datetime(2018, 1, 1, tzinfo=UTC)
 
     inmemory_model.set_desk(t1, Desk.DOWN)
 
     assert inmemory_model.get_desk_state() == Desk.DOWN
-    assert inmemory_model.datastore.get_desk_events_between(t1, t1) == [(t1, Desk.DOWN)]
+    assert inmemory_model.datastore.get_desk_events_between(t1, t1) == [
+        (expected_t1, Desk.DOWN),
+    ]

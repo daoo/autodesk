@@ -33,6 +33,9 @@ class AutoDeskService:
             self.logger.debug(error)
             self.timer.cancel()
 
+    def close(self) -> None:
+        self.session_service.model.close()
+
     def get_session_state(self) -> Session:
         return self.session_service.get()
 

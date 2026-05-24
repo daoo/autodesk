@@ -100,6 +100,7 @@ async def init(app: web.Application) -> None:
 
 async def cleanup(app: web.Application) -> None:
     cast(asyncio.Task[None], app["poll_button_task"]).cancel()
+    _service(app).close()
 
 
 def setup_app(

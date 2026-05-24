@@ -9,13 +9,16 @@ type DeskEvent = tuple[datetime.datetime, states.Desk]
 type SessionEvent = tuple[datetime.datetime, states.Session]
 
 def adapt_datetime_epoch(val: datetime.datetime) -> int:
-    utc = val.replace(tzinfo=datetime.UTC)
+    utc = (
+        val.replace(tzinfo=datetime.UTC)
+        if val.tzinfo is None
+        else val.astimezone(datetime.UTC)
+    )
     return int(utc.timestamp())
 
 
 def convert_timestamp(val: bytes) -> datetime.datetime:
-    utc = datetime.datetime.fromtimestamp(int(val), tz=datetime.UTC)
-    return utc.replace(tzinfo=None)
+    return datetime.datetime.fromtimestamp(int(val), tz=datetime.UTC)
 
 
 sqlite3.register_adapter(datetime.datetime, adapt_datetime_epoch)
