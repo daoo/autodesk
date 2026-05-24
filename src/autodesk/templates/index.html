@@ -1,35 +1,95 @@
-<!DOCTYPE>
-<html>
+<!doctype html>
+<html lang="en">
   <head>
     <title>AutoDesk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
       body {
         font-family: sans-serif;
+        margin: 0;
+      }
+
+      main {
         max-width: 800px;
         margin: 0 auto;
+        padding: 12px;
+      }
+
+      p {
+        margin: 0 0 8px;
+      }
+
+      button {
+        font: inherit;
+        margin-right: 4px;
+      }
+
+      #status-message {
+        min-height: 1em;
+      }
+
+      img {
+        width: 100%;
+        max-width: 640px;
+        max-height: 65vh;
       }
     </style>
     <script>
+      function putState(path, state) {
+        var message = document.querySelector("#status-message");
+
+        if (message) {
+          message.textContent = "Updating...";
+        }
+
+        fetch(path, { method: "PUT", body: state })
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("Request failed");
+            }
+
+            window.location.reload();
+          })
+          .catch(function () {
+            if (message) {
+              message.textContent = "Could not update state.";
+            }
+          });
+      }
+
       function desk(state) {
-        var oReq = new XMLHttpRequest();
-        oReq.open("PUT", "/api/desk");
-        oReq.send(state);
+        putState("/api/desk", state);
       }
 
       function session(state) {
-        var oReq = new XMLHttpRequest();
-        oReq.open("PUT", "/api/session");
-        oReq.send(state);
+        putState("/api/session", state);
       }
     </script>
   </head>
   <body>
-    <h1>AutoDesk</h1>
-    <p>Currently <b>{{session}}</b> with desk <b>{{desk}}</b> for <b>{{active_time}}</b>.</p>
-    <p>Change desk state: <a href="#" onclick="desk('down');">Down</a> / <a href="#" onclick="desk('up');">Up</a></p>
-    <p>Change active state: <a href="#" onclick="session('inactive');">Inactive</a> / <a href="#" onclick="session('active');">Active</a></p>
-    <h2>Statistics</h2>
-    <img src='data:image/png;charset=utf-8;base64, {{statistics}}' />
+    <main>
+      <h1>AutoDesk</h1>
+      <p>Currently <b>{{session}}</b> with desk <b>{{desk}}</b> for <b>{{active_time}}</b>.</p>
+
+      <p>
+        Desk:
+        <button type="button" onclick="desk('down');">Down</button>
+        <button type="button" onclick="desk('up');">Up</button>
+      </p>
+
+      <p>
+        Session:
+        <button type="button" onclick="session('inactive');">Inactive</button>
+        <button type="button" onclick="session('active');">Active</button>
+      </p>
+
+      <p id="status-message" role="status" aria-live="polite"></p>
+
+      <h2>Statistics</h2>
+      <img
+        src="data:image/png;charset=utf-8;base64, {{statistics}}"
+        alt="Weekly desk activity statistics"
+      >
+    </main>
   </body>
 </html>
