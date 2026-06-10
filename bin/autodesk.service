@@ -2,14 +2,10 @@
 Description=Autodesk desk automation service
 
 [Service]
-ExecStart=/usr/bin/env uv run autodesk
+ExecStart=/usr/bin/env uv run autodesk --address 127.0.0.1 --port 7380 --config ./config/ft232h.toml --database %S/autodesk.db
 KillMode=mixed
 Environment="PATH=%h/.local/share/mise/shims:/usr/local/bin:/usr/bin"
 WorkingDirectory=%h/code/autodesk
-Environment=AUTODESK_ADDRSESS=127.0.0.1
-Environment=AUTODESK_PORT=7380
-Environment=AUTODESK_CONFIG=./config/ft232h.toml
-Environment=AUTODESK_DATABASE=%S/autodesk.db
 StateDirectory=autodesk
 StateDirectoryMode=0700
 

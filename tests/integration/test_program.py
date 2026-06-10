@@ -7,13 +7,17 @@ import pytest
 
 @pytest.fixture
 def process():
-    cmd = ["uv", "run", "autodesk"]
+    cmd = [
+        "uv",
+        "run",
+        "autodesk",
+        "--address=127.0.0.1",
+        "--config=config/testing.toml",
+        "--database=:memory:",
+        "--port=7381",
+    ]
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "x"
-    env["AUTODESK_ADDRESS"] = "127.0.0.1"
-    env["AUTODESK_CONFIG"] = "config/testing.toml"
-    env["AUTODESK_DATABASE"] = ":memory:"
-    env["AUTODESK_PORT"] = "7381"
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,

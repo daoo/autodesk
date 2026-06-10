@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-export AUTODESK_ADDRESS="127.0.0.1"
-export AUTODESK_PORT="7380"
-export AUTODESK_CONFIG="./config/ft232h.toml"
-export AUTODESK_DATABASE="$HOME/AppData/Local/autodesk/autodesk.db"
-
-uv run autodesk
+uv run autodesk \
+    --address "127.0.0.1" \
+    --port "7380" \
+    --config "./config/ft232h.toml" \
+    --database "$HOME/AppData/Local/autodesk/autodesk.db"

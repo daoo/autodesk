@@ -1,5 +1,5 @@
+import argparse
 import logging
-import os
 import tomllib
 from contextlib import closing
 from datetime import timedelta
@@ -42,7 +42,7 @@ def read_config(path: str) -> ProgramConfig:
     return cast(ProgramConfig, loaded)
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
@@ -50,10 +50,17 @@ def main() -> None:
 
     logger = logging.getLogger("program")
 
-    config_path = os.getenv("AUTODESK_CONFIG", "config/testing.toml")
-    database = os.getenv("AUTODESK_DATABASE", ":memory:")
-    address = os.getenv("AUTODESK_ADDRESS", "127.0.0.1")
-    port = int(os.getenv("AUTODESK_PORT", "7380"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="config/testing.toml")
+    parser.add_argument("--database", default=":memory:")
+    parser.add_argument("--address", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=7380)
+    args = parser.parse_args(argv)
+
+    config_path = args.config
+    database = args.database
+    address = args.address
+    port = args.port
 
     logger.info('Reading config "%s"', config_path)
     config: ProgramConfig = read_config(config_path)

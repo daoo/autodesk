@@ -55,7 +55,7 @@ class DummyPinFactory:
         return object()
 
 
-def test_main(monkeypatch, mocker, tmp_path):
+def test_main(mocker, tmp_path):
     cfg = {
         "hardware": "noop",
         "button_pin": 1,
@@ -67,18 +67,24 @@ def test_main(monkeypatch, mocker, tmp_path):
     file = tmp_path / "config.toml"
     file.write_text(_dump_toml(cfg))
 
-    monkeypatch.setenv("AUTODESK_CONFIG", str(file))
-    monkeypatch.setenv("AUTODESK_DATABASE", ":memory:")
-    monkeypatch.setenv("AUTODESK_ADDRESS", "127.0.0.1")
-    monkeypatch.setenv("AUTODESK_PORT", "7381")
-
     dummy_factory = DummyPinFactory()
     mocker.patch("autodesk.create_pin_factory", return_value=dummy_factory)
 
     setup_app = mocker.patch("autodesk.setup_app", return_value={"service": "stub"})
     run_app = mocker.patch("aiohttp.web.run_app")
 
-    main()
+    main(
+        [
+            "--config",
+            str(file),
+            "--database",
+            ":memory:",
+            "--address",
+            "127.0.0.1",
+            "--port",
+            "7381",
+        ],
+    )
 
     setup_app.assert_called_once()
     run_app.assert_called_once()

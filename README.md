@@ -136,7 +136,7 @@ Use the following commands to setup and start the server (in test mode):
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
     $ cd autodesk
-    $ uv run autodesk
+    $ uv run autodesk --address 127.0.0.1 --port 7380 --config ./config/testing.toml --database :memory:
 
 ### Linux Client
 
@@ -161,7 +161,7 @@ Use the following commands to setup and start the server (in test mode):
     $ cd ~/opt
     $ git clone https://github.com/daoo/autodesk
     $ cd autodesk
-    $ uv run autodesk
+    $ uv run autodesk --address 127.0.0.1 --port 7380 --config .\\config\\testing.toml --database :memory:
 
 See [./bin/start-autodesk.ps1](./bin/start-autodesk.ps1) for start-up example.
 
