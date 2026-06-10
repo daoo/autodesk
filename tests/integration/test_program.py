@@ -11,7 +11,7 @@ def process():
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "x"
     env["AUTODESK_ADDRESS"] = "127.0.0.1"
-    env["AUTODESK_CONFIG"] = "config/testing.yml"
+    env["AUTODESK_CONFIG"] = "config/testing.toml"
     env["AUTODESK_DATABASE"] = ":memory:"
     env["AUTODESK_PORT"] = "7381"
     process = subprocess.Popen(

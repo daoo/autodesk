@@ -1,10 +1,10 @@
 import logging
 import os
+import tomllib
 from contextlib import closing
 from datetime import timedelta
 from typing import TypedDict, cast
 
-import yaml
 from aiohttp import web
 
 from autodesk.api import setup_app
@@ -36,9 +36,9 @@ class ProgramConfig(TypedDict):
     light_pins: LightPinsConfig
 
 
-def read_yaml(path: str) -> ProgramConfig:
-    with open(path) as file:
-        loaded = yaml.load(file, Loader=yaml.SafeLoader)
+def read_config(path: str) -> ProgramConfig:
+    with open(path, "rb") as file:
+        loaded = tomllib.load(file)
     return cast(ProgramConfig, loaded)
 
 
@@ -50,13 +50,13 @@ def main() -> None:
 
     logger = logging.getLogger("program")
 
-    config_path = os.getenv("AUTODESK_CONFIG", "config/testing.yml")
+    config_path = os.getenv("AUTODESK_CONFIG", "config/testing.toml")
     database = os.getenv("AUTODESK_DATABASE", ":memory:")
     address = os.getenv("AUTODESK_ADDRESS", "127.0.0.1")
     port = int(os.getenv("AUTODESK_PORT", "7380"))
 
     logger.info('Reading config "%s"', config_path)
-    config: ProgramConfig = read_yaml(config_path)
+    config: ProgramConfig = read_config(config_path)
 
     limit_down = timedelta(seconds=config["limits"]["down"])
     limit_up = timedelta(seconds=config["limits"]["up"])

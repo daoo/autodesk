@@ -1,9 +1,30 @@
-import yaml
-
-from autodesk import main, read_yaml
+from autodesk import main, read_config
 
 
-def test_read_yaml(tmp_path):
+def _dump_toml(cfg: dict) -> str:
+    return "\n".join(
+        [
+            f'hardware = "{cfg["hardware"]}"',
+            f"button_pin = {cfg['button_pin']}",
+            f"delay = {cfg['delay']}",
+            "",
+            "[limits]",
+            f"down = {cfg['limits']['down']}",
+            f"up = {cfg['limits']['up']}",
+            "",
+            "[motor_pins]",
+            f"down = {cfg['motor_pins']['down']}",
+            f"up = {cfg['motor_pins']['up']}",
+            "",
+            "[light_pins]",
+            f"desk = {cfg['light_pins']['desk']}",
+            f"session = {cfg['light_pins']['session']}",
+            "",
+        ],
+    )
+
+
+def test_read_config(tmp_path):
     cfg = {
         "hardware": "noop",
         "button_pin": 1,
@@ -12,10 +33,10 @@ def test_read_yaml(tmp_path):
         "motor_pins": {"down": 2, "up": 3},
         "light_pins": {"desk": 4, "session": 5},
     }
-    file = tmp_path / "config.yml"
-    file.write_text(yaml.dump(cfg))
+    file = tmp_path / "config.toml"
+    file.write_text(_dump_toml(cfg))
 
-    loaded = read_yaml(str(file))
+    loaded = read_config(str(file))
 
     assert loaded == cfg
 
@@ -43,8 +64,8 @@ def test_main(monkeypatch, mocker, tmp_path):
         "motor_pins": {"down": 2, "up": 3},
         "light_pins": {"desk": 4, "session": 5},
     }
-    file = tmp_path / "config.yml"
-    file.write_text(yaml.dump(cfg))
+    file = tmp_path / "config.toml"
+    file.write_text(_dump_toml(cfg))
 
     monkeypatch.setenv("AUTODESK_CONFIG", str(file))
     monkeypatch.setenv("AUTODESK_DATABASE", ":memory:")

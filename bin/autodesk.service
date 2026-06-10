@@ -8,7 +8,7 @@ Environment="PATH=%h/.local/share/mise/shims:/usr/local/bin:/usr/bin"
 WorkingDirectory=%h/code/autodesk
 Environment=AUTODESK_ADDRSESS=127.0.0.1
 Environment=AUTODESK_PORT=7380
-Environment=AUTODESK_CONFIG=./config/ft232h.yml
+Environment=AUTODESK_CONFIG=./config/ft232h.toml
 Environment=AUTODESK_DATABASE=%S/autodesk.db
 StateDirectory=autodesk
 StateDirectoryMode=0700
