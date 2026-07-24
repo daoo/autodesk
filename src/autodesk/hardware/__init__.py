@@ -1,6 +1,5 @@
 import logging
 from collections.abc import Callable
-from typing import cast
 
 from autodesk.hardware.tracing import TracingPinFactory
 from autodesk.hardware.types import HardwareKind, PinFactory
@@ -17,8 +16,7 @@ def create_pin_factory(kind: str) -> PinFactory:
     if kind not in builders:
         raise ValueError(f"Unknown hardware kind: {kind!r}")
 
-    kind_key = cast(HardwareKind, kind)
-    message, builder = builders[kind_key]
+    message, builder = builders[kind]
     logger.info(message)
     return TracingPinFactory(builder())
 
