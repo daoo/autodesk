@@ -58,7 +58,7 @@ class DeviceWrapper:
             used_pins = self.output_pins | self.input_pins
             invalid_pins = used_pins & ~valid_pins
             if invalid_pins != 0:
-                formatted = [i for i in range(0, 16) if invalid_pins & 1 << i != 0]
+                formatted = [i for i in range(16) if invalid_pins & 1 << i != 0]
                 raise HardwareError(f"Cannot use pin(s) {formatted} as GPIO.")
             # A low bit (equal to 0) indicates an input pin.
             # A high bit (equal to 1) indicates an output pin.

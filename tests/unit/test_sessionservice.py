@@ -1,5 +1,5 @@
 import contextlib
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 
@@ -10,8 +10,10 @@ from autodesk.lightcontroller import LightController
 from autodesk.model import Model
 from autodesk.states import Session
 
+DEFAULT_NOW = datetime.min.replace(tzinfo=UTC)
 
-def create_service(mocker, session_state, now=datetime.min):
+
+def create_service(mocker, session_state, now=DEFAULT_NOW):
     model_fake = mocker.create_autospec(Model, instance=True)
     model_fake.get_session_state.return_value = session_state
 
@@ -56,7 +58,7 @@ def test_set_active_light_on(mocker):
 
 
 def test_set_active_model_set_active(mocker):
-    now = datetime(2019, 8, 1, 13, 0)
+    now = datetime(2019, 8, 1, 13, 0, tzinfo=UTC)
     (model_mock, _, service) = create_service(mocker, Session.INACTIVE, now)
 
     service.set(Session.ACTIVE)
@@ -65,7 +67,7 @@ def test_set_active_model_set_active(mocker):
 
 
 def test_set_inactive_model_set_inactive(mocker):
-    now = datetime(2019, 8, 1, 13, 0)
+    now = datetime(2019, 8, 1, 13, 0, tzinfo=UTC)
     (model_mock, _, service) = create_service(mocker, Session.ACTIVE, now)
 
     service.set(Session.INACTIVE)
@@ -82,7 +84,7 @@ def test_set_hardware_error_is_passed_up(mocker):
 
 
 def test_set_hardware_error_model_still_called(mocker):
-    now = datetime(2019, 8, 1, 13, 0)
+    now = datetime(2019, 8, 1, 13, 0, tzinfo=UTC)
     (model_mock, light_controller_stub, service) = create_service(
         mocker, Session.INACTIVE, now
     )

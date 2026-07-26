@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import UTC, datetime, timedelta, timezone
+from functools import partial
 
 import pytest
 
@@ -7,6 +8,9 @@ from autodesk.sqlitedatastore import SqliteDataStore
 from autodesk.states import Desk, Session
 
 UTC_PLUS_ONE = timezone(timedelta(hours=1))
+
+
+dt = partial(datetime, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -29,23 +33,23 @@ def db_with_events():
     )
     connection.execute(
         "INSERT INTO session3 values(?, ?)",
-        (datetime(2023, 1, 9, 20, 7, 0), Session.INACTIVE),
+        (dt(2023, 1, 9, 20, 7, 0), Session.INACTIVE),
     )
     connection.execute(
         "INSERT INTO session3 values(?, ?)",
-        (datetime(2023, 1, 9, 20, 8, 0), Session.ACTIVE),
+        (dt(2023, 1, 9, 20, 8, 0), Session.ACTIVE),
     )
     connection.execute(
         "INSERT INTO desk3 values(?, ?)",
-        (datetime(2023, 1, 9, 20, 9, 0), Desk.UP),
+        (dt(2023, 1, 9, 20, 9, 0), Desk.UP),
     )
     connection.execute(
         "INSERT INTO desk3 values(?, ?)",
-        (datetime(2023, 1, 9, 20, 11, 0), Desk.DOWN),
+        (dt(2023, 1, 9, 20, 11, 0), Desk.DOWN),
     )
     connection.execute(
         "INSERT INTO session3 values(?, ?)",
-        (datetime(2023, 1, 9, 20, 12, 0), Session.INACTIVE),
+        (dt(2023, 1, 9, 20, 12, 0), Session.INACTIVE),
     )
     yield connection
     connection.close()
@@ -65,8 +69,8 @@ def test_get_desk_events_between_full_range(logger_stub, db_with_events):
     ]
     assert (
         data_store.get_desk_events_between(
-            datetime(2023, 1, 9, 20, 0, 0),
-            datetime(2023, 1, 9, 21, 0, 0),
+            dt(2023, 1, 9, 20, 0, 0),
+            dt(2023, 1, 9, 21, 0, 0),
         )
         == expected_events
     )
@@ -82,8 +86,8 @@ def test_get_session_events_between_full_range(logger_stub, db_with_events):
     ]
     assert (
         data_store.get_session_events_between(
-            datetime(2023, 1, 9, 20, 0, 0),
-            datetime(2023, 1, 9, 21, 0, 0),
+            dt(2023, 1, 9, 20, 0, 0),
+            dt(2023, 1, 9, 21, 0, 0),
         )
         == expected_events
     )
@@ -111,7 +115,7 @@ def test_get_last_desk_event_before(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     assert data_store.get_last_desk_event_before(
-        datetime(2023, 1, 9, 20, 10, 0),
+        dt(2023, 1, 9, 20, 10, 0),
     ) == (datetime(2023, 1, 9, 20, 9, 0, tzinfo=UTC), Desk.UP)
 
 
@@ -119,7 +123,7 @@ def test_get_last_session_event_before(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     assert data_store.get_last_session_event_before(
-        datetime(2023, 1, 9, 20, 8, 0),
+        dt(2023, 1, 9, 20, 8, 0),
     ) == (datetime(2023, 1, 9, 20, 8, 0, tzinfo=UTC), Session.ACTIVE)
 
 
@@ -127,8 +131,8 @@ def test_get_desk_events_between(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     assert data_store.get_desk_events_between(
-        datetime(2023, 1, 9, 20, 10, 0),
-        datetime(2023, 1, 9, 20, 12, 0),
+        dt(2023, 1, 9, 20, 10, 0),
+        dt(2023, 1, 9, 20, 12, 0),
     ) == [(datetime(2023, 1, 9, 20, 11, 0, tzinfo=UTC), Desk.DOWN)]
 
 
@@ -136,8 +140,8 @@ def test_get_session_events_between(logger_stub, db_with_events):
     data_store = SqliteDataStore(logger_stub, db_with_events)
 
     assert data_store.get_session_events_between(
-        datetime(2023, 1, 9, 20, 8, 0),
-        datetime(2023, 1, 9, 20, 12, 0),
+        dt(2023, 1, 9, 20, 8, 0),
+        dt(2023, 1, 9, 20, 12, 0),
     ) == [
         (datetime(2023, 1, 9, 20, 8, 0, tzinfo=UTC), Session.ACTIVE),
         (datetime(2023, 1, 9, 20, 12, 0, tzinfo=UTC), Session.INACTIVE),

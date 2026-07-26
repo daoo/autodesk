@@ -1,12 +1,12 @@
 import asyncio
 import base64
 import os
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 import pytest_asyncio
 
-import autodesk.api as api
+from autodesk import api
 from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.application.deskservice import DeskService
@@ -25,23 +25,23 @@ from tests.stubdatastore import fake_data_store
 
 SESSION_EVENTS = [
     # Tuesdays
-    (datetime(2019, 4, 16, 14, 0), Session.ACTIVE),
-    (datetime(2019, 4, 16, 18, 0), Session.INACTIVE),
-    (datetime(2019, 4, 23, 14, 0), Session.ACTIVE),
-    (datetime(2019, 4, 23, 18, 0), Session.INACTIVE),
+    (datetime(2019, 4, 16, 14, 0, tzinfo=UTC), Session.ACTIVE),
+    (datetime(2019, 4, 16, 18, 0, tzinfo=UTC), Session.INACTIVE),
+    (datetime(2019, 4, 23, 14, 0, tzinfo=UTC), Session.ACTIVE),
+    (datetime(2019, 4, 23, 18, 0, tzinfo=UTC), Session.INACTIVE),
     # Wednesdays
-    (datetime(2019, 4, 24, 13, 0), Session.ACTIVE),
-    (datetime(2019, 4, 24, 14, 0), Session.INACTIVE),
+    (datetime(2019, 4, 24, 13, 0, tzinfo=UTC), Session.ACTIVE),
+    (datetime(2019, 4, 24, 14, 0, tzinfo=UTC), Session.INACTIVE),
     # Thursdays
-    (datetime(2019, 4, 25, 8, 0), Session.ACTIVE),
-    (datetime(2019, 4, 25, 9, 0), Session.INACTIVE),
-    (datetime(2019, 4, 25, 10, 0), Session.ACTIVE),
+    (datetime(2019, 4, 25, 8, 0, tzinfo=UTC), Session.ACTIVE),
+    (datetime(2019, 4, 25, 9, 0, tzinfo=UTC), Session.INACTIVE),
+    (datetime(2019, 4, 25, 10, 0, tzinfo=UTC), Session.ACTIVE),
 ]
 
 DESK_EVENTS = [
-    (datetime(2019, 4, 25, 8, 30), Desk.UP),
-    (datetime(2019, 4, 25, 10, 30), Desk.DOWN),
-    (datetime(2019, 4, 25, 11, 30), Desk.UP),
+    (datetime(2019, 4, 25, 8, 30, tzinfo=UTC), Desk.UP),
+    (datetime(2019, 4, 25, 10, 30, tzinfo=UTC), Desk.DOWN),
+    (datetime(2019, 4, 25, 11, 30, tzinfo=UTC), Desk.UP),
 ]
 
 
@@ -72,8 +72,8 @@ async def client(mocker, button_pin_stub, service_mock, aiohttp_client):
 @pytest_asyncio.fixture
 async def index_client(mocker, aiohttp_client):
     time_service = mocker.create_autospec(TimeService, instance=True)
-    time_service.min = datetime.min
-    time_service.now.return_value = datetime(2019, 4, 25, 12, 0)
+    time_service.min = datetime.min.replace(tzinfo=UTC)
+    time_service.now.return_value = datetime(2019, 4, 25, 12, 0, tzinfo=UTC)
 
     model = Model(
         fake_data_store(mocker, session_events=SESSION_EVENTS, desk_events=DESK_EVENTS),

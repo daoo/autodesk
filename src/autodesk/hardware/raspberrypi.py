@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO  # type: ignore
+from RPi import GPIO  # type: ignore
 
 from autodesk.hardware.types import (
     InputPin,

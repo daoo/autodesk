@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 import pytest_asyncio
 
-import autodesk.api as api
+from autodesk import api
 from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.application.deskservice import DeskService

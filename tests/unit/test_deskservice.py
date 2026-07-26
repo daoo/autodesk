@@ -1,5 +1,5 @@
 import contextlib
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -10,8 +10,8 @@ from autodesk.model import Model
 from autodesk.operation import Operation
 from autodesk.states import Desk, Session
 
-TIME_ALLOWED = datetime(2018, 4, 23, 13, 0)
-TIME_DENIED = datetime(2018, 4, 23, 21, 0)
+TIME_ALLOWED = datetime(2018, 4, 23, 13, 0, tzinfo=UTC)
+TIME_DENIED = datetime(2018, 4, 23, 21, 0, tzinfo=UTC)
 DESK_DENIED = [
     (Session.ACTIVE, TIME_DENIED),
     (Session.INACTIVE, TIME_ALLOWED),

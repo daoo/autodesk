@@ -19,10 +19,11 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
 )
+logger = logging.getLogger(__name__)
 
 
 def notify(url: str, active: bool):
-    logging.info(f"notify {url} {active}")
+    logger.info("notify %s %s", url, active)
     state = b"active" if active else b"inactive"
     try:
         req = urlrequest.Request(
@@ -32,19 +33,19 @@ def notify(url: str, active: bool):
             method="PUT",
         )
         with urlrequest.urlopen(req) as response:
-            logging.info(f"result status={response.status}")
+            logger.info("result status=%s", response.status)
     except urlerror.HTTPError as http_error:
-        logging.error(
+        logger.error(
             "http error status=%s reason=%s",
             http_error.code,
             http_error.reason,
         )
-    except Exception as exc:
-        logging.error(exc)
+    except urlerror.URLError as url_error:
+        logger.error("url error reason=%s", url_error.reason)
 
 
 def properties_handler(url: str, interface, changed, invalidated):
-    logging.info(f"handler {interface} {changed} {invalidated}")
+    logger.info("handler %s %s %s", interface, changed, invalidated)
     if interface != "org.freedesktop.login1.Session":
         return
     if "Active" in changed:
@@ -57,7 +58,7 @@ def program(url: str):
     bus = SystemBus()
     login = bus.get("org.freedesktop.login1")
     for _, _, _, _, path in login.ListSessions():
-        logging.info(f"connecting {path}")
+        logger.info("connecting %s", path)
         sessionbus = bus.get("org.freedesktop.login1", path)
         sessionbus.PropertiesChanged.connect(
             lambda interface, changed, invalidated: properties_handler(

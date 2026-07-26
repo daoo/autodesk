@@ -110,12 +110,8 @@ class Model:
             events=self.datastore.get_session_events_between(initial, final),
         ):
             if session_state.is_active:
-                overlap_start = (
-                    start
-                    if start > current_desk_span_start
-                    else current_desk_span_start
-                )
-                overlap_end = end if end < final else final
+                overlap_start = max(current_desk_span_start, start)
+                overlap_end = min(final, end)
                 if overlap_start < overlap_end:
                     active_time = active_time + (overlap_end - overlap_start)
         return active_time

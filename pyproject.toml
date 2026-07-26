@@ -42,7 +42,7 @@ dev = [
 ]
 
 [tool.ruff.lint]
-select = [
+extend-select = [
     "F",
     "E",
     "W",

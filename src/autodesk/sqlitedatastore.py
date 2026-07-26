@@ -3,7 +3,7 @@ import logging
 import sqlite3
 from typing import Any, cast
 
-import autodesk.states as states
+from autodesk import states
 
 type DeskEvent = tuple[datetime.datetime, states.Desk]
 type SessionEvent = tuple[datetime.datetime, states.Session]

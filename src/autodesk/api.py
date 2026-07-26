@@ -6,7 +6,7 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
-import autodesk.plots as plots
+from autodesk import plots
 from autodesk.application.autodeskservice import AutoDeskService
 from autodesk.application.autodeskservicefactory import AutoDeskServiceFactory
 from autodesk.button import Button
