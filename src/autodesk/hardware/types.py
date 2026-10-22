@@ -1,4 +1,4 @@
-from typing import Literal, Protocol, cast
+from typing import Literal, Protocol
 
 type PinValue = Literal[0, 1]
 type HardwareKind = Literal["raspberrypi", "ft232h", "noop"]
@@ -27,4 +27,4 @@ class PinFactory(Protocol):
 def validate_pin_value(value: int) -> PinValue:
     if value not in (0, 1):
         raise ValueError(f"Pin value must be 0 or 1 but got {value}")
-    return cast(PinValue, value)
+    return value
